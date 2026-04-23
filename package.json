@@ -5,6 +5,7 @@
   "description": "Random flight generator for flight simulator pilots",
   "scripts": {
     "build": "tsc",
+    "test": "node --test scripts/build-airport-data.test.js",
     "dev": "serve ."
   },
   "devDependencies": {
