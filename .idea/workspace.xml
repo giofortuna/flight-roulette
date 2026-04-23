@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f2f4807b-21f1-41a3-b134-5fea51357c77" name="Changes" comment="squash! Init" />
+    <list default="true" id="f2f4807b-21f1-41a3-b134-5fea51357c77" name="Changes" comment="Init">
+      <change afterPath="$PROJECT_DIR$/docs/dispatch-mocks.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/flight-generator-spec.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -53,10 +57,18 @@
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "git-widget-placeholder": "main",
     "javascript.preferred.runtime.type.id": "node",
+    "last_opened_file_path": "C:/Users/mcglu/projects/stuff/airways-roulette/docs",
+    "nodejs_interpreter_path": "C:/Users/mcglu/AppData/Roaming/JetBrains/WebStorm2026.1/node/versions/24.15.0/node",
+    "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "vcs.log",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\mcglu\projects\stuff\airways-roulette\docs" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -81,7 +93,15 @@
       <option name="project" value="LOCAL" />
       <updated>1776952688170</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Init">
+      <option name="closed" value="true" />
+      <created>1776960591641</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1776960591641</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
