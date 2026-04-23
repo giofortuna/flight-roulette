@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DISPATCH — Random Flight Generator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     VIEW: MAIN (settings + content area)
+══════════════════════════════════════════ -->
+<div id="view-main" class="view">
+  <div class="app-shell">
+
+    <header class="app-header">
+      <div>
+        <div class="logo">DISPATCH</div>
+        <div class="logo-sub">Random Flight Generator</div>
+      </div>
+      <div class="header-right">
+        <button class="nav-link" id="nav-about">About</button>
+        <div class="status-dot"></div>
+      </div>
+    </header>
+
+    <div class="section-label">Settings</div>
+    <div class="settings-panel">
+
+      <div class="setting-row">
+        <span class="setting-label">Flight Type</span>
+        <div class="seg">
+          <input type="radio" name="flight-type" id="ft-passenger" value="passenger" checked>
+          <label for="ft-passenger">Passenger</label>
+          <input type="radio" name="flight-type" id="ft-cargo" value="cargo">
+          <label for="ft-cargo">Cargo</label>
+        </div>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-label">Simulator</span>
+        <div class="seg">
+          <input type="radio" name="simulator" id="sim-2020" value="msfs2020" checked>
+          <label for="sim-2020">MSFS 2020</label>
+          <input type="radio" name="simulator" id="sim-2024" value="msfs2024">
+          <label for="sim-2024">MSFS 2024</label>
+          <input type="radio" name="simulator" id="sim-xp" value="xplane12">
+          <label for="sim-xp">X-Plane 12</label>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="setting-row">
+        <span class="setting-label">Payload</span>
+        <div class="seg">
+          <input type="radio" name="payload" id="pay-random" value="random" checked>
+          <label for="pay-random">Random</label>
+          <input type="radio" name="payload" id="pay-simbrief" value="simbrief">
+          <label for="pay-simbrief">SimBrief</label>
+        </div>
+      </div>
+
+      <button class="btn-generate" id="btn-generate">▶ Generate Flight</button>
+    </div>
+
+    <!-- State: empty (default) -->
+    <div id="state-empty" class="empty-state">
+      <div class="empty-icon">✈</div>
+      <div class="empty-title">Awaiting Dispatch</div>
+      <div class="empty-sub" id="empty-message">Configure your settings above and press Generate to receive your flight assignment.</div>
+    </div>
+
+    <!-- State: loading -->
+    <div id="state-loading" class="loading-state hidden">
+      <div class="loading-icon">◌</div>
+      <div class="loading-title">Calculating Route</div>
+    </div>
+
+    <!-- State: flight card -->
+    <div id="state-card" class="hidden">
+      <div class="section-label">Generated Flight</div>
+
+      <div class="flight-card">
+
+        <div class="card-header">
+          <div class="card-header-left">
+            <div class="card-airline" id="card-airline">—</div>
+            <div class="card-fltnum" id="card-fltnum">———</div>
+          </div>
+          <div class="sim-badge" id="card-sim-badge">—</div>
+        </div>
+
+        <div class="card-route">
+          <div class="apt">
+            <div class="apt-icao" id="card-dep-icao">————</div>
+            <div class="apt-name" id="card-dep-name">—</div>
+            <div class="apt-city" id="card-dep-city">—</div>
+          </div>
+          <div class="route-mid">
+            <div class="route-stat" id="card-distance">— nm</div>
+            <div class="route-arrow">
+              <div class="r-line"></div>
+              <div class="r-plane">✈</div>
+              <div class="r-line"></div>
+            </div>
+            <div class="route-stat" id="card-blocktime">—+— BLK</div>
+          </div>
+          <div class="apt right">
+            <div class="apt-icao" id="card-dest-icao">————</div>
+            <div class="apt-name" id="card-dest-name">—</div>
+            <div class="apt-city" id="card-dest-city">—</div>
+          </div>
+        </div>
+
+        <div class="card-grid">
+          <div class="grid-cell full" style="border-bottom: 1px solid var(--border);">
+            <div class="cell-label">Aircraft</div>
+            <div class="cell-value-sm" id="card-aircraft-type">—</div>
+            <div class="cell-sub" id="card-aircraft-frame">—</div>
+          </div>
+          <div class="grid-cell" id="cell-pax">
+            <div class="cell-label">Passengers</div>
+            <div class="cell-value" id="card-pax">—</div>
+            <div class="cell-sub" id="card-pax-max">/ — max</div>
+          </div>
+          <div class="grid-cell">
+            <div class="cell-label">Cargo</div>
+            <div class="cell-value" id="card-cargo">—<span style="font-size:15px;color:var(--amber-dim)"> kg</span></div>
+            <div class="cell-sub" id="card-cargo-max">/ — kg max</div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <div class="footer-note">
+            <div class="footer-note-label">Fuel</div>
+            <div class="footer-note-val">Calculated by SimBrief</div>
+          </div>
+          <a class="btn-dispatch" id="btn-dispatch" href="#" target="_blank" rel="noopener noreferrer">
+            Dispatch to SimBrief →
+          </a>
+        </div>
+
+      </div><!-- /.flight-card -->
+
+      <div class="regen-row">
+        <button class="btn-regen" id="btn-regen">↺ Generate another flight</button>
+      </div>
+    </div><!-- /#state-card -->
+
+  </div><!-- /.app-shell -->
+</div><!-- /#view-main -->
+
+<!-- ══════════════════════════════════════════
+     VIEW: ABOUT
+══════════════════════════════════════════ -->
+<div id="view-about" class="view hidden">
+  <div class="app-shell">
+
+    <header class="app-header">
+      <div>
+        <div class="logo">DISPATCH</div>
+        <div class="logo-sub">Random Flight Generator</div>
+      </div>
+      <div class="header-right">
+        <button class="nav-link" id="nav-back">← Back</button>
+        <div class="status-dot"></div>
+      </div>
+    </header>
+
+    <div class="about-hero">
+      <div class="about-title">Random.<br>Realistic.<br>Ready to fly.</div>
+      <div class="about-tagline">A dispatch tool for flight simulator pilots who want<br>to go somewhere new, every time.</div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">What is Dispatch?</div>
+      <div class="about-text">
+        <p>Dispatch generates random, realistic flight assignments for flight simulator pilots. Pick your simulator and preferences, and the app selects an aircraft, airline, departure airport, and destination — constrained by real-world performance data.</p>
+        <p>Every generated flight is sent directly to SimBrief for a full operational flight plan, complete with routing, weather, and fuel calculations.</p>
+      </div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">How it works</div>
+      <ul class="feature-list">
+        <li>An airline is picked randomly from a database of ~400 worldwide operators</li>
+        <li>An aircraft is selected, filtered by your chosen simulator and flight type</li>
+        <li>A departure airport is chosen from the full ICAO database</li>
+        <li>A destination is picked based on aircraft range and minimum runway requirements</li>
+        <li>Optional: payload (passengers + cargo) is randomly generated and passed to SimBrief</li>
+      </ul>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Supported Aircraft (v1)</div>
+      <table class="aircraft-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Airframe</th>
+            <th>Simulators</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>B738</td>
+            <td>PMDG 737-800</td>
+            <td>MSFS 2020 / 2024</td>
+          </tr>
+          <tr>
+            <td>A320</td>
+            <td>Fenix A320 Sharklet CFM</td>
+            <td>MSFS 2020 / 2024</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Supported Simulators</div>
+      <table class="sim-table">
+        <tr>
+          <td>MSFS 2020</td>
+          <td><span class="tag-live">● LIVE</span></td>
+        </tr>
+        <tr>
+          <td>MSFS 2024</td>
+          <td><span class="tag-live">● LIVE</span></td>
+        </tr>
+        <tr>
+          <td>X-Plane 12</td>
+          <td><span class="tag-soon">COMING SOON</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Links</div>
+      <div class="about-links">
+        <a class="about-link" href="https://flightsim.to" target="_blank" rel="noopener">FlightSim.to</a>
+        <a class="about-link" href="https://github.com/ivanzlenko/airways-roulette" target="_blank" rel="noopener">GitHub</a>
+        <a class="about-link" href="https://www.simbrief.com" target="_blank" rel="noopener">SimBrief</a>
+        <a class="about-link" href="https://ourairports.com" target="_blank" rel="noopener">OurAirports</a>
+      </div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Version</div>
+      <div class="about-text">
+        v1.0.0 — Initial release<br>
+        <span style="color:var(--text-dim)">Airport data: OurAirports · Airline data: OurAirports · Flight planning: SimBrief</span>
+      </div>
+    </div>
+
+  </div><!-- /.app-shell -->
+</div><!-- /#view-about -->
+
+<script type="module" src="dist/main.js"></script>
+</body>
+</html>

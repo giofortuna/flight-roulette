@@ -1,0 +1,742 @@
+:root {
+  --amber: #FFB000;
+  --amber-dim: #7A5400;
+  --amber-glow: rgba(255, 176, 0, 0.15);
+  --amber-bright: #FFD060;
+  --bg: #080604;
+  --bg2: #0F0C06;
+  --bg3: #161008;
+  --border: #2A1C00;
+  --border-active: #3A2800;
+  --text-dim: #5A4010;
+  --green: #39FF14;
+  --red: #FF3B3B;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--amber);
+  font-family: 'Share Tech Mono', monospace;
+  min-height: 100vh;
+  cursor: crosshair;
+}
+
+/* CRT scanlines */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  pointer-events: none;
+  z-index: 9000;
+}
+
+/* Vignette */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);
+  pointer-events: none;
+  z-index: 8999;
+}
+
+/* ── Utility ── */
+.hidden { display: none !important; }
+
+/* ── Views ── */
+.view { min-height: 100vh; }
+
+/* ════════════════════════════════════════
+   SHARED LAYOUT
+════════════════════════════════════════ */
+.app-shell {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 0 20px 100px;
+}
+
+/* ── App header ── */
+.app-header {
+  padding: 20px 0 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
+.logo {
+  font-family: 'Orbitron', monospace;
+  font-weight: 900;
+  font-size: 26px;
+  letter-spacing: 0.15em;
+  text-shadow: 0 0 20px rgba(255,176,0,0.35);
+  animation: flicker 9s infinite;
+}
+
+.logo-sub {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--text-dim);
+  margin-top: 3px;
+  text-transform: uppercase;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-link {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--amber-dim);
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s;
+  background: none;
+  border: none;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.nav-link:hover,
+.nav-link.active-nav {
+  color: var(--amber);
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+  animation: blink 2s step-end infinite;
+  flex-shrink: 0;
+}
+
+/* ── Section label ── */
+.section-label {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* ════════════════════════════════════════
+   SETTINGS PANEL
+════════════════════════════════════════ */
+.settings-panel {
+  background: var(--bg2);
+  border: 1px solid var(--border-active);
+  padding: 20px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.setting-label {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--amber-dim);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  width: 110px;
+}
+
+/* Segmented toggle */
+.seg {
+  display: flex;
+  border: 1px solid var(--amber-dim);
+  flex: 1;
+  overflow: hidden;
+}
+
+.seg input[type="radio"] { display: none; }
+
+.seg label {
+  flex: 1;
+  text-align: center;
+  padding: 8px 6px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber-dim);
+  cursor: pointer;
+  transition: all 0.12s;
+  border-right: 1px solid var(--amber-dim);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.seg label:last-of-type { border-right: none; }
+
+.seg input[type="radio"]:checked + label {
+  background: var(--amber);
+  color: var(--bg);
+  font-weight: 700;
+}
+
+.seg label:hover {
+  color: var(--amber);
+  background: var(--amber-glow);
+}
+
+.seg input[type="radio"]:checked + label:hover {
+  color: var(--bg);
+  background: var(--amber);
+}
+
+.divider {
+  height: 1px;
+  background: var(--border);
+  margin: 2px 0;
+}
+
+/* Generate button */
+.btn-generate {
+  background: var(--amber);
+  color: var(--bg);
+  border: none;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  padding: 14px;
+  width: 100%;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 0 24px rgba(255,176,0,0.2);
+  transition: all 0.12s;
+}
+
+.btn-generate:hover {
+  background: var(--amber-bright);
+  box-shadow: 0 0 36px rgba(255,176,0,0.4);
+}
+
+.btn-generate:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  border: 1px dashed var(--border-active);
+  padding: 60px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.empty-icon {
+  font-size: 40px;
+  opacity: 0.2;
+  animation: float 4s ease-in-out infinite;
+}
+
+.empty-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  color: var(--amber-dim);
+  text-transform: uppercase;
+}
+
+.empty-sub {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+/* ── Loading state ── */
+.loading-state {
+  border: 1px dashed var(--border-active);
+  padding: 60px 20px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.loading-icon {
+  font-size: 40px;
+  animation: spin 1.5s linear infinite;
+}
+
+.loading-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 13px;
+  letter-spacing: 0.25em;
+  color: var(--amber-dim);
+  text-transform: uppercase;
+}
+
+/* ════════════════════════════════════════
+   FLIGHT CARD
+════════════════════════════════════════ */
+.flight-card {
+  background: var(--bg2);
+  border: 1px solid var(--border-active);
+  position: relative;
+  overflow: hidden;
+}
+
+.flight-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--amber) 40%, var(--amber) 60%, transparent);
+  opacity: 0.45;
+}
+
+/* Card header */
+.card-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.card-airline {
+  font-size: 13px;
+  color: var(--amber-dim);
+  letter-spacing: 0.15em;
+}
+
+.card-fltnum {
+  font-family: 'Orbitron', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+}
+
+.sim-badge {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--amber-dim);
+  border: 1px solid var(--border-active);
+  padding: 5px 10px;
+  text-transform: uppercase;
+}
+
+/* Route */
+.card-route {
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.apt {
+  flex: 1;
+  min-width: 0;
+}
+
+.apt-icao {
+  font-family: 'Orbitron', monospace;
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(255,176,0,0.25);
+}
+
+.apt-name {
+  font-size: 13px;
+  color: var(--amber-dim);
+  margin-top: 5px;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.apt-city {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 2px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.apt.right { text-align: right; }
+
+.route-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  padding: 0 6px;
+}
+
+.route-stat {
+  font-size: 12px;
+  color: var(--amber-dim);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.route-arrow {
+  display: flex;
+  align-items: center;
+  width: 56px;
+}
+
+.r-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-active);
+}
+
+.r-plane {
+  font-size: 17px;
+  color: var(--amber);
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Details grid */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-cell {
+  padding: 15px 20px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.grid-cell:nth-child(2n) { border-right: none; }
+.grid-cell:nth-last-child(-n+2) { border-bottom: none; }
+.grid-cell.full {
+  grid-column: span 2;
+  border-right: none;
+}
+
+.cell-label {
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.cell-value {
+  font-family: 'Space Mono', monospace;
+  font-size: 26px;
+  color: var(--amber);
+  line-height: 1;
+}
+
+.cell-sub {
+  font-size: 12px;
+  color: var(--amber-dim);
+  margin-top: 4px;
+  letter-spacing: 0.05em;
+}
+
+.cell-value-sm {
+  font-family: 'Space Mono', monospace;
+  font-size: 18px;
+  color: var(--amber);
+  line-height: 1.3;
+}
+
+/* Card footer */
+.card-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+  background: var(--bg3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.footer-note {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footer-note-label {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+
+.footer-note-val {
+  font-size: 13px;
+  color: var(--amber-dim);
+}
+
+.btn-dispatch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--amber);
+  color: var(--bg);
+  border: none;
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  padding: 12px 18px;
+  cursor: pointer;
+  text-transform: uppercase;
+  box-shadow: 0 0 20px rgba(255,176,0,0.2);
+  transition: all 0.12s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+
+.btn-dispatch:hover {
+  background: var(--amber-bright);
+  box-shadow: 0 0 32px rgba(255,176,0,0.4);
+  transform: translateY(-1px);
+}
+
+/* Regenerate link */
+.regen-row {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.btn-regen {
+  background: none;
+  border: none;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: color 0.15s;
+}
+
+.btn-regen:hover { color: var(--amber-dim); }
+
+/* ════════════════════════════════════════
+   ABOUT PAGE
+════════════════════════════════════════ */
+.about-hero {
+  padding: 32px 0 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+
+.about-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  line-height: 1.1;
+  text-shadow: 0 0 30px rgba(255,176,0,0.3);
+  margin-bottom: 10px;
+}
+
+.about-tagline {
+  font-size: 14px;
+  color: var(--amber-dim);
+  letter-spacing: 0.15em;
+  line-height: 1.6;
+  margin-top: 14px;
+}
+
+.about-block {
+  margin-bottom: 28px;
+}
+
+.about-block-title {
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--amber-dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.about-text {
+  font-size: 14px;
+  color: var(--amber-dim);
+  line-height: 1.85;
+  letter-spacing: 0.04em;
+}
+
+.about-text p + p { margin-top: 10px; }
+
+/* Feature list */
+.feature-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feature-list li {
+  display: flex;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--amber-dim);
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+
+.feature-list li::before {
+  content: '→';
+  color: var(--amber);
+  flex-shrink: 0;
+}
+
+/* Aircraft table */
+.aircraft-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.aircraft-table th {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  text-align: left;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg3);
+}
+
+.aircraft-table td {
+  font-size: 13px;
+  color: var(--amber-dim);
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.05em;
+  vertical-align: top;
+}
+
+.aircraft-table td:first-child {
+  font-family: 'Orbitron', monospace;
+  font-size: 14px;
+  color: var(--amber);
+  letter-spacing: 0.1em;
+}
+
+.aircraft-table tr:last-child td { border-bottom: none; }
+
+/* Sim table */
+.sim-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sim-table tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.sim-table tr:last-child { border-bottom: none; }
+
+.sim-table td {
+  padding: 10px 12px;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+}
+
+.sim-table td:first-child {
+  color: var(--amber);
+  width: 50%;
+}
+
+.sim-table td:last-child {
+  color: var(--text-dim);
+  text-align: right;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+}
+
+.tag-live {
+  color: var(--green);
+  letter-spacing: 0.15em;
+  font-size: 12px;
+}
+
+.tag-soon { color: var(--text-dim); }
+
+/* Links */
+.about-links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.about-link {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--amber-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-active);
+  padding-bottom: 2px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.about-link:hover {
+  color: var(--amber);
+  border-color: var(--amber-dim);
+}
+
+/* ── Animations ── */
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+  20%, 24%, 55% { opacity: 0.7; }
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="f2f4807b-21f1-41a3-b134-5fea51357c77" name="Changes" comment="Init">
-      <change afterPath="$PROJECT_DIR$/docs/dispatch-mocks.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docs/flight-generator-spec.md" afterDir="false" />
+    <list default="true" id="f2f4807b-21f1-41a3-b134-5fea51357c77" name="Changes" comment="Update README">
+      <change afterPath="$PROJECT_DIR$/.github/workflows/deploy.yml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/css/style.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/index.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CLAUDE.md" beforeDir="false" afterPath="$PROJECT_DIR$/CLAUDE.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/index.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -61,6 +69,7 @@
     "nodejs_interpreter_path": "C:/Users/mcglu/AppData/Roaming/JetBrains/WebStorm2026.1/node/versions/24.15.0/node",
     "nodejs_package_manager_path": "npm",
     "settings.editor.selected.configurable": "vcs.log",
+    "ts.external.directory.path": "C:\\Users\\mcglu\\projects\\stuff\\airways-roulette\\node_modules\\typescript\\lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -101,7 +110,31 @@
       <option name="project" value="LOCAL" />
       <updated>1776960591641</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Add docs and settings">
+      <option name="closed" value="true" />
+      <created>1776961491442</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1776961491442</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Add CLAUDE.md">
+      <option name="closed" value="true" />
+      <created>1776961703545</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1776961703545</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Update README">
+      <option name="closed" value="true" />
+      <created>1776961792930</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1776961792930</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -121,6 +154,9 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="squash! Init" />
     <MESSAGE value="Init" />
-    <option name="LAST_COMMIT_MESSAGE" value="Init" />
+    <MESSAGE value="Add docs and settings" />
+    <MESSAGE value="Add CLAUDE.md" />
+    <MESSAGE value="Update README" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update README" />
   </component>
 </project>

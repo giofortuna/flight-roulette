@@ -40,10 +40,10 @@ Regional JSON files (`data/airports-{region}.json`) are produced by `scripts/bui
 
 ### TypeScript / build notes
 
-- Source: `src/` — browser ES modules
+- Source: `src/` — browser ES modules; `moduleResolution: "bundler"`, `module: "ES2020"`, `target: "ES2020"`
 - Output: `dist/` — served by GitHub Pages
-- `tsconfig.json` currently targets `commonjs`/`es2016` — **update to `module: ES2020` and `target: ES2020`** when wiring browser modules (tracked in issue #1)
-- The build script (`scripts/build-airport-data.js`) is plain Node.js, not TypeScript — it runs directly with `node`, not `tsc`
+- **All relative imports between `src/` modules must use `.js` extensions** (e.g. `import { airlines } from './airline-db.js'`). TypeScript resolves to the `.ts` source; the browser needs `.js` at runtime. `bundler` resolution does not add extensions automatically.
+- The build script (`scripts/build-airport-data.js`) is plain Node.js, not TypeScript — runs directly with `node`, not `tsc`
 
 ### Data files
 

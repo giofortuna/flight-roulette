@@ -1,13 +1,14 @@
 {
   "name": "airways-roulette",
+  "type": "module",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "description": "Random flight generator for flight simulator pilots",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "dev": "serve ."
   },
-  "dependencies": {},
   "devDependencies": {
+    "serve": "^14.2.6",
     "typescript": "^5.5.3"
   },
   "private": true
