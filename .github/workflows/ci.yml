@@ -34,7 +34,7 @@ jobs:
 
   deploy:
     needs: ci
-    if: github.event_name == 'push'
+    if: false # repo is private; re-enable (github.event_name == 'push') when public
     runs-on: ubuntu-latest
     permissions:
       contents: read
