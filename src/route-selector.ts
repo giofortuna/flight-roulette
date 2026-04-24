@@ -45,7 +45,8 @@ function pickRandom<T>(arr: T[]): T {
 }
 
 const MAX_DEPARTURE_ATTEMPTS = 10;
-const RANGE_RELAXATION = 1.2;
+const RANGE_UTILISATION = 0.80; // leave headroom for airways routing, winds, and fuel reserves
+const RANGE_RELAXATION  = 1.2;
 
 export function pickRoute(
   input: SelectionInput,
@@ -73,7 +74,7 @@ export function pickRoute(
     throw new NoRouteError('not enough airports meet runway requirement');
 
   for (let relaxed = 0; relaxed <= 1; relaxed++) {
-    const rangeNm = pickedAircraft.range_nm * (relaxed ? RANGE_RELAXATION : 1);
+    const rangeNm = pickedAircraft.range_nm * RANGE_UTILISATION * (relaxed ? RANGE_RELAXATION : 1);
 
     for (let attempt = 0; attempt < MAX_DEPARTURE_ATTEMPTS; attempt++) {
       const departure = pickRandom(eligibleAirports);
