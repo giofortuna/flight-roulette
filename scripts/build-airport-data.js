@@ -111,20 +111,22 @@ export function buildRunwayMap(runwayRows) {
 export function processAirports(airportRows, { runwayMap, allRunwayAirports }) {
   const regions = {};
   const skipped = {
-    noIcao:         0, // ident is not a 4-letter ICAO code (includes FAA/local codes)
-    wrongType:      0, // heliport, seaplane base, closed, etc.
-    unknownRegion:  0, // ICAO prefix not in PREFIX_REGION table
-    noRunwayRecord: 0, // airport has no entry in runways.csv at all
-    softRunwayOnly: 0, // airport appears in runways.csv but all runways are soft/closed
-    badCoords:      0, // lat or lon is missing or non-numeric
+    noIcao:          0, // ident is not a 4-letter ICAO code (includes FAA/local codes)
+    wrongType:       0, // heliport, seaplane base, closed, etc.
+    noScheduled:     0, // no active commercial scheduled service (military, GA-only, etc.)
+    unknownRegion:   0, // ICAO prefix not in PREFIX_REGION table
+    noRunwayRecord:  0, // airport has no entry in runways.csv at all
+    softRunwayOnly:  0, // airport appears in runways.csv but all runways are soft/closed
+    badCoords:       0, // lat or lon is missing or non-numeric
   };
 
   for (const apt of airportRows) {
     const icao = apt.ident;
 
     // OurAirports includes FAA/local codes (e.g. "00AK", "1AZ2") — intentionally excluded.
-    if (!/^[A-Z]{4}$/.test(icao))  { skipped.noIcao++;         continue; }
-    if (!KEEP_TYPES.has(apt.type)) { skipped.wrongType++;       continue; }
+    if (!/^[A-Z]{4}$/.test(icao))          { skipped.noIcao++;       continue; }
+    if (!KEEP_TYPES.has(apt.type))          { skipped.wrongType++;     continue; }
+    if (apt.scheduled_service !== 'yes')    { skipped.noScheduled++;   continue; }
 
     const region = PREFIX_REGION[icao[0]];
     if (!region)                    { skipped.unknownRegion++;   continue; }
