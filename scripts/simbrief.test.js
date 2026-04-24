@@ -53,3 +53,13 @@ test('buildSimbriefUrl — useRandomPayload true omits pax for cargo flight (pax
   assert.equal(params.get('pax'),   null);
   assert.equal(params.get('cargo'), '18');
 });
+
+test('buildSimbriefUrl — cargo with fractional tons is preserved as decimal', () => {
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, { pax: 100, cargo_kg: 5500 }, { useRandomPayload: true }));
+  assert.equal(params.get('cargo'), '5.5');
+});
+
+test('buildSimbriefUrl — cargo below 1 ton is expressed as decimal', () => {
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, { pax: 100, cargo_kg: 340 }, { useRandomPayload: true }));
+  assert.equal(params.get('cargo'), '0.34');
+});
