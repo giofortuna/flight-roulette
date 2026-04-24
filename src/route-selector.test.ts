@@ -1,7 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { haversineNm, pickRoute, NoRouteError } from '../dist/route-selector.js';
-import { filterByRunway } from '../dist/airport-db.js';
+import { haversineNm, pickRoute, NoRouteError } from './route-selector.js';
+import type { SelectionInput } from './route-selector.js';
+import { filterByRunway } from './airport-db.js';
+import type { Aircraft, Airline, Airport } from './route-selector.js';
 
 // ── haversineNm ───────────────────────────────────────────────────────────────
 
@@ -35,10 +37,10 @@ test('haversineNm — symmetric', () => {
 
 // ── filterByRunway ─────────────────────────────────────────────────────────────
 
-const AIRPORTS = [
-  { icao: 'EGLL', name: 'Heathrow',  city: 'London',  country: 'GB', lat: 51.477, lon: -0.461, max_runway_m: 3902 },
-  { icao: 'EGGW', name: 'Luton',     city: 'London',  country: 'GB', lat: 51.874, lon: -0.368, max_runway_m: 2160 },
-  { icao: 'EGKB', name: 'Biggin Hill', city: 'London', country: 'GB', lat: 51.331, lon: 0.032,  max_runway_m: 1823 },
+const AIRPORTS: Airport[] = [
+  { icao: 'EGLL', name: 'Heathrow',   city: 'London', country: 'GB', lat: 51.477, lon: -0.461, max_runway_m: 3902 },
+  { icao: 'EGGW', name: 'Luton',      city: 'London', country: 'GB', lat: 51.874, lon: -0.368, max_runway_m: 2160 },
+  { icao: 'EGKB', name: 'Biggin Hill', city: 'London', country: 'GB', lat: 51.331, lon:  0.032, max_runway_m: 1823 },
 ];
 
 test('filterByRunway — returns all airports when minRunwayM is 0', () => {
@@ -62,7 +64,7 @@ test('filterByRunway — exact match is included', () => {
 
 // ── pickRoute ─────────────────────────────────────────────────────────────────
 
-function makeAircraft(overrides = {}) {
+function makeAircraft(overrides: Partial<Aircraft> = {}): Aircraft {
   return {
     icao_type: 'B738', type_name: '737-800', airframe_name: 'Test 737',
     flight_type: 'passenger', simulator: ['msfs2020', 'msfs2024'],
@@ -73,7 +75,7 @@ function makeAircraft(overrides = {}) {
   };
 }
 
-function makeAirline(overrides = {}) {
+function makeAirline(overrides: Partial<Airline> = {}): Airline {
   return {
     icao: 'BAW', iata: 'BA', name: 'British Airways', callsign: 'SPEEDBIRD',
     country: 'GB', region: 'europe', hub: 'EGLL', type: 'passenger',
@@ -82,11 +84,11 @@ function makeAirline(overrides = {}) {
   };
 }
 
-function makeAirport(icao, lat, lon, overrides = {}) {
+function makeAirport(icao: string, lat: number, lon: number, overrides: Partial<Airport> = {}): Airport {
   return { icao, name: `Airport ${icao}`, city: 'City', country: 'XX', lat, lon, max_runway_m: 3000, ...overrides };
 }
 
-const INPUT = { flightType: 'passenger', simulator: 'msfs2020' };
+const INPUT: SelectionInput = { flightType: 'passenger', simulator: 'msfs2020' };
 
 // Two airports ~90nm apart at the equator (within any reasonable aircraft range)
 const NEAR_A = makeAirport('XAAA', 0, 0);
@@ -142,7 +144,7 @@ test('pickRoute — returns valid SelectedRoute with distinct departure and dest
 test('pickRoute — distanceNm equals rounded haversine between departure and destination', () => {
   const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]);
   const expected = Math.round(
-    haversineNm(route.departure.lat, route.departure.lon, route.destination.lat, route.destination.lon)
+    haversineNm(route.departure.lat, route.departure.lon, route.destination.lat, route.destination.lon),
   );
   assert.equal(route.distanceNm, expected);
 });
@@ -153,7 +155,7 @@ test('pickRoute — airline with type "both" matches passenger input', () => {
 });
 
 test('pickRoute — airline with type "both" matches cargo input', () => {
-  const cargoInput = { flightType: 'cargo', simulator: 'msfs2020' };
+  const cargoInput: SelectionInput = { flightType: 'cargo', simulator: 'msfs2020' };
   const route = pickRoute(cargoInput, [makeAircraft({ flight_type: 'cargo' })], [makeAirline({ type: 'both' })], [NEAR_A, NEAR_B]);
   assert.equal(route.airline.type, 'both');
 });

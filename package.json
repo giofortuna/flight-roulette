@@ -5,11 +5,12 @@
   "description": "Random flight generator for flight simulator pilots",
   "scripts": {
     "build": "tsc",
-    "test": "node --test",
+    "test": "tsx --test",
     "dev": "serve ."
   },
   "devDependencies": {
     "serve": "^14.2.6",
+    "tsx": "^4.21.0",
     "typescript": "^5.5.3"
   },
   "private": true
