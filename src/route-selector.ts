@@ -45,7 +45,7 @@ function pickRandom<T>(arr: T[]): T {
 }
 
 const MAX_DEPARTURE_ATTEMPTS = 10;
-const RANGE_UTILISATION = 0.85; // leave headroom for airways routing, winds, and fuel reserves
+const RANGE_UTILISATION = 0.80; // leave headroom for airways routing, winds, and fuel reserves
 const RANGE_RELAXATION  = 1.2;
 
 export function pickRoute(
