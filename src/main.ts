@@ -47,7 +47,8 @@ async function generate(): Promise<void> {
       renderFlight({ route, plan, payload, simbriefUrl, simulator: settings.simulator });
     } catch (err) {
       if (err instanceof NoRouteError) {
-        renderEmpty('Could not generate a route. Please try again.');
+        const hint = settings.scheduledOnly ? ' Try switching Airports to All in Options.' : '';
+        renderEmpty(`Could not generate a route.${hint} Please try again.`);
         console.error(err);
       } else {
         renderEmpty('An unexpected error occurred. Please try again.');
