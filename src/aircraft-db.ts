@@ -20,10 +20,23 @@ export interface Aircraft {
 
 let _cache: Aircraft[] | null = null;
 
+function validate(data: unknown): Aircraft[] {
+  if (!Array.isArray(data) || data.length === 0)
+    throw new Error('aircraft.json: expected non-empty array');
+  for (const item of data) {
+    if (typeof item.icao_type !== 'string'
+     || typeof item.range_nm !== 'number'
+     || typeof item.min_runway_m !== 'number'
+     || !Array.isArray(item.simulator))
+      throw new Error(`aircraft.json: invalid entry "${item.icao_type}"`);
+  }
+  return data as Aircraft[];
+}
+
 export async function loadAircraft(): Promise<Aircraft[]> {
   if (_cache) return _cache;
   const res = await fetch(new URL('../data/aircraft.json', import.meta.url).href);
   if (!res.ok) throw new Error(`Failed to load aircraft data: ${res.status}`);
-  _cache = await res.json() as Aircraft[];
+  _cache = validate(await res.json());
   return _cache;
 }
