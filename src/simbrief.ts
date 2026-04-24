@@ -6,7 +6,7 @@ export interface DispatchOptions {
   useRandomPayload: boolean;
 }
 
-// TODO: verify pax/cargo params against SimBrief documentation (undocumented as of writing)
+// TODO(#18): verify pax/cargo params against SimBrief documentation (undocumented as of writing)
 export function buildSimbriefUrl(
   route: SelectedRoute,
   plan: FlightPlan,
