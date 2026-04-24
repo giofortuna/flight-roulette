@@ -45,11 +45,11 @@ test('buildSimbriefUrl — useRandomPayload false omits pax and cargo', () => {
 test('buildSimbriefUrl — useRandomPayload true includes pax and cargo for passenger flight', () => {
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, PAYLOAD_PAX, { useRandomPayload: true }));
   assert.equal(params.get('pax'),   '130');
-  assert.equal(params.get('cargo'), '5000');
+  assert.equal(params.get('cargo'), '5');
 });
 
 test('buildSimbriefUrl — useRandomPayload true omits pax for cargo flight (pax=null)', () => {
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, PAYLOAD_CARGO, { useRandomPayload: true }));
   assert.equal(params.get('pax'),   null);
-  assert.equal(params.get('cargo'), '18000');
+  assert.equal(params.get('cargo'), '18');
 });
