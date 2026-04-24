@@ -20,7 +20,6 @@ export function buildSimbriefUrl(
     airline: route.airline.simbrief_id,
     fltnum:  plan.flight_number,
     fl:      String(plan.cruise_fl),
-    route:   'AUTO',
     units:   'KGS',
   });
 

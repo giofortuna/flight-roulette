@@ -32,7 +32,7 @@ test('buildSimbriefUrl — required params always present', () => {
   assert.equal(params.get('airline'), 'BA');
   assert.equal(params.get('fltnum'),  'BAW442');
   assert.equal(params.get('fl'),      '350');
-  assert.equal(params.get('route'),   'AUTO');
+  assert.equal(params.get('route'),   null);
   assert.equal(params.get('units'),   'KGS');
 });
 
