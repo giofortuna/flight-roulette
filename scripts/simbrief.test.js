@@ -45,11 +45,21 @@ test('buildSimbriefUrl — useRandomPayload false omits pax and cargo', () => {
 test('buildSimbriefUrl — useRandomPayload true includes pax and cargo for passenger flight', () => {
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, PAYLOAD_PAX, { useRandomPayload: true }));
   assert.equal(params.get('pax'),   '130');
-  assert.equal(params.get('cargo'), '5000');
+  assert.equal(params.get('cargo'), '5');
 });
 
 test('buildSimbriefUrl — useRandomPayload true omits pax for cargo flight (pax=null)', () => {
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, PAYLOAD_CARGO, { useRandomPayload: true }));
   assert.equal(params.get('pax'),   null);
-  assert.equal(params.get('cargo'), '18000');
+  assert.equal(params.get('cargo'), '18');
+});
+
+test('buildSimbriefUrl — cargo with fractional tons is preserved as decimal', () => {
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, { pax: 100, cargo_kg: 5500 }, { useRandomPayload: true }));
+  assert.equal(params.get('cargo'), '5.5');
+});
+
+test('buildSimbriefUrl — cargo below 1 ton is expressed as decimal', () => {
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, { pax: 100, cargo_kg: 340 }, { useRandomPayload: true }));
+  assert.equal(params.get('cargo'), '0.34');
 });

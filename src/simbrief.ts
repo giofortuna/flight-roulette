@@ -25,7 +25,7 @@ export function buildSimbriefUrl(
 
   if (options.useRandomPayload) {
     if (payload.pax !== null) params.set('pax', String(payload.pax));
-    params.set('cargo', String(payload.cargo_kg));
+    params.set('cargo', String(payload.cargo_kg / 1000));
   }
 
   return `https://www.simbrief.com/system/dispatch.php?${params.toString()}`;
