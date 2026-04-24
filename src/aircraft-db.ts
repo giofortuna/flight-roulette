@@ -25,9 +25,19 @@ function validate(data: unknown): Aircraft[] {
     throw new Error('aircraft.json: expected non-empty array');
   for (const item of data) {
     if (typeof item.icao_type !== 'string'
+     || typeof item.type_name !== 'string'
+     || typeof item.airframe_name !== 'string'
+     || typeof item.flight_type !== 'string'
+     || !Array.isArray(item.simulator)
      || typeof item.range_nm !== 'number'
      || typeof item.min_runway_m !== 'number'
-     || !Array.isArray(item.simulator))
+     || typeof item.cruise_ft !== 'number'
+     || typeof item.cruise_kts !== 'number'
+     || typeof item.category !== 'string'
+     || typeof item.max_pax !== 'number'
+     || typeof item.max_cargo_kg !== 'number'
+     || typeof item.simbrief_type !== 'string'
+     || typeof item.simbrief_airframe_id !== 'string')
       throw new Error(`aircraft.json: invalid entry "${item.icao_type}"`);
   }
   return data as Aircraft[];

@@ -22,9 +22,15 @@ function validate(data: unknown): Airline[] {
     throw new Error('airlines.json: expected non-empty array');
   for (const item of data) {
     if (typeof item.icao !== 'string'
+     || typeof item.iata !== 'string'
+     || typeof item.name !== 'string'
+     || typeof item.callsign !== 'string'
+     || typeof item.country !== 'string'
      || typeof item.region !== 'string'
+     || !Array.isArray(item.hub)
      || typeof item.type !== 'string'
-     || !Array.isArray(item.hub))
+     || typeof item.simbrief_id !== 'string'
+     || !Array.isArray(item.fleet))
       throw new Error(`airlines.json: invalid entry "${item.icao}"`);
   }
   return data as Airline[];
