@@ -16,42 +16,40 @@ const AIRCRAFT = {
   max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '',
 };
 
-// EGLL → EHAM (~200nm)
-const EGLL = { icao: 'EGLL', name: 'Heathrow', city: 'London', country: 'GB', lat: 51.477, lon: -0.461, max_runway_m: 3902 };
-const EHAM = { icao: 'EHAM', name: 'Amsterdam', city: 'Amsterdam', country: 'NL', lat: 52.308, lon: 4.764, max_runway_m: 3800 };
+const DISTANCE_NM = 200;
 
 test('planFlight — block_time_min is always > 0', () => {
-  const plan = planFlight(AIRLINE, AIRCRAFT, EGLL, EHAM);
+  const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
   assert.ok(plan.block_time_min > 0);
 });
 
-test('planFlight — block_time_min includes 30-min buffer', () => {
-  const plan = planFlight(AIRLINE, AIRCRAFT, EGLL, EHAM);
-  const rawMin = (plan.distance_nm / AIRCRAFT.cruise_kts) * 60;
-  assert.ok(plan.block_time_min >= Math.round(rawMin + 30) - 1);
+test('planFlight — block_time_min is (distance/cruise_kts)*60 + 30, rounded', () => {
+  const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
+  const expected = Math.round((DISTANCE_NM / AIRCRAFT.cruise_kts) * 60 + 30);
+  assert.equal(plan.block_time_min, expected);
 });
 
 test('planFlight — cruise_fl matches aircraft.cruise_ft / 100', () => {
-  const plan = planFlight(AIRLINE, AIRCRAFT, EGLL, EHAM);
+  const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
   assert.equal(plan.cruise_fl, Math.floor(AIRCRAFT.cruise_ft / 100));
+});
+
+test('planFlight — distance_nm echoes the input', () => {
+  const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
+  assert.equal(plan.distance_nm, DISTANCE_NM);
 });
 
 test('planFlight — flight_number starts with airline ICAO', () => {
   for (let i = 0; i < 20; i++) {
-    const plan = planFlight(AIRLINE, AIRCRAFT, EGLL, EHAM);
+    const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
     assert.ok(plan.flight_number.startsWith(AIRLINE.icao), `got ${plan.flight_number}`);
   }
 });
 
 test('planFlight — flight_number suffix is a 3-digit number in [100, 999]', () => {
   for (let i = 0; i < 20; i++) {
-    const plan = planFlight(AIRLINE, AIRCRAFT, EGLL, EHAM);
+    const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
     const suffix = Number(plan.flight_number.slice(AIRLINE.icao.length));
     assert.ok(suffix >= 100 && suffix <= 999, `suffix ${suffix} out of range`);
   }
-});
-
-test('planFlight — distance_nm is a positive integer', () => {
-  const plan = planFlight(AIRLINE, AIRCRAFT, EGLL, EHAM);
-  assert.ok(Number.isInteger(plan.distance_nm) && plan.distance_nm > 0);
 });
