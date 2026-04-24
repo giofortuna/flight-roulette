@@ -10,31 +10,6 @@ export interface Airport {
   max_runway_m: number;
 }
 
-// Must stay in sync with the same table in scripts/build-airport-data.js
-const PREFIX_REGION: Record<string, Region> = {
-  'B': 'europe',
-  'E': 'europe',
-  'L': 'europe',
-  'U': 'europe',
-  'C': 'namerica',
-  'K': 'namerica',
-  'M': 'namerica',
-  'P': 'namerica',
-  'S': 'sam',
-  'T': 'sam',
-  'D': 'africa',
-  'F': 'africa',
-  'G': 'africa',
-  'H': 'africa',
-  'O': 'asia',
-  'R': 'asia',
-  'V': 'asia',
-  'W': 'asia',
-  'Z': 'asia',
-  'N': 'pacific',
-  'Y': 'pacific',
-};
-
 const _cache = new Map<Region, Airport[]>();
 
 function validate(data: unknown, region: Region): Airport[] {
@@ -72,8 +47,4 @@ export async function loadAll(): Promise<Airport[]> {
 
 export function filterByRunway(airports: Airport[], minRunwayM: number): Airport[] {
   return airports.filter(a => a.max_runway_m >= minRunwayM);
-}
-
-export function icaoToRegion(icao: string): Region | undefined {
-  return PREFIX_REGION[icao[0]];
 }

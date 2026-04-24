@@ -47,13 +47,12 @@ function pickRandom<T>(arr: T[]): T {
 const MAX_DEPARTURE_ATTEMPTS = 10;
 const RANGE_RELAXATION = 1.2;
 
-export async function selectRoute(input: SelectionInput): Promise<SelectedRoute> {
-  const [allAircraft, allAirlines, allAirports] = await Promise.all([
-    loadAircraft(),
-    loadAirlines(),
-    loadAll(),
-  ]);
-
+export function pickRoute(
+  input: SelectionInput,
+  allAircraft: Aircraft[],
+  allAirlines: Airline[],
+  allAirports: Airport[],
+): SelectedRoute {
   const airlines = allAirlines.filter(a =>
     a.type === input.flightType || a.type === 'both'
   );
@@ -93,4 +92,13 @@ export async function selectRoute(input: SelectionInput): Promise<SelectedRoute>
   }
 
   throw new NoRouteError('exhausted all attempts — no valid departure/destination pair found');
+}
+
+export async function selectRoute(input: SelectionInput): Promise<SelectedRoute> {
+  const [allAircraft, allAirlines, allAirports] = await Promise.all([
+    loadAircraft(),
+    loadAirlines(),
+    loadAll(),
+  ]);
+  return pickRoute(input, allAircraft, allAirlines, allAirports);
 }
