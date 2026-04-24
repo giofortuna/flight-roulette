@@ -78,19 +78,15 @@ export async function selectRoute(input: SelectionInput): Promise<SelectedRoute>
 
     for (let attempt = 0; attempt < MAX_DEPARTURE_ATTEMPTS; attempt++) {
       const departure = pickRandom(eligibleAirports);
-      const candidates = eligibleAirports.filter(a => {
-        if (a.icao === departure.icao) return false;
-        const dist = haversineNm(departure.lat, departure.lon, a.lat, a.lon);
-        return dist <= rangeNm;
-      });
+      const candidates = eligibleAirports
+        .filter(a => a.icao !== departure.icao)
+        .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
+        .filter(({ distNm }) => distNm <= rangeNm);
 
       if (candidates.length === 0) continue;
 
-      const destination = pickRandom(candidates);
-      const distanceNm = Math.round(haversineNm(
-        departure.lat, departure.lon,
-        destination.lat, destination.lon,
-      ));
+      const { airport: destination, distNm } = pickRandom(candidates);
+      const distanceNm = Math.round(distNm);
 
       return { airline: pickedAirline, aircraft: pickedAircraft, departure, destination, distanceNm };
     }
