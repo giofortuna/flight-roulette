@@ -77,18 +77,21 @@ const RUNWAY_ROWS = [
   { airport_ident: 'WMKK', length_ft: '14000', surface: 'ASPH', closed: '1' },
   // ZZZZ: gravel only — soft surface, excluded entirely
   { airport_ident: 'ZZZZ', length_ft: '9000',  surface: 'GRVL', closed: '0' },
+  // EGMQ: valid runway, but airport has no scheduled service (military-only etc.)
+  { airport_ident: 'EGMQ', length_ft: '8000',  surface: 'ASPH', closed: '0' },
 ];
 
 const AIRPORT_ROWS = [
-  { ident: 'EGLL', type: 'large_airport', name: 'Heathrow Airport',     municipality: 'London',       iso_country: 'GB', latitude_deg: '51.47750091', longitude_deg: '-0.46194199' },
-  { ident: 'KORD', type: 'large_airport', name: "O'Hare International", municipality: 'Chicago',      iso_country: 'US', latitude_deg: '41.97860',    longitude_deg: '-87.90480'   },
-  { ident: 'YSSY', type: 'large_airport', name: 'Sydney Airport',       municipality: 'Sydney',       iso_country: 'AU', latitude_deg: '-33.94610',   longitude_deg: '151.17700'   },
-  { ident: 'LFPG', type: 'large_airport', name: 'Charles de Gaulle',    municipality: 'Paris',        iso_country: 'FR', latitude_deg: '49.00970',    longitude_deg: '2.54790'     }, // no runway record at all
-  { ident: '00AK', type: 'small_airport', name: 'FAA local',            municipality: 'Anchorage',    iso_country: 'US', latitude_deg: '59.94',       longitude_deg: '-151.69'     }, // FAA code
-  { ident: 'LTHP', type: 'heliport',     name: 'Istanbul Heliport',     municipality: 'Istanbul',     iso_country: 'TR', latitude_deg: '41.27',       longitude_deg: '28.73'       }, // wrong type
-  { ident: 'WMKK', type: 'large_airport', name: 'KL International',     municipality: 'Kuala Lumpur', iso_country: 'MY', latitude_deg: '2.74557',     longitude_deg: '101.70999'   }, // closed runway only
-  { ident: 'ZZZZ', type: 'large_airport', name: 'Gravel Strip',         municipality: 'Nowhere',      iso_country: 'AU', latitude_deg: '-25.0',       longitude_deg: '135.0'       }, // soft runway only
-  { ident: 'AXYZ', type: 'large_airport', name: 'Unknown Prefix',       municipality: 'Unknown',      iso_country: 'XX', latitude_deg: '0.0',         longitude_deg: '0.0'         }, // prefix A not in table
+  { ident: 'EGLL', type: 'large_airport', name: 'Heathrow Airport',     municipality: 'London',       iso_country: 'GB', latitude_deg: '51.47750091', longitude_deg: '-0.46194199', scheduled_service: 'yes' },
+  { ident: 'KORD', type: 'large_airport', name: "O'Hare International", municipality: 'Chicago',      iso_country: 'US', latitude_deg: '41.97860',    longitude_deg: '-87.90480',   scheduled_service: 'yes' },
+  { ident: 'YSSY', type: 'large_airport', name: 'Sydney Airport',       municipality: 'Sydney',       iso_country: 'AU', latitude_deg: '-33.94610',   longitude_deg: '151.17700',   scheduled_service: 'yes' },
+  { ident: 'LFPG', type: 'large_airport', name: 'Charles de Gaulle',    municipality: 'Paris',        iso_country: 'FR', latitude_deg: '49.00970',    longitude_deg: '2.54790',     scheduled_service: 'yes' }, // no runway record at all
+  { ident: '00AK', type: 'small_airport', name: 'FAA local',            municipality: 'Anchorage',    iso_country: 'US', latitude_deg: '59.94',       longitude_deg: '-151.69',     scheduled_service: 'no'  }, // FAA code
+  { ident: 'LTHP', type: 'heliport',     name: 'Istanbul Heliport',     municipality: 'Istanbul',     iso_country: 'TR', latitude_deg: '41.27',       longitude_deg: '28.73',       scheduled_service: 'yes' }, // wrong type
+  { ident: 'WMKK', type: 'large_airport', name: 'KL International',     municipality: 'Kuala Lumpur', iso_country: 'MY', latitude_deg: '2.74557',     longitude_deg: '101.70999',   scheduled_service: 'yes' }, // closed runway only
+  { ident: 'ZZZZ', type: 'large_airport', name: 'Gravel Strip',         municipality: 'Nowhere',      iso_country: 'AU', latitude_deg: '-25.0',       longitude_deg: '135.0',       scheduled_service: 'yes' }, // soft runway only
+  { ident: 'AXYZ', type: 'large_airport', name: 'Unknown Prefix',       municipality: 'Unknown',      iso_country: 'XX', latitude_deg: '0.0',         longitude_deg: '0.0',         scheduled_service: 'yes' }, // prefix A not in table
+  { ident: 'EGMQ', type: 'medium_airport', name: 'Military Only',       municipality: 'Nowhere',      iso_country: 'GB', latitude_deg: '52.0',        longitude_deg: '0.0',         scheduled_service: 'no'  }, // no scheduled service
 ];
 
 // ── buildRunwayMap ────────────────────────────────────────────────────────────
@@ -149,6 +152,14 @@ test('processAirports — airport with no runway record at all skipped as noRunw
 test('processAirports — airports with only soft/closed runways skipped as softRunwayOnly', () => {
   const { skipped } = processAirports(AIRPORT_ROWS, buildRunwayMap(RUNWAY_ROWS));
   assert.equal(skipped.softRunwayOnly, 2); // WMKK, ZZZZ
+});
+
+test('processAirports — scheduled field is true for scheduled airports, false otherwise', () => {
+  const { regions } = processAirports(AIRPORT_ROWS, buildRunwayMap(RUNWAY_ROWS));
+  const egll = regions.europe.find(a => a.icao === 'EGLL');
+  const egmq = regions.europe.find(a => a.icao === 'EGMQ');
+  assert.equal(egll.scheduled, true);
+  assert.equal(egmq.scheduled, false);
 });
 
 test('processAirports — output record has correct shape with rounded coordinates', () => {

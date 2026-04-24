@@ -147,6 +147,7 @@ export function processAirports(airportRows, { runwayMap, allRunwayAirports }) {
       lat:          round4(lat),
       lon:          round4(lon),
       max_runway_m: runwayMap.get(icao),
+      scheduled:    apt.scheduled_service === 'yes',
     });
   }
 

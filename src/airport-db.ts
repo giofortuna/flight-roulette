@@ -8,6 +8,7 @@ export interface Airport {
   lat: number;
   lon: number;
   max_runway_m: number;
+  scheduled?: boolean; // undefined in older JSON files → treated as true
 }
 
 const _cache = new Map<Region, Airport[]>();

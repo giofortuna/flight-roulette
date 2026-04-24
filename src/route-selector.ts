@@ -11,6 +11,7 @@ export type { Aircraft, Airline, Airport };
 export interface SelectionInput {
   flightType: FlightType;
   simulator: Simulator;
+  scheduledOnly: boolean;
 }
 
 export interface SelectedRoute {
@@ -68,7 +69,8 @@ export function pickRoute(
 
   const pickedAircraft = pickRandom(aircraft);
   const pickedAirline = pickRandom(airlines);
-  const eligibleAirports = filterByRunway(allAirports, pickedAircraft.min_runway_m);
+  const pool = input.scheduledOnly ? allAirports.filter(a => a.scheduled !== false) : allAirports;
+  const eligibleAirports = filterByRunway(pool, pickedAircraft.min_runway_m);
 
   if (eligibleAirports.length < 2)
     throw new NoRouteError('not enough airports meet runway requirement');
