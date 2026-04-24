@@ -24,35 +24,34 @@ let generating = false;
 async function generate(): Promise<void> {
   if (generating) return;
   generating = true;
-
-  const settings = getSettings();
-
-  if (settings.simulator === 'xplane12') {
-    renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
-    generating = false;
-    return;
-  }
-  if (settings.flightType === 'cargo') {
-    renderEmpty('Cargo flights are coming soon. Please select Passenger for now.');
-    generating = false;
-    return;
-  }
-
-  renderLoading();
-
   try {
-    const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator });
-    const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
-    const payload = generatePayload(route.aircraft, settings.flightType);
-    const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
-    renderFlight({ route, plan, payload, simbriefUrl, simulator: settings.simulator });
-  } catch (err) {
-    if (err instanceof NoRouteError) {
-      renderEmpty('Could not generate a route. Please try again.');
-      console.error(err);
-    } else {
-      renderEmpty('An unexpected error occurred. Please try again.');
-      console.error(err);
+    const settings = getSettings();
+
+    if (settings.simulator === 'xplane12') {
+      renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
+      return;
+    }
+    if (settings.flightType === 'cargo') {
+      renderEmpty('Cargo flights are coming soon. Please select Passenger for now.');
+      return;
+    }
+
+    renderLoading();
+
+    try {
+      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator });
+      const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
+      const payload = generatePayload(route.aircraft, settings.flightType);
+      const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
+      renderFlight({ route, plan, payload, simbriefUrl, simulator: settings.simulator });
+    } catch (err) {
+      if (err instanceof NoRouteError) {
+        renderEmpty('Could not generate a route. Please try again.');
+        console.error(err);
+      } else {
+        renderEmpty('An unexpected error occurred. Please try again.');
+        console.error(err);
+      }
     }
   } finally {
     generating = false;
