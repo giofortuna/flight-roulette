@@ -1,6 +1,5 @@
-import type { FlightType } from './aircraft-db.js';
-
-export type Region = 'europe' | 'namerica' | 'asia' | 'africa' | 'pacific' | 'sam' | 'caribbean';
+import type { AirlineType, Region } from './types.js';
+export type { AirlineType, Region };
 
 export interface Airline {
   icao: string;
@@ -10,7 +9,7 @@ export interface Airline {
   country: string;
   region: Region;
   hub: string[];
-  type: FlightType;
+  type: AirlineType;
   simbrief_id: string;
   fleet: string[];
 }
