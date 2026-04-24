@@ -1,5 +1,5 @@
-export type FlightType = 'passenger' | 'cargo';
-export type Simulator = 'msfs2020' | 'msfs2024' | 'xplane12';
+import type { FlightType, Simulator } from './types.js';
+export type { FlightType, Simulator };
 
 export interface Aircraft {
   icao_type: string;
