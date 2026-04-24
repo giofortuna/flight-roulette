@@ -1,5 +1,10 @@
-// Entry point — wired in issue #6
-// View navigation is handled here; flight generation logic arrives in later issues.
+import { loadAircraft } from './aircraft-db.js';
+import { loadAirlines } from './airline-db.js';
+
+// Warm the caches before the user clicks Generate
+Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
+  console.error('Failed to preload app data:', err);
+});
 
 const viewMain = document.getElementById('view-main')!;
 const viewAbout = document.getElementById('view-about')!;
