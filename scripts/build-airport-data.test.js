@@ -154,9 +154,12 @@ test('processAirports — airports with only soft/closed runways skipped as soft
   assert.equal(skipped.softRunwayOnly, 2); // WMKK, ZZZZ
 });
 
-test('processAirports — airport with no scheduled service skipped as noScheduled', () => {
-  const { skipped } = processAirports(AIRPORT_ROWS, buildRunwayMap(RUNWAY_ROWS));
-  assert.equal(skipped.noScheduled, 1); // EGMQ
+test('processAirports — scheduled field is true for scheduled airports, false otherwise', () => {
+  const { regions } = processAirports(AIRPORT_ROWS, buildRunwayMap(RUNWAY_ROWS));
+  const egll = regions.europe.find(a => a.icao === 'EGLL');
+  const egmq = regions.europe.find(a => a.icao === 'EGMQ');
+  assert.equal(egll.scheduled, true);
+  assert.equal(egmq.scheduled, false);
 });
 
 test('processAirports — output record has correct shape with rounded coordinates', () => {

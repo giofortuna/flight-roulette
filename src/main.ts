@@ -12,11 +12,12 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean } {
+function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean } {
   const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
   const useRandomPayload = (document.querySelector('input[name="payload"]:checked') as HTMLInputElement).value === 'random';
-  return { flightType, simulator, useRandomPayload };
+  const scheduledOnly    = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
+  return { flightType, simulator, useRandomPayload, scheduledOnly };
 }
 
 let generating = false;
@@ -39,7 +40,7 @@ async function generate(): Promise<void> {
     renderLoading();
 
     try {
-      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator });
+      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly });
       const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
       const payload = generatePayload(route.aircraft, settings.flightType);
       const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });

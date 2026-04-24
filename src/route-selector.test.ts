@@ -85,10 +85,10 @@ function makeAirline(overrides: Partial<Airline> = {}): Airline {
 }
 
 function makeAirport(icao: string, lat: number, lon: number, overrides: Partial<Airport> = {}): Airport {
-  return { icao, name: `Airport ${icao}`, city: 'City', country: 'XX', lat, lon, max_runway_m: 3000, ...overrides };
+  return { icao, name: `Airport ${icao}`, city: 'City', country: 'XX', lat, lon, max_runway_m: 3000, scheduled: true, ...overrides };
 }
 
-const INPUT: SelectionInput = { flightType: 'passenger', simulator: 'msfs2020' };
+const INPUT: SelectionInput = { flightType: 'passenger', simulator: 'msfs2020', scheduledOnly: true };
 
 // Two airports ~90nm apart at the equator (within any reasonable aircraft range)
 const NEAR_A = makeAirport('XAAA', 0, 0);
@@ -155,9 +155,25 @@ test('pickRoute — airline with type "both" matches passenger input', () => {
 });
 
 test('pickRoute — airline with type "both" matches cargo input', () => {
-  const cargoInput: SelectionInput = { flightType: 'cargo', simulator: 'msfs2020' };
+  const cargoInput: SelectionInput = { flightType: 'cargo', simulator: 'msfs2020', scheduledOnly: true };
   const route = pickRoute(cargoInput, [makeAircraft({ flight_type: 'cargo' })], [makeAirline({ type: 'both' })], [NEAR_A, NEAR_B]);
   assert.equal(route.airline.type, 'both');
+});
+
+test('pickRoute — scheduledOnly: true throws NoRouteError when all airports are unscheduled', () => {
+  const unscheduledA = makeAirport('XNSA', 0, 0, { scheduled: false });
+  const unscheduledB = makeAirport('XNSB', 0, 1.5, { scheduled: false });
+  assert.throws(
+    () => pickRoute({ ...INPUT, scheduledOnly: true }, [makeAircraft()], [makeAirline()], [unscheduledA, unscheduledB]),
+    (err) => err instanceof NoRouteError,
+  );
+});
+
+test('pickRoute — scheduledOnly: false includes unscheduled airports', () => {
+  const unscheduledA = makeAirport('XNSA', 0, 0, { scheduled: false });
+  const unscheduledB = makeAirport('XNSB', 0, 1.5, { scheduled: false });
+  const route = pickRoute({ ...INPUT, scheduledOnly: false }, [makeAircraft()], [makeAirline()], [unscheduledA, unscheduledB]);
+  assert.ok(route.departure.icao !== route.destination.icao);
 });
 
 test('pickRoute — routes beyond 80% utilisation buffer are excluded without relaxation but found via relaxation', () => {

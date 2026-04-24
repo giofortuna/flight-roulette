@@ -205,6 +205,47 @@ body::after {
   margin: 2px 0;
 }
 
+/* Advanced collapsible */
+.advanced-section { list-style: none; }
+
+.advanced-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.advanced-toggle::-webkit-details-marker { display: none; }
+
+.advanced-toggle .setting-label {
+  color: var(--text-dim);
+  transition: color 0.15s;
+}
+
+.advanced-toggle:hover .setting-label { color: var(--amber-dim); }
+
+.advanced-arrow {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0;
+  transition: transform 0.15s, color 0.15s;
+}
+
+.advanced-toggle:hover .advanced-arrow { color: var(--amber-dim); }
+
+details[open] .advanced-arrow { transform: rotate(90deg); }
+
+.advanced-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
 /* Generate button */
 .btn-generate {
   background: var(--amber);
