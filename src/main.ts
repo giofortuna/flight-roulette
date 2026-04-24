@@ -19,15 +19,22 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; useRando
   return { flightType, simulator, useRandomPayload };
 }
 
+let generating = false;
+
 async function generate(): Promise<void> {
+  if (generating) return;
+  generating = true;
+
   const settings = getSettings();
 
   if (settings.simulator === 'xplane12') {
     renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
+    generating = false;
     return;
   }
   if (settings.flightType === 'cargo') {
     renderEmpty('Cargo flights are coming soon. Please select Passenger for now.');
+    generating = false;
     return;
   }
 
@@ -47,6 +54,8 @@ async function generate(): Promise<void> {
       renderEmpty('An unexpected error occurred. Please try again.');
       console.error(err);
     }
+  } finally {
+    generating = false;
   }
 }
 
