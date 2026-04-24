@@ -160,8 +160,15 @@ test('pickRoute — airline with type "both" matches cargo input', () => {
   assert.equal(route.airline.type, 'both');
 });
 
-test('pickRoute — finds route via range relaxation when strict range excludes all candidates', () => {
-  // NEAR_A and NEAR_B are ~90nm apart; range_nm=80 fails strict (80 < 90), passes relaxed (96 > 90)
-  const route = pickRoute(INPUT, [makeAircraft({ range_nm: 80 })], [makeAirline()], [NEAR_A, NEAR_B]);
-  assert.ok(route.distanceNm > 80);
+test('pickRoute — routes beyond 85% utilisation buffer are excluded without relaxation but found via relaxation', () => {
+  // NEAR_A and NEAR_B are ~90nm apart
+  // range_nm=100: strict effective = 85nm (< 90nm, excluded); relaxed effective = 102nm (> 90nm, found)
+  const route = pickRoute(INPUT, [makeAircraft({ range_nm: 100 })], [makeAirline()], [NEAR_A, NEAR_B]);
+  assert.ok(route.distanceNm > 85); // above the strict 85% ceiling
+});
+
+test('pickRoute — distanceNm is within 85% of range_nm under normal conditions', () => {
+  const aircraft = makeAircraft({ range_nm: 3000 });
+  const route = pickRoute(INPUT, [aircraft], [makeAirline()], [NEAR_A, NEAR_B]);
+  assert.ok(route.distanceNm <= aircraft.range_nm * 0.85 * 1.2); // within relaxed ceiling
 });
