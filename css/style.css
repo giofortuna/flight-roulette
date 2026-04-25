@@ -372,19 +372,15 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .card-section.card-section-dark { background: var(--flap-section); }
 
 /* ── Card header ── */
-.card-header {
+.card-header-row1 {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 12px;
 }
 
-.card-header-left {
-  display: flex;
-  gap: 22px;
-  align-items: flex-end;
-  flex-wrap: wrap;
-}
+.card-header-row2 { /* airline — full width, second line */ }
 
 /* ── Route section ── */
 .card-route {
