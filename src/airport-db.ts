@@ -29,7 +29,7 @@ function validate(data: unknown, region: AirportRegion): Airport[] {
   return data as Airport[];
 }
 
-export async function loadAirportRegion(region: AirportRegion): Promise<Airport[]> {
+export async function loadRegion(region: AirportRegion): Promise<Airport[]> {
   const cached = _cache.get(region);
   if (cached) return cached;
   const res = await fetch(new URL(`../data/airports-${region}.json`, import.meta.url).href);
@@ -42,7 +42,7 @@ export async function loadAirportRegion(region: AirportRegion): Promise<Airport[
 export async function loadAll(): Promise<Airport[]> {
   // 'caribbean' has no airport file — T-prefix airports are mapped to 'sam' by the build script
   const regions: AirportRegion[] = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam'];
-  const chunks = await Promise.all(regions.map(loadAirportRegion));
+  const chunks = await Promise.all(regions.map(loadRegion));
   return chunks.flat();
 }
 

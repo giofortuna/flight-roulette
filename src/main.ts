@@ -44,7 +44,7 @@ async function generate(): Promise<void> {
       const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
       const payload = generatePayload(route.aircraft, settings.flightType);
       const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
-      renderFlight({ route, plan, payload, simbriefUrl, simulator: settings.simulator });
+      renderFlight({ route, plan, payload, simbriefUrl });
     } catch (err) {
       if (err instanceof NoRouteError) {
         const hint = settings.scheduledOnly ? ' Try switching Airports to All in Options.' : '';
