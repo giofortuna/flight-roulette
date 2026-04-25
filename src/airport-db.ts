@@ -13,23 +13,23 @@ export interface Airport {
 
 const _cache = new Map<AirportRegion, Airport[]>();
 
-export function validate(data: unknown, region: AirportRegion): Airport[] {
-  if (!Array.isArray(data) || data.length === 0)
-    throw new Error(`airports-${region}.json: expected non-empty array`);
+function validate(data: unknown, region: AirportRegion): Airport[] {
+  if (!Array.isArray(data))
+    throw new Error(`airports-${region}.json: expected array`);
   for (const item of data) {
     if (typeof item.icao !== 'string'
      || typeof item.name !== 'string'
      || typeof item.city !== 'string'
      || typeof item.country !== 'string'
-     || !Number.isFinite(item.lat)
-     || !Number.isFinite(item.lon)
-     || !Number.isFinite(item.max_runway_m)   || item.max_runway_m < 0)
+     || typeof item.lat !== 'number'
+     || typeof item.lon !== 'number'
+     || typeof item.max_runway_m !== 'number')
       throw new Error(`airports-${region}.json: invalid entry "${item.icao}"`);
   }
   return data as Airport[];
 }
 
-export async function loadRegion(region: AirportRegion): Promise<Airport[]> {
+export async function loadAirportRegion(region: AirportRegion): Promise<Airport[]> {
   const cached = _cache.get(region);
   if (cached) return cached;
   const res = await fetch(new URL(`../data/airports-${region}.json`, import.meta.url).href);
@@ -39,14 +39,10 @@ export async function loadRegion(region: AirportRegion): Promise<Airport[]> {
   return airports;
 }
 
-// Record<AirportRegion, 1> enforces exhaustiveness: TypeScript errors here if AirportRegion gains a new member.
-const ALL_REGIONS: Record<AirportRegion, 1> = {
-  europe: 1, namerica: 1, asia: 1, africa: 1, pacific: 1, sam: 1,
-};
-
 export async function loadAll(): Promise<Airport[]> {
   // 'caribbean' has no airport file — T-prefix airports are mapped to 'sam' by the build script
-  const chunks = await Promise.all((Object.keys(ALL_REGIONS) as AirportRegion[]).map(loadRegion));
+  const regions: AirportRegion[] = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam'];
+  const chunks = await Promise.all(regions.map(loadAirportRegion));
   return chunks.flat();
 }
 

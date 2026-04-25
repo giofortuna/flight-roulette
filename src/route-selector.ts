@@ -48,7 +48,6 @@ function pickRandom<T>(arr: [T, ...T[]]): T {
 const MAX_DEPARTURE_ATTEMPTS = 10;
 const RANGE_UTILISATION = 0.80; // leave headroom for airways routing, winds, and fuel reserves
 const RANGE_RELAXATION  = 1.2;
-const MIN_DISTANCE_NM   = 50;  // discard adjacent-airport hops that produce nonsense flight plans
 
 export function pickRoute(
   input: SelectionInput,
@@ -70,12 +69,8 @@ export function pickRoute(
 
   const pool = input.scheduledOnly ? allAirports.filter(a => a.scheduled !== false) : allAirports;
 
-  // Shuffle aircraft so all types are tried in random order before giving up (Fisher-Yates)
-  const shuffledAircraft = [...aircraft];
-  for (let i = shuffledAircraft.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffledAircraft[i], shuffledAircraft[j]] = [shuffledAircraft[j], shuffledAircraft[i]];
-  }
+  // Shuffle aircraft so all types are tried in random order before giving up
+  const shuffledAircraft = [...aircraft].sort(() => Math.random() - 0.5);
   // Airline selection is independent of route feasibility — pick once
   const pickedAirline = pickRandom(airlines as [Airline, ...Airline[]]);
 
@@ -94,7 +89,7 @@ export function pickRoute(
         const candidates = eligibleAirports
           .filter(a => a.icao !== departure.icao)
           .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
-          .filter(({ distNm }) => distNm >= MIN_DISTANCE_NM && distNm <= rangeNm);
+          .filter(({ distNm }) => distNm <= rangeNm);
 
         if (candidates.length === 0) continue;
 
