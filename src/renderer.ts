@@ -1,4 +1,3 @@
-import type { Simulator } from './types.js';
 import type { SelectedRoute } from './route-selector.js';
 import type { FlightPlan } from './flight-planner.js';
 import type { Payload } from './payload-gen.js';
@@ -13,7 +12,6 @@ export interface GeneratedFlight {
   plan: FlightPlan;
   payload: Payload;
   simbriefUrl: string;
-  simulator: Simulator;
 }
 
 type FlapSize = 'xl' | 'lg' | 'md' | 'sm';
@@ -73,27 +71,6 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
   }
 }
 
-function setFlaps(target: HTMLElement, text: string, size: FlapSize, amber = false): void {
-  target.innerHTML = '';
-  const upper = text.toUpperCase();
-  const words = upper.split(' ');
-  words.forEach((word, wi) => {
-    const group = document.createElement('span');
-    group.className = 'flap-word';
-    for (const ch of word) {
-      const span = document.createElement('span');
-      span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
-      span.textContent = ch;
-      group.appendChild(span);
-    }
-    target.appendChild(group);
-    if (wi < words.length - 1) {
-      const gap = document.createElement('span');
-      gap.className = `flap-gap flap-gap-${size}`;
-      target.appendChild(gap);
-    }
-  });
-}
 
 // Distance: number part padded to 6 chars (covers up to "15,000" for future widebodies)
 const DIST_WIDTH    = 6;
@@ -136,16 +113,16 @@ export function renderBlank(): void {
 export function renderFlight(flight: GeneratedFlight): void {
   const { route, plan, payload } = flight;
 
-  setFlaps(el('card-fltnum'),  plan.flight_number,  'xl');
+  setFlapsMin(el('card-fltnum'), plan.flight_number, 'xl', 6);
   setFlapsMin(el('card-airline'), route.airline.name, 'lg', AIRLINE_TILES);
   // card-std: populated by issue #34 (STD departure time)
 
-  setFlaps(el('card-dep-icao'),    route.departure.icao,    'xl');
+  setFlapsMin(el('card-dep-icao'), route.departure.icao, 'xl', 4);
   setFlapsMin(el('card-dep-city'),   route.departure.city,    'lg', 12);
   el('card-dep-name').textContent    = route.departure.name;
   el('card-dep-country').textContent = countryName(route.departure.country);
 
-  setFlaps(el('card-dest-icao'),    route.destination.icao,    'xl');
+  setFlapsMin(el('card-dest-icao'), route.destination.icao, 'xl', 4);
   setFlapsMin(el('card-dest-city'),  route.destination.city,   'lg', 12);
   el('card-dest-name').textContent    = route.destination.name;
   el('card-dest-country').textContent = countryName(route.destination.country);
@@ -194,4 +171,6 @@ export function renderEmpty(message: string): void {
   msg.textContent = message;
   msg.classList.remove('hidden');
   el('flight-card').classList.remove('is-loading');
+  el('btn-dispatch').classList.add('is-disabled');
+  el('btn-dispatch').setAttribute('aria-disabled', 'true');
 }
