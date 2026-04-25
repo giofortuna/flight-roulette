@@ -121,8 +121,8 @@ export function renderBlank(): void {
   setFlapsMin(el('card-dest-city'),  '', 'lg', 12);
   setFlaps(el('card-dest-name'),      BLANK, 'sm');
   setFlaps(el('card-dest-country'),   BLANK, 'sm');
-  setFlapsWithSuffix(el('card-distance'),  '', 'NM',  DIST_WIDTH, 'md');
-  setFlapsWithSuffix(el('card-blocktime'), '', 'BLK', BLK_WIDTH,  'md');
+  setFlapsWithSuffix(el('card-distance'),  '0'.repeat(DIST_WIDTH), 'NM',  DIST_WIDTH, 'md');
+  setFlapsWithSuffix(el('card-blocktime'), '00+00',                'BLK', BLK_WIDTH,  'md');
   setFlaps(el('card-aircraft-type'),  BLANK, 'lg');
   setFlaps(el('card-aircraft-frame'), BLANK, 'sm');
   setFlaps(el('card-pax'),            BLANK, 'lg');
