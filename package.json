@@ -9,6 +9,7 @@
     "dev": "serve ."
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "serve": "^14.2.6",
     "tsx": "^4.21.0",
     "typescript": "^5.5.3"

@@ -41,7 +41,7 @@ export function haversineNm(aLat: number, aLon: number, bLat: number, bLon: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function pickRandom<T>(arr: T[]): T {
+function pickRandom<T>(arr: [T, ...T[]]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
@@ -67,30 +67,39 @@ export function pickRoute(
   if (airlines.length === 0)
     throw new NoRouteError(`no airlines available for flight type ${input.flightType}`);
 
-  const pickedAircraft = pickRandom(aircraft);
-  const pickedAirline = pickRandom(airlines);
   const pool = input.scheduledOnly ? allAirports.filter(a => a.scheduled !== false) : allAirports;
-  const eligibleAirports = filterByRunway(pool, pickedAircraft.min_runway_m);
 
-  if (eligibleAirports.length < 2)
-    throw new NoRouteError('not enough airports meet runway requirement');
+  // Shuffle aircraft so all types are tried in random order before giving up
+  const shuffledAircraft = [...aircraft].sort(() => Math.random() - 0.5);
+  // Airline selection is independent of route feasibility — pick once
+  const pickedAirline = pickRandom(airlines as [Airline, ...Airline[]]);
 
-  for (let relaxed = 0; relaxed <= 1; relaxed++) {
-    const rangeNm = pickedAircraft.range_nm * RANGE_UTILISATION * (relaxed ? RANGE_RELAXATION : 1);
+  for (const pickedAircraft of shuffledAircraft) {
+    const eligibleAirports = filterByRunway(pool, pickedAircraft.min_runway_m);
+    if (eligibleAirports.length < 2) continue;
 
-    for (let attempt = 0; attempt < MAX_DEPARTURE_ATTEMPTS; attempt++) {
-      const departure = pickRandom(eligibleAirports);
-      const candidates = eligibleAirports
-        .filter(a => a.icao !== departure.icao)
-        .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
-        .filter(({ distNm }) => distNm <= rangeNm);
+    // Length checked above — safe to treat as non-empty
+    const eligible = eligibleAirports as [Airport, ...Airport[]];
 
-      if (candidates.length === 0) continue;
+    for (let relaxed = 0; relaxed <= 1; relaxed++) {
+      const rangeNm = pickedAircraft.range_nm * RANGE_UTILISATION * (relaxed ? RANGE_RELAXATION : 1);
 
-      const { airport: destination, distNm } = pickRandom(candidates);
-      const distanceNm = Math.round(distNm);
+      for (let attempt = 0; attempt < MAX_DEPARTURE_ATTEMPTS; attempt++) {
+        const departure = pickRandom(eligible);
+        const candidates = eligibleAirports
+          .filter(a => a.icao !== departure.icao)
+          .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
+          .filter(({ distNm }) => distNm <= rangeNm);
 
-      return { airline: pickedAirline, aircraft: pickedAircraft, departure, destination, distanceNm };
+        if (candidates.length === 0) continue;
+
+        // Length checked above — safe to treat as non-empty
+        type Candidate = (typeof candidates)[number];
+        const { airport: destination, distNm } = pickRandom(candidates as [Candidate, ...Candidate[]]);
+        const distanceNm = Math.round(distNm);
+
+        return { airline: pickedAirline, aircraft: pickedAircraft, departure, destination, distanceNm };
+      }
     }
   }
 

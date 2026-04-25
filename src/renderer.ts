@@ -107,8 +107,6 @@ const CARGO_WIDTH   = 7;
 // (820px card − 36px section padding = 784px; ⌊784/25⌋ = 31 lg tiles = 773px)
 const AIRLINE_TILES = 31;
 
-const BLANK = '—';
-
 export function renderBlank(): void {
   setBlankTiles(el('card-fltnum'),    6, 'xl');
   setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
@@ -177,6 +175,14 @@ export function renderFlight(flight: GeneratedFlight): void {
 }
 
 export function renderLoading(): void {
+  el('card-dep-name').textContent     = '';
+  el('card-dep-country').textContent  = '';
+  el('card-dest-name').textContent    = '';
+  el('card-dest-country').textContent = '';
+  el('card-aircraft-type').textContent  = '';
+  el('card-aircraft-frame').textContent = '';
+  el('card-pax-max').textContent   = '';
+  el('card-cargo-max').textContent = '';
   el('flight-card').classList.add('is-loading');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');

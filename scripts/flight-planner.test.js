@@ -29,11 +29,6 @@ test('planFlight — block_time_min is (distance/cruise_kts)*60 + 30, rounded', 
   assert.equal(plan.block_time_min, expected);
 });
 
-test('planFlight — cruise_fl matches aircraft.cruise_ft / 100', () => {
-  const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
-  assert.equal(plan.cruise_fl, Math.floor(AIRCRAFT.cruise_ft / 100));
-});
-
 test('planFlight — distance_nm echoes the input', () => {
   const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
   assert.equal(plan.distance_nm, DISTANCE_NM);

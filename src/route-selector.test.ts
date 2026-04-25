@@ -69,7 +69,7 @@ function makeAircraft(overrides: Partial<Aircraft> = {}): Aircraft {
     icao_type: 'B738', type_name: '737-800', airframe_name: 'Test 737',
     flight_type: 'passenger', simulator: ['msfs2020', 'msfs2024'],
     range_nm: 3000, min_runway_m: 2000,
-    cruise_ft: 35000, cruise_kts: 450, category: 'M',
+    cruise_ft: 35000, cruise_kts: 450, category: 'narrowbody',
     max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '',
     ...overrides,
   };
@@ -78,7 +78,7 @@ function makeAircraft(overrides: Partial<Aircraft> = {}): Aircraft {
 function makeAirline(overrides: Partial<Airline> = {}): Airline {
   return {
     icao: 'BAW', iata: 'BA', name: 'British Airways', callsign: 'SPEEDBIRD',
-    country: 'GB', region: 'europe', hub: 'EGLL', type: 'passenger',
+    country: 'GB', region: 'europe', hub: ['EGLL'], type: 'passenger',
     simbrief_id: 'BA', fleet: [],
     ...overrides,
   };
@@ -101,21 +101,21 @@ const FAR_B = makeAirport('XFBB', 0, 180);
 test('pickRoute — throws NoRouteError when no aircraft match simulator', () => {
   assert.throws(
     () => pickRoute(INPUT, [makeAircraft({ simulator: ['xplane12'] })], [makeAirline()], [NEAR_A, NEAR_B]),
-    (err) => err instanceof NoRouteError,
+    (err: unknown) => err instanceof NoRouteError,
   );
 });
 
 test('pickRoute — throws NoRouteError when no aircraft match flight type', () => {
   assert.throws(
     () => pickRoute(INPUT, [makeAircraft({ flight_type: 'cargo' })], [makeAirline()], [NEAR_A, NEAR_B]),
-    (err) => err instanceof NoRouteError,
+    (err: unknown) => err instanceof NoRouteError,
   );
 });
 
 test('pickRoute — throws NoRouteError when no airlines match flight type', () => {
   assert.throws(
     () => pickRoute(INPUT, [makeAircraft()], [makeAirline({ type: 'cargo' })], [NEAR_A, NEAR_B]),
-    (err) => err instanceof NoRouteError,
+    (err: unknown) => err instanceof NoRouteError,
   );
 });
 
@@ -123,14 +123,14 @@ test('pickRoute — throws NoRouteError when fewer than 2 airports meet runway r
   const tinyRunway = makeAirport('XSSS', 0, 0, { max_runway_m: 500 });
   assert.throws(
     () => pickRoute(INPUT, [makeAircraft({ min_runway_m: 2000 })], [makeAirline()], [tinyRunway]),
-    (err) => err instanceof NoRouteError,
+    (err: unknown) => err instanceof NoRouteError,
   );
 });
 
 test('pickRoute — throws NoRouteError when all airports are out of range', () => {
   assert.throws(
     () => pickRoute(INPUT, [makeAircraft({ range_nm: 100 })], [makeAirline()], [FAR_A, FAR_B]),
-    (err) => err instanceof NoRouteError,
+    (err: unknown) => err instanceof NoRouteError,
   );
 });
 
@@ -165,7 +165,7 @@ test('pickRoute — scheduledOnly: true throws NoRouteError when all airports ar
   const unscheduledB = makeAirport('XNSB', 0, 1.5, { scheduled: false });
   assert.throws(
     () => pickRoute({ ...INPUT, scheduledOnly: true }, [makeAircraft()], [makeAirline()], [unscheduledA, unscheduledB]),
-    (err) => err instanceof NoRouteError,
+    (err: unknown) => err instanceof NoRouteError,
   );
 });
 

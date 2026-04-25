@@ -1,4 +1,4 @@
-import type { Region } from './types.js';
+import type { AirportRegion } from './types.js';
 
 export interface Airport {
   icao: string;
@@ -11,9 +11,9 @@ export interface Airport {
   scheduled?: boolean; // undefined in older JSON files → treated as true
 }
 
-const _cache = new Map<Region, Airport[]>();
+const _cache = new Map<AirportRegion, Airport[]>();
 
-function validate(data: unknown, region: Region): Airport[] {
+function validate(data: unknown, region: AirportRegion): Airport[] {
   if (!Array.isArray(data))
     throw new Error(`airports-${region}.json: expected array`);
   for (const item of data) {
@@ -29,7 +29,7 @@ function validate(data: unknown, region: Region): Airport[] {
   return data as Airport[];
 }
 
-export async function loadRegion(region: Region): Promise<Airport[]> {
+export async function loadAirportRegion(region: AirportRegion): Promise<Airport[]> {
   const cached = _cache.get(region);
   if (cached) return cached;
   const res = await fetch(new URL(`../data/airports-${region}.json`, import.meta.url).href);
@@ -41,8 +41,8 @@ export async function loadRegion(region: Region): Promise<Airport[]> {
 
 export async function loadAll(): Promise<Airport[]> {
   // 'caribbean' has no airport file — T-prefix airports are mapped to 'sam' by the build script
-  const regions: Region[] = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam'];
-  const chunks = await Promise.all(regions.map(loadRegion));
+  const regions: AirportRegion[] = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam'];
+  const chunks = await Promise.all(regions.map(loadAirportRegion));
   return chunks.flat();
 }
 
