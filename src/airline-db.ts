@@ -14,9 +14,12 @@ export interface Airline {
   fleet: string[];
 }
 
+const VALID_REGIONS: readonly Region[]      = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam', 'caribbean'];
+const VALID_TYPES:   readonly AirlineType[] = ['passenger', 'cargo', 'both'];
+
 let _cache: Airline[] | null = null;
 
-function validate(data: unknown): Airline[] {
+export function validate(data: unknown): Airline[] {
   if (!Array.isArray(data) || data.length === 0)
     throw new Error('airlines.json: expected non-empty array');
   for (const item of data) {
@@ -25,9 +28,9 @@ function validate(data: unknown): Airline[] {
      || typeof item.name !== 'string'
      || typeof item.callsign !== 'string'
      || typeof item.country !== 'string'
-     || typeof item.region !== 'string'
+     || !(VALID_REGIONS as readonly string[]).includes(item.region)
      || !Array.isArray(item.hub)
-     || typeof item.type !== 'string'
+     || !(VALID_TYPES as readonly string[]).includes(item.type)
      || typeof item.simbrief_id !== 'string'
      || !Array.isArray(item.fleet))
       throw new Error(`airlines.json: invalid entry "${item.icao}"`);
