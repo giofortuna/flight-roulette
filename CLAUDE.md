@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 npm run build        # tsc — compiles src/ → dist/
 node scripts/build-airport-data.js   # one-time: converts data/raw/*.csv → data/airports-{region}.json
+node scripts/build-country-names.js  # one-time: converts data/raw/countries.csv → src/country-names.ts
 ```
 
 No test runner or linter is configured yet. TypeScript strict mode is the primary correctness gate.

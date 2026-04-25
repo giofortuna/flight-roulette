@@ -2,6 +2,11 @@ import type { Simulator } from './types.js';
 import type { SelectedRoute } from './route-selector.js';
 import type { FlightPlan } from './flight-planner.js';
 import type { Payload } from './payload-gen.js';
+import { COUNTRY_NAMES } from './country-names.js';
+
+function countryName(code: string): string {
+  return COUNTRY_NAMES[code] ?? code;
+}
 
 export interface GeneratedFlight {
   route: SelectedRoute;
@@ -28,9 +33,8 @@ function setBlankTiles(target: HTMLElement, count: number, size: FlapSize): void
   }
 }
 
-// Fixed-width number field: blank-pads numStr to numWidth tiles, then a gap, then suffix tiles.
-// Width never changes regardless of value length.
-function setFlapsWithSuffix(target: HTMLElement, numStr: string, suffix: string, numWidth: number, size: FlapSize): void {
+// Fixed-width number field: blank-pads numStr to numWidth tiles. Width never changes regardless of value length.
+function setFlapsNumber(target: HTMLElement, numStr: string, numWidth: number, size: FlapSize): void {
   target.innerHTML = '';
   const upper = numStr.toUpperCase();
   const pad = Math.max(0, numWidth - upper.length);
@@ -40,15 +44,6 @@ function setFlapsWithSuffix(target: HTMLElement, numStr: string, suffix: string,
     target.appendChild(blank);
   }
   for (const ch of upper) {
-    const span = document.createElement('span');
-    span.className = `flap-char flap-${size}`;
-    span.textContent = ch;
-    target.appendChild(span);
-  }
-  const gap = document.createElement('span');
-  gap.className = `flap-gap flap-gap-${size}`;
-  target.appendChild(gap);
-  for (const ch of suffix) {
     const span = document.createElement('span');
     span.className = `flap-char flap-${size}`;
     span.textContent = ch;
@@ -104,6 +99,10 @@ function setFlaps(target: HTMLElement, text: string, size: FlapSize, amber = fal
 const DIST_WIDTH    = 6;
 // Block time: always exactly "XX+XX" = 5 chars
 const BLK_WIDTH     = 5;
+// Pax: max 3 digits (covers 999 pax)
+const PAX_WIDTH     = 3;
+// Cargo: covers up to "999,999" KG = 7 chars
+const CARGO_WIDTH   = 7;
 // Airline: fills the full card section interior at max-width 860px
 // (820px card − 36px section padding = 784px; ⌊784/25⌋ = 31 lg tiles = 773px)
 const AIRLINE_TILES = 31;
@@ -115,21 +114,23 @@ export function renderBlank(): void {
   setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
   setBlankTiles(el('card-dep-icao'),  4,  'xl');
   setFlapsMin(el('card-dep-city'),   '', 'lg', 12);
-  setFlaps(el('card-dep-name'),       BLANK, 'sm');
-  setFlaps(el('card-dep-country'),    BLANK, 'sm');
+  el('card-dep-name').textContent    = '';
+  el('card-dep-country').textContent = '';
   setBlankTiles(el('card-dest-icao'), 4,  'xl');
   setFlapsMin(el('card-dest-city'),  '', 'lg', 12);
-  setFlaps(el('card-dest-name'),      BLANK, 'sm');
-  setFlaps(el('card-dest-country'),   BLANK, 'sm');
-  setFlapsWithSuffix(el('card-distance'),  '0'.repeat(DIST_WIDTH), 'NM',  DIST_WIDTH, 'md');
-  setFlapsWithSuffix(el('card-blocktime'), '00+00',                'BLK', BLK_WIDTH,  'md');
-  setFlaps(el('card-aircraft-type'),  BLANK, 'lg');
-  setFlaps(el('card-aircraft-frame'), BLANK, 'sm');
-  setFlaps(el('card-pax'),            BLANK, 'lg');
-  el('card-pax-max').innerHTML  = '';
-  setFlaps(el('card-cargo'),          BLANK, 'lg');
-  el('card-cargo-max').innerHTML = '';
+  el('card-dest-name').textContent    = '';
+  el('card-dest-country').textContent = '';
+  setFlapsNumber(el('card-distance'),  '00,000', DIST_WIDTH, 'md');
+  setFlapsNumber(el('card-blocktime'), '00+00',  BLK_WIDTH,  'md');
+  el('card-aircraft-type').textContent  = '';
+  el('card-aircraft-frame').textContent = '';
+  setFlapsNumber(el('card-pax'),   '000',     PAX_WIDTH,   'lg');
+  el('card-pax-max').textContent  = '';
+  setFlapsNumber(el('card-cargo'), '000,000', CARGO_WIDTH, 'lg');
+  el('card-cargo-max').textContent = '';
   (el('btn-dispatch') as HTMLAnchorElement).href = '#';
+  el('btn-dispatch').classList.add('is-disabled');
+  el('btn-dispatch').setAttribute('aria-disabled', 'true');
   el('flight-card').classList.remove('is-loading');
   el('status-msg').classList.add('hidden');
 }
@@ -143,31 +144,33 @@ export function renderFlight(flight: GeneratedFlight): void {
 
   setFlaps(el('card-dep-icao'),    route.departure.icao,    'xl');
   setFlapsMin(el('card-dep-city'),   route.departure.city,    'lg', 12);
-  setFlaps(el('card-dep-name'),    route.departure.name,    'sm');
-  setFlaps(el('card-dep-country'), route.departure.country, 'sm');
+  el('card-dep-name').textContent    = route.departure.name;
+  el('card-dep-country').textContent = countryName(route.departure.country);
 
   setFlaps(el('card-dest-icao'),    route.destination.icao,    'xl');
   setFlapsMin(el('card-dest-city'),  route.destination.city,   'lg', 12);
-  setFlaps(el('card-dest-name'),    route.destination.name,    'sm');
-  setFlaps(el('card-dest-country'), route.destination.country, 'sm');
+  el('card-dest-name').textContent    = route.destination.name;
+  el('card-dest-country').textContent = countryName(route.destination.country);
 
   const distStr = plan.distance_nm.toLocaleString('en-US');
   const blkH = Math.floor(plan.block_time_min / 60);
   const blkM = plan.block_time_min % 60;
   const blkStr = `${String(blkH).padStart(2, '0')}+${String(blkM).padStart(2, '0')}`;
-  setFlapsWithSuffix(el('card-distance'),  distStr, 'NM',  DIST_WIDTH, 'md');
-  setFlapsWithSuffix(el('card-blocktime'), blkStr,  'BLK', BLK_WIDTH,  'md');
+  setFlapsNumber(el('card-distance'),  distStr, DIST_WIDTH, 'md');
+  setFlapsNumber(el('card-blocktime'), blkStr,  BLK_WIDTH,  'md');
 
-  setFlaps(el('card-aircraft-type'),  route.aircraft.type_name,    'lg');
-  setFlaps(el('card-aircraft-frame'), route.aircraft.airframe_name, 'sm');
+  el('card-aircraft-type').textContent  = route.aircraft.type_name;
+  el('card-aircraft-frame').textContent = route.aircraft.airframe_name;
 
-  setFlaps(el('card-pax'),     String(payload.pax ?? '—'),                         'lg');
-  setFlaps(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`,                  'sm');
+  setFlapsNumber(el('card-pax'), String(payload.pax ?? 0), PAX_WIDTH, 'lg');
+  el('card-pax-max').textContent = `/ ${route.aircraft.max_pax} MAX`;
 
-  setFlaps(el('card-cargo'),     payload.cargo_kg.toLocaleString('en-US') + ' KG', 'lg');
-  setFlaps(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`, 'sm');
+  setFlapsNumber(el('card-cargo'), payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH, 'lg');
+  el('card-cargo-max').textContent = `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`;
 
   (el('btn-dispatch') as HTMLAnchorElement).href = flight.simbriefUrl;
+  el('btn-dispatch').classList.remove('is-disabled');
+  el('btn-dispatch').removeAttribute('aria-disabled');
 
   el('flight-card').classList.remove('is-loading');
   el('status-msg').classList.add('hidden');
@@ -175,6 +178,8 @@ export function renderFlight(flight: GeneratedFlight): void {
 
 export function renderLoading(): void {
   el('flight-card').classList.add('is-loading');
+  el('btn-dispatch').classList.add('is-disabled');
+  el('btn-dispatch').setAttribute('aria-disabled', 'true');
   el('status-msg').classList.add('hidden');
 }
 
