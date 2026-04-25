@@ -56,35 +56,22 @@ function setFlapsWithSuffix(target: HTMLElement, numStr: string, suffix: string,
   }
 }
 
-// Renders text as word-grouped tiles (trimmed to minTiles chars), then pads with blanks.
-// Empty words are filtered so blank state produces exactly minTiles flat tiles with no extra gaps.
+// Fixed-width tile row: all characters (including spaces → blank tiles) rendered flat.
+// Uniform 2px gap between every tile. Trims with "..." if text exceeds minTiles.
 function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles: number, amber = false): void {
   target.innerHTML = '';
   const upper = text.toUpperCase();
-  const words = upper.split(' ').filter(w => w.length > 0);
-  let tileCount = 0;
+  const chars = upper.length > minTiles
+    ? [...upper.slice(0, minTiles - 3), '.', '.', '.']
+    : [...upper];
 
-  for (let wi = 0; wi < words.length; wi++) {
-    if (tileCount >= minTiles) break;
-    const charsToTake = Math.min(words[wi].length, minTiles - tileCount);
-    const group = document.createElement('span');
-    group.className = 'flap-word';
-    for (let ci = 0; ci < charsToTake; ci++) {
-      const span = document.createElement('span');
-      span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
-      span.textContent = words[wi][ci];
-      group.appendChild(span);
-    }
-    target.appendChild(group);
-    tileCount += charsToTake;
-    if (wi < words.length - 1 && tileCount < minTiles) {
-      const gap = document.createElement('span');
-      gap.className = `flap-gap flap-gap-${size}`;
-      target.appendChild(gap);
-    }
+  for (const ch of chars) {
+    const span = document.createElement('span');
+    span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
+    if (ch !== ' ') span.textContent = ch;
+    target.appendChild(span);
   }
-
-  for (let i = tileCount; i < minTiles; i++) {
+  for (let i = chars.length; i < minTiles; i++) {
     const blank = document.createElement('span');
     blank.className = `flap-char flap-${size}`;
     target.appendChild(blank);
