@@ -11,8 +11,6 @@ export interface GeneratedFlight {
   simulator: Simulator;
 }
 
-const DEFAULT_EMPTY_MSG = 'Configure your settings above and press Generate to receive your flight assignment.';
-
 type FlapSize = 'xl' | 'lg' | 'md' | 'sm';
 
 function el(id: string): HTMLElement {
@@ -53,51 +51,75 @@ function formatBlockTime(minutes: number): string {
   return `${String(h).padStart(2, '0')}+${String(m).padStart(2, '0')} BLK`;
 }
 
+const BLANK = '—';
+
+export function renderBlank(): void {
+  setFlaps(el('card-fltnum'),         BLANK, 'lg');
+  setFlaps(el('card-airline'),        BLANK, 'lg');
+  setFlaps(el('card-dep-icao'),       BLANK, 'xl');
+  setFlaps(el('card-dep-name'),       BLANK, 'sm');
+  setFlaps(el('card-dep-city'),       BLANK, 'sm');
+  setFlaps(el('card-dep-country'),    BLANK, 'sm');
+  setFlaps(el('card-dest-icao'),      BLANK, 'xl');
+  setFlaps(el('card-dest-name'),      BLANK, 'sm');
+  setFlaps(el('card-dest-city'),      BLANK, 'sm');
+  setFlaps(el('card-dest-country'),   BLANK, 'sm');
+  setFlaps(el('card-distance'),       BLANK, 'md');
+  setFlaps(el('card-blocktime'),      BLANK, 'md');
+  setFlaps(el('card-aircraft-type'),  BLANK, 'lg');
+  setFlaps(el('card-aircraft-frame'), BLANK, 'sm');
+  setFlaps(el('card-pax'),            BLANK, 'lg');
+  el('card-pax-max').innerHTML  = '';
+  setFlaps(el('card-cargo'),          BLANK, 'lg');
+  el('card-cargo-max').innerHTML = '';
+  (el('btn-dispatch') as HTMLAnchorElement).href = '#';
+  el('flight-card').classList.remove('is-loading');
+  el('status-msg').classList.add('hidden');
+}
+
 export function renderFlight(flight: GeneratedFlight): void {
   const { route, plan, payload } = flight;
 
-  setFlaps(el('card-fltnum'), plan.flight_number, 'lg');
-  setFlaps(el('card-airline'), route.airline.name, 'lg');
+  setFlaps(el('card-fltnum'),  plan.flight_number,  'lg');
+  setFlaps(el('card-airline'), route.airline.name,  'lg');
   // card-std: populated by issue #34 (STD departure time)
 
-  setFlaps(el('card-dep-icao'), route.departure.icao, 'xl');
-  setFlaps(el('card-dep-name'), route.departure.name, 'sm');
-  setFlaps(el('card-dep-city'), route.departure.city, 'sm');
+  setFlaps(el('card-dep-icao'),    route.departure.icao,    'xl');
+  setFlaps(el('card-dep-name'),    route.departure.name,    'sm');
+  setFlaps(el('card-dep-city'),    route.departure.city,    'sm');
   setFlaps(el('card-dep-country'), route.departure.country, 'sm');
 
-  setFlaps(el('card-dest-icao'), route.destination.icao, 'xl');
-  setFlaps(el('card-dest-name'), route.destination.name, 'sm');
-  setFlaps(el('card-dest-city'), route.destination.city, 'sm');
+  setFlaps(el('card-dest-icao'),    route.destination.icao,    'xl');
+  setFlaps(el('card-dest-name'),    route.destination.name,    'sm');
+  setFlaps(el('card-dest-city'),    route.destination.city,    'sm');
   setFlaps(el('card-dest-country'), route.destination.country, 'sm');
 
-  setFlaps(el('card-distance'), formatDistance(plan.distance_nm), 'md');
-  setFlaps(el('card-blocktime'), formatBlockTime(plan.block_time_min), 'md');
+  setFlaps(el('card-distance'),  formatDistance(plan.distance_nm),      'md');
+  setFlaps(el('card-blocktime'), formatBlockTime(plan.block_time_min),   'md');
 
-  setFlaps(el('card-aircraft-type'), route.aircraft.type_name, 'lg');
+  setFlaps(el('card-aircraft-type'),  route.aircraft.type_name,    'lg');
   setFlaps(el('card-aircraft-frame'), route.aircraft.airframe_name, 'sm');
 
-  setFlaps(el('card-pax'), String(payload.pax ?? '—'), 'lg');
-  setFlaps(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`, 'sm');
+  setFlaps(el('card-pax'),     String(payload.pax ?? '—'),                         'lg');
+  setFlaps(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`,                  'sm');
 
-  setFlaps(el('card-cargo'), payload.cargo_kg.toLocaleString('en-US') + ' KG', 'lg');
+  setFlaps(el('card-cargo'),     payload.cargo_kg.toLocaleString('en-US') + ' KG', 'lg');
   setFlaps(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`, 'sm');
 
   (el('btn-dispatch') as HTMLAnchorElement).href = flight.simbriefUrl;
 
-  el('state-empty').classList.add('hidden');
-  el('state-loading').classList.add('hidden');
-  el('state-card').classList.remove('hidden');
-}
-
-export function renderEmpty(message = DEFAULT_EMPTY_MSG): void {
-  el('empty-message').textContent = message;
-  el('state-empty').classList.remove('hidden');
-  el('state-loading').classList.add('hidden');
-  el('state-card').classList.add('hidden');
+  el('flight-card').classList.remove('is-loading');
+  el('status-msg').classList.add('hidden');
 }
 
 export function renderLoading(): void {
-  el('state-empty').classList.add('hidden');
-  el('state-loading').classList.remove('hidden');
-  el('state-card').classList.add('hidden');
+  el('flight-card').classList.add('is-loading');
+  el('status-msg').classList.add('hidden');
+}
+
+export function renderEmpty(message: string): void {
+  const msg = el('status-msg');
+  msg.textContent = message;
+  msg.classList.remove('hidden');
+  el('flight-card').classList.remove('is-loading');
 }

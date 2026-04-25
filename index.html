@@ -28,7 +28,6 @@
       </div>
     </header>
 
-    <div class="section-label">Settings</div>
     <div class="settings-panel">
 
       <div class="setting-row">
@@ -85,24 +84,9 @@
       <button class="btn-generate" id="btn-generate">▶ Generate Flight</button>
     </div>
 
-    <!-- State: empty (default) -->
-    <div id="state-empty" class="empty-state">
-      <div class="empty-icon">✈</div>
-      <div class="empty-title">Awaiting Dispatch</div>
-      <div class="empty-sub" id="empty-message">Configure your settings above and press Generate to receive your flight assignment.</div>
-    </div>
+    <div id="status-msg" class="status-msg hidden"></div>
 
-    <!-- State: loading -->
-    <div id="state-loading" class="loading-state hidden">
-      <div class="loading-icon">◌</div>
-      <div class="loading-title">Calculating Route</div>
-    </div>
-
-    <!-- State: flight card -->
-    <div id="state-card" class="hidden">
-      <div class="section-label">Generated Flight</div>
-
-      <div class="flight-card">
+    <div class="flight-card" id="flight-card">
 
         <!-- Header: flight number · airline · STD -->
         <div class="card-section card-section-dark">
@@ -186,12 +170,7 @@
           </a>
         </div>
 
-      </div><!-- /.flight-card -->
-
-      <div class="regen-row">
-        <button class="btn-regen" id="btn-regen">↺ Generate another flight</button>
-      </div>
-    </div><!-- /#state-card -->
+    </div><!-- /.flight-card -->
 
   </div><!-- /.app-shell -->
 </div><!-- /#view-main -->
