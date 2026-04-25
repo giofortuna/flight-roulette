@@ -1,14 +1,14 @@
 :root {
   --amber: #FFB000;
-  --amber-dim: #7A5400;
-  --amber-glow: rgba(255, 176, 0, 0.15);
+  --amber-dim: #9a7020;
+  --amber-glow: rgba(255, 176, 0, 0.12);
   --amber-bright: #FFD060;
-  --bg: #080604;
-  --bg2: #0F0C06;
-  --bg3: #161008;
-  --border: #2A1C00;
-  --border-active: #3A2800;
-  --text-dim: #5A4010;
+  --bg: #0c0d0e;
+  --bg2: #111213;
+  --bg3: #161718;
+  --border: #1e1f20;
+  --border-active: #272829;
+  --text-dim: #404244;
   --green: #39FF14;
   --red: #FF3B3B;
 
@@ -83,14 +83,14 @@ body::after {
   font-weight: 900;
   font-size: 26px;
   letter-spacing: 0.15em;
-  text-shadow: 0 0 20px rgba(255,176,0,0.35);
+  text-shadow: 0 0 16px rgba(255,176,0,0.2);
   animation: flicker 9s infinite;
 }
 
 .logo-sub {
   font-size: 11px;
   letter-spacing: 0.3em;
-  color: var(--text-dim);
+  color: var(--flap-label);
   margin-top: 3px;
   text-transform: uppercase;
 }
@@ -104,7 +104,7 @@ body::after {
 .nav-link {
   font-size: 12px;
   letter-spacing: 0.2em;
-  color: var(--amber-dim);
+  color: var(--flap-sub);
   text-transform: uppercase;
   cursor: pointer;
   transition: color 0.15s;
@@ -115,7 +115,7 @@ body::after {
 
 .nav-link:hover,
 .nav-link.active-nav {
-  color: var(--amber);
+  color: var(--flap-text);
 }
 
 .status-dot {
@@ -262,7 +262,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 /* Generate button */
 .btn-generate {
   background: var(--amber);
-  color: #080604;
+  color: #0c0d0e;
   border: none;
   font-family: 'Orbitron', monospace;
   font-weight: 700;
@@ -272,18 +272,14 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   width: 100%;
   cursor: pointer;
   text-transform: uppercase;
-  transition: background 0.12s, box-shadow 0.12s;
+  transition: background 0.12s;
 }
 
-.btn-generate:hover {
-  background: var(--amber-bright);
-  box-shadow: 0 0 28px rgba(255,176,0,0.25);
-}
+.btn-generate:hover { background: var(--amber-bright); }
 
 .btn-generate:disabled {
-  opacity: 0.35;
+  opacity: 0.3;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 /* ── Status message (unsupported simulator/type warnings) ── */
@@ -453,8 +449,8 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .btn-dispatch {
   background: none;
-  border: 1px solid var(--amber-dim);
-  color: var(--amber-dim);
+  border: 1px solid var(--flap-sub);
+  color: var(--flap-sub);
   font-family: 'Orbitron', monospace;
   font-weight: 700;
   font-size: 9px;
@@ -465,13 +461,12 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   white-space: nowrap;
   flex-shrink: 0;
   text-decoration: none;
-  transition: border-color 0.15s, color 0.15s, box-shadow 0.15s;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .btn-dispatch:hover {
-  border-color: var(--amber);
-  color: var(--amber);
-  box-shadow: 0 0 16px rgba(255,176,0,0.12);
+  border-color: var(--flap-text);
+  color: var(--flap-text);
 }
 
 
