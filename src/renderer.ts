@@ -62,7 +62,7 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
   target.innerHTML = '';
   const upper = text.toUpperCase();
   const chars = upper.length > minTiles
-    ? [...upper.slice(0, minTiles - 3), '.', '.', '.']
+    ? [...upper.slice(0, minTiles - 1), '…']  // … in the last slot
     : [...upper];
 
   for (const ch of chars) {
