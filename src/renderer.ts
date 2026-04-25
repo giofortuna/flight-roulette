@@ -101,15 +101,18 @@ function setFlaps(target: HTMLElement, text: string, size: FlapSize, amber = fal
 }
 
 // Distance: number part padded to 6 chars (covers up to "15,000" for future widebodies)
-const DIST_WIDTH = 6;
+const DIST_WIDTH    = 6;
 // Block time: always exactly "XX+XX" = 5 chars
-const BLK_WIDTH  = 5;
+const BLK_WIDTH     = 5;
+// Airline: fills the full card section interior at max-width 860px
+// (820px card − 36px section padding = 784px; ⌊784/25⌋ = 31 lg tiles = 773px)
+const AIRLINE_TILES = 31;
 
 const BLANK = '—';
 
 export function renderBlank(): void {
   setBlankTiles(el('card-fltnum'),    6, 'xl');
-  setBlankTiles(el('card-airline'),   8, 'lg');
+  setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
   setBlankTiles(el('card-dep-icao'),  4,  'xl');
   setFlapsMin(el('card-dep-city'),   '', 'lg', 12);
   setFlaps(el('card-dep-name'),       BLANK, 'sm');
@@ -135,7 +138,7 @@ export function renderFlight(flight: GeneratedFlight): void {
   const { route, plan, payload } = flight;
 
   setFlaps(el('card-fltnum'),  plan.flight_number,  'xl');
-  setFlaps(el('card-airline'), route.airline.name,  'lg');
+  setFlapsMin(el('card-airline'), route.airline.name, 'lg', AIRLINE_TILES);
   // card-std: populated by issue #34 (STD departure time)
 
   setFlaps(el('card-dep-icao'),    route.departure.icao,    'xl');
