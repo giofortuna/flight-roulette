@@ -56,6 +56,36 @@ function setFlapsWithSuffix(target: HTMLElement, numStr: string, suffix: string,
   }
 }
 
+// Renders text as word-grouped tiles, then appends blank tiles until total reaches minTiles.
+function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles: number, amber = false): void {
+  target.innerHTML = '';
+  const upper = text.toUpperCase();
+  const words = upper.split(' ');
+  let tileCount = 0;
+  words.forEach((word, wi) => {
+    const group = document.createElement('span');
+    group.className = 'flap-word';
+    for (const ch of word) {
+      const span = document.createElement('span');
+      span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
+      span.textContent = ch;
+      group.appendChild(span);
+      tileCount++;
+    }
+    target.appendChild(group);
+    if (wi < words.length - 1) {
+      const gap = document.createElement('span');
+      gap.className = `flap-gap flap-gap-${size}`;
+      target.appendChild(gap);
+    }
+  });
+  for (let i = tileCount; i < minTiles; i++) {
+    const blank = document.createElement('span');
+    blank.className = `flap-char flap-${size}`;
+    target.appendChild(blank);
+  }
+}
+
 function setFlaps(target: HTMLElement, text: string, size: FlapSize, amber = false): void {
   target.innerHTML = '';
   const upper = text.toUpperCase();
@@ -89,11 +119,11 @@ export function renderBlank(): void {
   setBlankTiles(el('card-fltnum'),    6, 'xl');
   setBlankTiles(el('card-airline'),   8, 'lg');
   setBlankTiles(el('card-dep-icao'),  4,  'xl');
-  setBlankTiles(el('card-dep-city'),  12, 'lg');
+  setFlapsMin(el('card-dep-city'),   '', 'lg', 12);
   setFlaps(el('card-dep-name'),       BLANK, 'sm');
   setFlaps(el('card-dep-country'),    BLANK, 'sm');
   setBlankTiles(el('card-dest-icao'), 4,  'xl');
-  setBlankTiles(el('card-dest-city'), 12, 'lg');
+  setFlapsMin(el('card-dest-city'),  '', 'lg', 12);
   setFlaps(el('card-dest-name'),      BLANK, 'sm');
   setFlaps(el('card-dest-country'),   BLANK, 'sm');
   setFlapsWithSuffix(el('card-distance'),  '', 'NM',  DIST_WIDTH, 'md');
@@ -117,12 +147,12 @@ export function renderFlight(flight: GeneratedFlight): void {
   // card-std: populated by issue #34 (STD departure time)
 
   setFlaps(el('card-dep-icao'),    route.departure.icao,    'xl');
-  setFlaps(el('card-dep-city'),    route.departure.city,    'lg');
+  setFlapsMin(el('card-dep-city'),   route.departure.city,    'lg', 12);
   setFlaps(el('card-dep-name'),    route.departure.name,    'sm');
   setFlaps(el('card-dep-country'), route.departure.country, 'sm');
 
   setFlaps(el('card-dest-icao'),    route.destination.icao,    'xl');
-  setFlaps(el('card-dest-city'),    route.destination.city,    'lg');
+  setFlapsMin(el('card-dest-city'),  route.destination.city,   'lg', 12);
   setFlaps(el('card-dest-name'),    route.destination.name,    'sm');
   setFlaps(el('card-dest-country'), route.destination.country, 'sm');
 
