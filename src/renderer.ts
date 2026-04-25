@@ -88,13 +88,13 @@ const BLANK = '—';
 export function renderBlank(): void {
   setBlankTiles(el('card-fltnum'),    6, 'xl');
   setBlankTiles(el('card-airline'),   8, 'lg');
-  setBlankTiles(el('card-dep-icao'),  4, 'xl');
+  setBlankTiles(el('card-dep-icao'),  4,  'xl');
+  setBlankTiles(el('card-dep-city'),  12, 'lg');
   setFlaps(el('card-dep-name'),       BLANK, 'sm');
-  setFlaps(el('card-dep-city'),       BLANK, 'sm');
   setFlaps(el('card-dep-country'),    BLANK, 'sm');
-  setBlankTiles(el('card-dest-icao'), 4, 'xl');
+  setBlankTiles(el('card-dest-icao'), 4,  'xl');
+  setBlankTiles(el('card-dest-city'), 12, 'lg');
   setFlaps(el('card-dest-name'),      BLANK, 'sm');
-  setFlaps(el('card-dest-city'),      BLANK, 'sm');
   setFlaps(el('card-dest-country'),   BLANK, 'sm');
   setFlapsWithSuffix(el('card-distance'),  '', 'NM',  DIST_WIDTH, 'md');
   setFlapsWithSuffix(el('card-blocktime'), '', 'BLK', BLK_WIDTH,  'md');
@@ -117,13 +117,13 @@ export function renderFlight(flight: GeneratedFlight): void {
   // card-std: populated by issue #34 (STD departure time)
 
   setFlaps(el('card-dep-icao'),    route.departure.icao,    'xl');
+  setFlaps(el('card-dep-city'),    route.departure.city,    'lg');
   setFlaps(el('card-dep-name'),    route.departure.name,    'sm');
-  setFlaps(el('card-dep-city'),    route.departure.city,    'sm');
   setFlaps(el('card-dep-country'), route.departure.country, 'sm');
 
   setFlaps(el('card-dest-icao'),    route.destination.icao,    'xl');
+  setFlaps(el('card-dest-city'),    route.destination.city,    'lg');
   setFlaps(el('card-dest-name'),    route.destination.name,    'sm');
-  setFlaps(el('card-dest-city'),    route.destination.city,    'sm');
   setFlaps(el('card-dest-country'), route.destination.country, 'sm');
 
   const distStr = plan.distance_nm.toLocaleString('en-US');
