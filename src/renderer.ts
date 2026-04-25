@@ -13,11 +13,7 @@ export interface GeneratedFlight {
 
 const DEFAULT_EMPTY_MSG = 'Configure your settings above and press Generate to receive your flight assignment.';
 
-const SIM_LABEL: Record<Simulator, string> = {
-  msfs2020: 'MSFS 2020',
-  msfs2024: 'MSFS 2024',
-  xplane12: 'X-Plane 12',
-};
+type FlapSize = 'xl' | 'lg' | 'md' | 'sm';
 
 function el(id: string): HTMLElement {
   const e = document.getElementById(id);
@@ -25,8 +21,30 @@ function el(id: string): HTMLElement {
   return e;
 }
 
+function setFlaps(target: HTMLElement, text: string, size: FlapSize, amber = false): void {
+  target.innerHTML = '';
+  const upper = text.toUpperCase();
+  const words = upper.split(' ');
+  words.forEach((word, wi) => {
+    const group = document.createElement('span');
+    group.className = 'flap-word';
+    for (const ch of word) {
+      const span = document.createElement('span');
+      span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
+      span.textContent = ch;
+      group.appendChild(span);
+    }
+    target.appendChild(group);
+    if (wi < words.length - 1) {
+      const gap = document.createElement('span');
+      gap.className = `flap-gap flap-gap-${size}`;
+      target.appendChild(gap);
+    }
+  });
+}
+
 function formatDistance(nm: number): string {
-  return nm.toLocaleString('en-US') + ' nm';
+  return nm.toLocaleString('en-US') + ' NM';
 }
 
 function formatBlockTime(minutes: number): string {
@@ -36,38 +54,33 @@ function formatBlockTime(minutes: number): string {
 }
 
 export function renderFlight(flight: GeneratedFlight): void {
-  const { route, plan, payload, simulator } = flight;
+  const { route, plan, payload } = flight;
 
-  el('card-airline').textContent = route.airline.name;
-  el('card-fltnum').textContent = plan.flight_number;
-  el('card-sim-badge').textContent = SIM_LABEL[simulator];
+  setFlaps(el('card-fltnum'), plan.flight_number, 'lg');
+  setFlaps(el('card-airline'), route.airline.name, 'lg');
+  // card-std: populated by issue #34 (STD departure time)
 
-  el('card-dep-icao').textContent = route.departure.icao;
-  el('card-dep-name').textContent = route.departure.name;
-  el('card-dep-city').textContent = route.departure.city;
+  setFlaps(el('card-dep-icao'), route.departure.icao, 'xl');
+  setFlaps(el('card-dep-name'), route.departure.name, 'sm');
+  setFlaps(el('card-dep-city'), route.departure.city, 'sm');
+  setFlaps(el('card-dep-country'), route.departure.country, 'sm');
 
-  el('card-dest-icao').textContent = route.destination.icao;
-  el('card-dest-name').textContent = route.destination.name;
-  el('card-dest-city').textContent = route.destination.city;
+  setFlaps(el('card-dest-icao'), route.destination.icao, 'xl');
+  setFlaps(el('card-dest-name'), route.destination.name, 'sm');
+  setFlaps(el('card-dest-city'), route.destination.city, 'sm');
+  setFlaps(el('card-dest-country'), route.destination.country, 'sm');
 
-  el('card-distance').textContent = formatDistance(plan.distance_nm);
-  el('card-blocktime').textContent = formatBlockTime(plan.block_time_min);
+  setFlaps(el('card-distance'), formatDistance(plan.distance_nm), 'md');
+  setFlaps(el('card-blocktime'), formatBlockTime(plan.block_time_min), 'md');
 
-  el('card-aircraft-type').textContent = route.aircraft.type_name;
-  el('card-aircraft-frame').textContent = route.aircraft.airframe_name;
+  setFlaps(el('card-aircraft-type'), route.aircraft.type_name, 'lg');
+  setFlaps(el('card-aircraft-frame'), route.aircraft.airframe_name, 'sm');
 
-  const cellPax = el('cell-pax');
-  if (payload.pax !== null) {
-    cellPax.classList.remove('hidden');
-    el('card-pax').textContent = String(payload.pax);
-    el('card-pax-max').textContent = `/ ${route.aircraft.max_pax} max`;
-  } else {
-    cellPax.classList.add('hidden');
-  }
+  setFlaps(el('card-pax'), String(payload.pax ?? '—'), 'lg');
+  setFlaps(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`, 'sm');
 
-  // card-cargo has an inline <span> for the "kg" suffix — update only the text node
-  el('card-cargo').childNodes[0].textContent = payload.cargo_kg.toLocaleString('en-US');
-  el('card-cargo-max').textContent = `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} kg max`;
+  setFlaps(el('card-cargo'), payload.cargo_kg.toLocaleString('en-US') + ' KG', 'lg');
+  setFlaps(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`, 'sm');
 
   (el('btn-dispatch') as HTMLAnchorElement).href = flight.simbriefUrl;
 
