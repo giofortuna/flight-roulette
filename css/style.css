@@ -370,6 +370,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 }
 .card-section:last-child { border-bottom: none; }
 .card-section.card-section-dark { background: var(--flap-section); }
+.card-section.route-section { overflow: hidden; }
 
 /* ── Card header ── */
 .card-header-row1 {
@@ -391,8 +392,20 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 }
 
 .apt { display: flex; flex-direction: column; gap: 5px; }
-.apt.right { align-items: flex-end; }
+.apt.right { align-items: flex-end; text-align: right; }
 .apt.right .flap-row { justify-content: flex-end; }
+
+.apt-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #6e6c64;
+  height: 20px;
+  line-height: 20px;
+  max-width: 298px;
+  overflow: hidden;
+  white-space: nowrap;
+}
 
 .route-mid {
   display: flex;
@@ -403,6 +416,18 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 }
 
 .r-stat { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+
+.r-metric { display: flex; align-items: center; gap: 6px; }
+
+.metric-unit {
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--flap-sub);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
 
 .r-line { width: 1px; height: 14px; background: #222; }
 
@@ -420,9 +445,27 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .stat-cell {
   padding: 13px 18px;
+  height: 100px;
+  overflow: hidden;
   border-right: 1px solid var(--flap-divider);
 }
 .stat-cell:last-child { border-right: none; }
+
+.aircraft-type {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  color: var(--flap-text);
+}
+
+.stat-sub {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: #6e6c64;
+  margin-top: 5px;
+  white-space: nowrap;
+}
 
 /* ── Card footer ── */
 .card-footer {
@@ -463,6 +506,13 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .btn-dispatch:hover {
   border-color: var(--flap-text);
   color: var(--flap-text);
+}
+
+.btn-dispatch.is-disabled {
+  border-color: var(--flap-label);
+  color: var(--flap-label);
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 

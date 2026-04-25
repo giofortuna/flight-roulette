@@ -107,26 +107,32 @@
         </div>
 
         <!-- Route: departure → destination -->
-        <div class="card-section">
+        <div class="card-section route-section">
           <div class="card-route">
             <div class="apt">
               <div class="flap-label">From</div>
               <div class="flap-row" id="card-dep-icao"></div>
               <div class="flap-row" id="card-dep-city"></div>
-              <div class="flap-row" id="card-dep-name"></div>
-              <div class="flap-row" id="card-dep-country"></div>
+              <div class="apt-sub" id="card-dep-name"></div>
+              <div class="apt-sub" id="card-dep-country"></div>
             </div>
 
             <div class="route-mid">
               <div class="r-stat">
                 <div class="flap-label">Distance</div>
-                <div class="flap-row" id="card-distance"></div>
+                <div class="r-metric">
+                  <div class="flap-row" id="card-distance"></div>
+                  <span class="metric-unit">NM</span>
+                </div>
               </div>
               <div class="r-line"></div>
               <div class="r-plane">✈</div>
               <div class="r-line"></div>
               <div class="r-stat">
-                <div class="flap-row" id="card-blocktime"></div>
+                <div class="r-metric">
+                  <div class="flap-row" id="card-blocktime"></div>
+                  <span class="metric-unit">BLK</span>
+                </div>
                 <div class="flap-label" style="margin-top:5px;">Block</div>
               </div>
             </div>
@@ -135,8 +141,8 @@
               <div class="flap-label" style="text-align:right;">To</div>
               <div class="flap-row" id="card-dest-icao"></div>
               <div class="flap-row" id="card-dest-city"></div>
-              <div class="flap-row" id="card-dest-name"></div>
-              <div class="flap-row" id="card-dest-country"></div>
+              <div class="apt-sub" id="card-dest-name"></div>
+              <div class="apt-sub" id="card-dest-country"></div>
             </div>
           </div>
         </div>
@@ -145,25 +151,28 @@
         <div class="card-stats">
           <div class="stat-cell">
             <div class="flap-label">Aircraft</div>
-            <div class="flap-row" id="card-aircraft-type"></div>
-            <div class="flap-row" id="card-aircraft-frame"></div>
+            <div class="aircraft-type" id="card-aircraft-type"></div>
+            <div class="stat-sub" id="card-aircraft-frame"></div>
           </div>
           <div class="stat-cell" id="cell-pax">
             <div class="flap-label">Passengers</div>
             <div class="flap-row" id="card-pax"></div>
-            <div class="flap-row" id="card-pax-max"></div>
+            <div class="stat-sub" id="card-pax-max"></div>
           </div>
           <div class="stat-cell">
             <div class="flap-label">Cargo</div>
-            <div class="flap-row" id="card-cargo"></div>
-            <div class="flap-row" id="card-cargo-max"></div>
+            <div class="r-metric">
+              <div class="flap-row" id="card-cargo"></div>
+              <span class="metric-unit">KG</span>
+            </div>
+            <div class="stat-sub" id="card-cargo-max"></div>
           </div>
         </div>
 
         <!-- Footer -->
         <div class="card-footer">
           <div class="footer-note">Fuel · Routing · Weather via SimBrief</div>
-          <a class="btn-dispatch" id="btn-dispatch" href="#" target="_blank" rel="noopener noreferrer">
+          <a class="btn-dispatch is-disabled" id="btn-dispatch" href="#" target="_blank" rel="noopener noreferrer" aria-disabled="true">
             Dispatch to SimBrief →
           </a>
         </div>
