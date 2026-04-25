@@ -56,29 +56,34 @@ function setFlapsWithSuffix(target: HTMLElement, numStr: string, suffix: string,
   }
 }
 
-// Renders text as word-grouped tiles, then appends blank tiles until total reaches minTiles.
+// Renders text as word-grouped tiles (trimmed to minTiles chars), then pads with blanks.
+// Empty words are filtered so blank state produces exactly minTiles flat tiles with no extra gaps.
 function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles: number, amber = false): void {
   target.innerHTML = '';
   const upper = text.toUpperCase();
-  const words = upper.split(' ');
+  const words = upper.split(' ').filter(w => w.length > 0);
   let tileCount = 0;
-  words.forEach((word, wi) => {
+
+  for (let wi = 0; wi < words.length; wi++) {
+    if (tileCount >= minTiles) break;
+    const charsToTake = Math.min(words[wi].length, minTiles - tileCount);
     const group = document.createElement('span');
     group.className = 'flap-word';
-    for (const ch of word) {
+    for (let ci = 0; ci < charsToTake; ci++) {
       const span = document.createElement('span');
       span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
-      span.textContent = ch;
+      span.textContent = words[wi][ci];
       group.appendChild(span);
-      tileCount++;
     }
     target.appendChild(group);
-    if (wi < words.length - 1) {
+    tileCount += charsToTake;
+    if (wi < words.length - 1 && tileCount < minTiles) {
       const gap = document.createElement('span');
       gap.className = `flap-gap flap-gap-${size}`;
       target.appendChild(gap);
     }
-  });
+  }
+
   for (let i = tileCount; i < minTiles; i++) {
     const blank = document.createElement('span');
     blank.className = `flap-char flap-${size}`;
