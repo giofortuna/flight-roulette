@@ -19,6 +19,15 @@ function el(id: string): HTMLElement {
   return e;
 }
 
+function setBlankTiles(target: HTMLElement, count: number, size: FlapSize): void {
+  target.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const span = document.createElement('span');
+    span.className = `flap-char flap-${size}`;
+    target.appendChild(span);
+  }
+}
+
 function setFlaps(target: HTMLElement, text: string, size: FlapSize, amber = false): void {
   target.innerHTML = '';
   const upper = text.toUpperCase();
@@ -54,13 +63,13 @@ function formatBlockTime(minutes: number): string {
 const BLANK = '—';
 
 export function renderBlank(): void {
-  setFlaps(el('card-fltnum'),         BLANK, 'lg');
-  setFlaps(el('card-airline'),        BLANK, 'lg');
-  setFlaps(el('card-dep-icao'),       BLANK, 'xl');
+  setBlankTiles(el('card-fltnum'),    6, 'lg');
+  setBlankTiles(el('card-airline'),   8, 'lg');
+  setBlankTiles(el('card-dep-icao'),  4, 'xl');
   setFlaps(el('card-dep-name'),       BLANK, 'sm');
   setFlaps(el('card-dep-city'),       BLANK, 'sm');
   setFlaps(el('card-dep-country'),    BLANK, 'sm');
-  setFlaps(el('card-dest-icao'),      BLANK, 'xl');
+  setBlankTiles(el('card-dest-icao'),  4, 'xl');
   setFlaps(el('card-dest-name'),      BLANK, 'sm');
   setFlaps(el('card-dest-city'),      BLANK, 'sm');
   setFlaps(el('card-dest-country'),   BLANK, 'sm');
