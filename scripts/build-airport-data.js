@@ -137,7 +137,7 @@ export function processAirports(airportRows, { runwayMap, allRunwayAirports }) {
 
     const lat = parseFloat(apt.latitude_deg);
     const lon = parseFloat(apt.longitude_deg);
-    if (isNaN(lat) || isNaN(lon))  { skipped.badCoords++;       continue; }
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) { skipped.badCoords++; continue; }
 
     (regions[region] ??= []).push({
       icao,
