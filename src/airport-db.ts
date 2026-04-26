@@ -23,7 +23,8 @@ export function validate(data: unknown, region: AirportRegion): Airport[] {
      || typeof item.country !== 'string'
      || !Number.isFinite(item.lat)
      || !Number.isFinite(item.lon)
-     || !Number.isFinite(item.max_runway_m)   || item.max_runway_m < 0)
+     || !Number.isFinite(item.max_runway_m)   || item.max_runway_m < 0
+     || (item.scheduled !== undefined && typeof item.scheduled !== 'boolean'))
       throw new Error(`airports-${region}.json: invalid entry "${item.icao}"`);
   }
   return data as Airport[];

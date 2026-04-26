@@ -68,6 +68,13 @@ test('validate — accepts optional scheduled field as boolean or absent', () =>
   assert.doesNotThrow(() => validate([makeAirport()], 'europe'));
 });
 
+test('validate — throws when scheduled is a non-boolean value', () => {
+  assert.throws(() => validate([makeAirport({ scheduled: 0 })],       'europe'), /invalid entry/);
+  assert.throws(() => validate([makeAirport({ scheduled: 1 })],       'europe'), /invalid entry/);
+  assert.throws(() => validate([makeAirport({ scheduled: 'false' })], 'europe'), /invalid entry/);
+  assert.throws(() => validate([makeAirport({ scheduled: 'yes' })],   'europe'), /invalid entry/);
+});
+
 test('validate — error message includes region name', () => {
   assert.throws(() => validate([], 'namerica'), /namerica/);
   assert.throws(() => validate([makeAirport({ lat: NaN })], 'asia'), /asia/);
