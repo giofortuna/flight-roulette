@@ -46,6 +46,13 @@ test('validate — throws when hub is not an array', () => {
   );
 });
 
+test('validate — throws when icao is not 3 uppercase letters', () => {
+  assert.throws(() => validate([makeAirline({ icao: 'BA' })]),    /invalid entry/);
+  assert.throws(() => validate([makeAirline({ icao: 'BAWA' })]),  /invalid entry/);
+  assert.throws(() => validate([makeAirline({ icao: 'ba1' })]),   /invalid entry/);
+  assert.throws(() => validate([makeAirline({ icao: '' })]),      /invalid entry/);
+});
+
 test('validate — accepts all valid region values', () => {
   const regions = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam', 'caribbean'];
   for (const region of regions)

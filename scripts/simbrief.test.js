@@ -4,13 +4,13 @@ import { buildSimbriefUrl } from '../dist/simbrief.js';
 
 const ROUTE = {
   airline:  { icao: 'BAW', iata: 'BA', name: 'British Airways', callsign: 'SPEEDBIRD', country: 'GB', region: 'europe', hub: ['EGLL'], type: 'passenger', simbrief_id: 'BA', fleet: [] },
-  aircraft: { icao_type: 'B738', type_name: '737-800', airframe_name: 'Test', flight_type: 'passenger', simulator: ['msfs2020'], range_nm: 3000, min_runway_m: 2000, cruise_ft: 35000, cruise_kts: 450, category: 'M', max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '' },
+  aircraft: { icao_type: 'B738', type_name: '737-800', airframe_name: 'Test', flight_type: 'passenger', simulator: ['msfs2020'], range_nm: 3000, min_runway_m: 2000, cruise_ft: 35000, cruise_kts: 450, category: 'narrowbody', max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '' },
   departure:   { icao: 'EGLL', name: 'Heathrow',  city: 'London',    country: 'GB', lat: 51.477, lon: -0.461, max_runway_m: 3902 },
   destination: { icao: 'EHAM', name: 'Amsterdam', city: 'Amsterdam', country: 'NL', lat: 52.308, lon:  4.764, max_runway_m: 3800 },
   distanceNm: 200,
 };
 
-const PLAN = { distance_nm: 200, block_time_min: 57, cruise_fl: 350, flight_number: 'BAW442' };
+const PLAN = { distance_nm: 200, block_time_min: 57, flight_number: 'BAW442' };
 const PAYLOAD_PAX  = { pax: 130, cargo_kg: 5000 };
 const PAYLOAD_CARGO = { pax: null, cargo_kg: 18000 };
 
@@ -62,4 +62,10 @@ test('buildSimbriefUrl — cargo with fractional tons is preserved as decimal', 
 test('buildSimbriefUrl — cargo below 1 ton is expressed as decimal', () => {
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, { pax: 100, cargo_kg: 340 }, { useRandomPayload: true }));
   assert.equal(params.get('cargo'), '0.34');
+});
+
+test('buildSimbriefUrl — airline param omitted when simbrief_id is empty', () => {
+  const routeNoId = { ...ROUTE, airline: { ...ROUTE.airline, simbrief_id: '' } };
+  const { params } = parseUrl(buildSimbriefUrl(routeNoId, PLAN, PAYLOAD_PAX, { useRandomPayload: false }));
+  assert.equal(params.get('airline'), null);
 });

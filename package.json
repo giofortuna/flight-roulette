@@ -5,10 +5,12 @@
   "description": "Random flight generator for flight simulator pilots",
   "scripts": {
     "build": "tsc",
+    "typecheck": "tsc -p tsconfig.test.json",
     "test": "tsx --test",
     "dev": "serve ."
   },
   "devDependencies": {
+    "@types/node": "^25.6.0",
     "serve": "^14.2.6",
     "tsx": "^4.21.0",
     "typescript": "^5.5.3"

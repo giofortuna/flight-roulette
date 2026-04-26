@@ -12,7 +12,7 @@ const AIRCRAFT = {
   icao_type: 'B738', type_name: '737-800', airframe_name: 'Test',
   flight_type: 'passenger', simulator: ['msfs2020'],
   range_nm: 3000, min_runway_m: 2000,
-  cruise_ft: 35000, cruise_kts: 450, category: 'M',
+  cruise_ft: 35000, cruise_kts: 450, category: 'narrowbody',
   max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '',
 };
 
@@ -27,11 +27,6 @@ test('planFlight — block_time_min is (distance/cruise_kts)*60 + 30, rounded', 
   const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
   const expected = Math.round((DISTANCE_NM / AIRCRAFT.cruise_kts) * 60 + 30);
   assert.equal(plan.block_time_min, expected);
-});
-
-test('planFlight — cruise_fl matches aircraft.cruise_ft / 100', () => {
-  const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
-  assert.equal(plan.cruise_fl, Math.floor(AIRCRAFT.cruise_ft / 100));
 });
 
 test('planFlight — distance_nm echoes the input', () => {

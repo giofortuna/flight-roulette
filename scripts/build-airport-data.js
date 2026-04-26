@@ -137,7 +137,7 @@ export function processAirports(airportRows, { runwayMap, allRunwayAirports }) {
 
     const lat = parseFloat(apt.latitude_deg);
     const lon = parseFloat(apt.longitude_deg);
-    if (isNaN(lat) || isNaN(lon))  { skipped.badCoords++;       continue; }
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) { skipped.badCoords++; continue; }
 
     (regions[region] ??= []).push({
       icao,
@@ -179,13 +179,16 @@ async function main() {
 
   console.log('\n── Build complete ──────────────────');
   let total = 0;
+  let lowCount = false;
   for (const [region, airports] of Object.entries(regions)) {
     if (airports.length === 0) {
       console.warn(`  ⚠ ${region}: no airports — skipping file`);
+      lowCount = true;
       continue;
     }
     fs.writeFileSync(path.join(OUT_DIR, `airports-${region}.json`), JSON.stringify(airports));
     const warn = airports.length < MIN_AIRPORT_COUNT ? ' ⚠ LOW COUNT' : '';
+    if (airports.length < MIN_AIRPORT_COUNT) lowCount = true;
     console.log(`  ${region.padEnd(14)} ${airports.length.toLocaleString().padStart(5)} airports${warn}`);
     total += airports.length;
   }
@@ -194,6 +197,11 @@ async function main() {
   console.log('\n── Skipped ─────────────────────────');
   for (const [reason, count] of Object.entries(skipped)) {
     console.log(`  ${reason.padEnd(16)} ${count.toLocaleString()}`);
+  }
+
+  if (lowCount) {
+    console.error('\nBuild failed: one or more regions below MIN_AIRPORT_COUNT threshold.');
+    process.exit(1);
   }
 }
 

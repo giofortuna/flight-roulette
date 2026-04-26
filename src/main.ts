@@ -5,7 +5,7 @@ import { selectRoute, NoRouteError } from './route-selector.js';
 import { planFlight } from './flight-planner.js';
 import { generatePayload } from './payload-gen.js';
 import { buildSimbriefUrl } from './simbrief.js';
-import { renderFlight, renderEmpty, renderLoading } from './renderer.js';
+import { renderFlight, renderBlank, renderEmpty, renderLoading } from './renderer.js';
 
 // Warm the caches before the user clicks Generate
 Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
@@ -44,7 +44,7 @@ async function generate(): Promise<void> {
       const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
       const payload = generatePayload(route.aircraft, settings.flightType);
       const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
-      renderFlight({ route, plan, payload, simbriefUrl, simulator: settings.simulator });
+      renderFlight({ route, plan, payload, simbriefUrl });
     } catch (err) {
       if (err instanceof NoRouteError) {
         const hint = settings.scheduledOnly ? ' Try switching Airports to All in Options.' : '';
@@ -60,10 +60,9 @@ async function generate(): Promise<void> {
   }
 }
 
-renderEmpty();
+renderBlank();
 
 document.getElementById('btn-generate')!.addEventListener('click', generate);
-document.getElementById('btn-regen')!.addEventListener('click', generate);
 
 const viewMain  = document.getElementById('view-main')!;
 const viewAbout = document.getElementById('view-about')!;

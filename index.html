@@ -28,7 +28,6 @@
       </div>
     </header>
 
-    <div class="section-label">Settings</div>
     <div class="settings-panel">
 
       <div class="setting-row">
@@ -85,89 +84,100 @@
       <button class="btn-generate" id="btn-generate">▶ Generate Flight</button>
     </div>
 
-    <!-- State: empty (default) -->
-    <div id="state-empty" class="empty-state">
-      <div class="empty-icon">✈</div>
-      <div class="empty-title">Awaiting Dispatch</div>
-      <div class="empty-sub" id="empty-message">Configure your settings above and press Generate to receive your flight assignment.</div>
-    </div>
+    <div id="status-msg" class="status-msg hidden"></div>
 
-    <!-- State: loading -->
-    <div id="state-loading" class="loading-state hidden">
-      <div class="loading-icon">◌</div>
-      <div class="loading-title">Calculating Route</div>
-    </div>
+    <div class="flight-card" id="flight-card">
 
-    <!-- State: flight card -->
-    <div id="state-card" class="hidden">
-      <div class="section-label">Generated Flight</div>
-
-      <div class="flight-card">
-
-        <div class="card-header">
-          <div class="card-header-left">
-            <div class="card-airline" id="card-airline">—</div>
-            <div class="card-fltnum" id="card-fltnum">———</div>
+        <!-- Header: flight number · STD · airline -->
+        <div class="card-section card-section-dark">
+          <div class="card-header-row1">
+            <div>
+              <div class="flap-label">Flight</div>
+              <div class="flap-row" id="card-fltnum"></div>
+            </div>
+            <div hidden>
+              <div class="flap-label" style="text-align:right;">STD</div>
+              <div class="flap-row" id="card-std"></div>
+            </div>
           </div>
-          <div class="sim-badge" id="card-sim-badge">—</div>
+          <div class="card-header-row2">
+            <div class="flap-label">Airline</div>
+            <div class="flap-row" id="card-airline"></div>
+          </div>
         </div>
 
-        <div class="card-route">
-          <div class="apt">
-            <div class="apt-icao" id="card-dep-icao">————</div>
-            <div class="apt-name" id="card-dep-name">—</div>
-            <div class="apt-city" id="card-dep-city">—</div>
-          </div>
-          <div class="route-mid">
-            <div class="route-stat" id="card-distance">— nm</div>
-            <div class="route-arrow">
+        <!-- Route: departure → destination -->
+        <div class="card-section route-section">
+          <div class="card-route">
+            <div class="apt">
+              <div class="flap-label">From</div>
+              <div class="flap-row" id="card-dep-icao"></div>
+              <div class="flap-row" id="card-dep-city"></div>
+              <div class="apt-sub" id="card-dep-name"></div>
+              <div class="apt-sub" id="card-dep-country"></div>
+            </div>
+
+            <div class="route-mid">
+              <div class="r-stat">
+                <div class="flap-label">Distance</div>
+                <div class="r-metric">
+                  <div class="flap-row" id="card-distance"></div>
+                  <span class="metric-unit">NM</span>
+                </div>
+              </div>
               <div class="r-line"></div>
               <div class="r-plane">✈</div>
               <div class="r-line"></div>
+              <div class="r-stat">
+                <div class="r-metric">
+                  <div class="flap-row" id="card-blocktime"></div>
+                  <span class="metric-unit">BLK</span>
+                </div>
+                <div class="flap-label" style="margin-top:5px;">Block</div>
+              </div>
             </div>
-            <div class="route-stat" id="card-blocktime">—+— BLK</div>
-          </div>
-          <div class="apt right">
-            <div class="apt-icao" id="card-dest-icao">————</div>
-            <div class="apt-name" id="card-dest-name">—</div>
-            <div class="apt-city" id="card-dest-city">—</div>
+
+            <div class="apt right">
+              <div class="flap-label" style="text-align:right;">To</div>
+              <div class="flap-row" id="card-dest-icao"></div>
+              <div class="flap-row" id="card-dest-city"></div>
+              <div class="apt-sub" id="card-dest-name"></div>
+              <div class="apt-sub" id="card-dest-country"></div>
+            </div>
           </div>
         </div>
 
-        <div class="card-grid">
-          <div class="grid-cell full" style="border-bottom: 1px solid var(--border);">
-            <div class="cell-label">Aircraft</div>
-            <div class="cell-value-sm" id="card-aircraft-type">—</div>
-            <div class="cell-sub" id="card-aircraft-frame">—</div>
+        <!-- Stats: aircraft / pax / cargo -->
+        <div class="card-stats">
+          <div class="stat-cell">
+            <div class="flap-label">Aircraft</div>
+            <div class="aircraft-type" id="card-aircraft-type"></div>
+            <div class="stat-sub" id="card-aircraft-frame"></div>
           </div>
-          <div class="grid-cell" id="cell-pax">
-            <div class="cell-label">Passengers</div>
-            <div class="cell-value" id="card-pax">—</div>
-            <div class="cell-sub" id="card-pax-max">/ — max</div>
+          <div class="stat-cell" id="cell-pax">
+            <div class="flap-label">Passengers</div>
+            <div class="flap-row" id="card-pax"></div>
+            <div class="stat-sub" id="card-pax-max"></div>
           </div>
-          <div class="grid-cell">
-            <div class="cell-label">Cargo</div>
-            <div class="cell-value" id="card-cargo">—<span style="font-size:15px;color:var(--amber-dim)"> kg</span></div>
-            <div class="cell-sub" id="card-cargo-max">/ — kg max</div>
+          <div class="stat-cell">
+            <div class="flap-label">Cargo</div>
+            <div class="r-metric">
+              <div class="flap-row" id="card-cargo"></div>
+              <span class="metric-unit">KG</span>
+            </div>
+            <div class="stat-sub" id="card-cargo-max"></div>
           </div>
         </div>
 
+        <!-- Footer -->
         <div class="card-footer">
-          <div class="footer-note">
-            <div class="footer-note-label">Fuel</div>
-            <div class="footer-note-val">Calculated by SimBrief</div>
-          </div>
-          <a class="btn-dispatch" id="btn-dispatch" href="#" target="_blank" rel="noopener noreferrer">
+          <div class="footer-note">Fuel · Routing · Weather via SimBrief</div>
+          <a class="btn-dispatch is-disabled" id="btn-dispatch" target="_blank" rel="noopener noreferrer" aria-disabled="true">
             Dispatch to SimBrief →
           </a>
         </div>
 
-      </div><!-- /.flight-card -->
-
-      <div class="regen-row">
-        <button class="btn-regen" id="btn-regen">↺ Generate another flight</button>
-      </div>
-    </div><!-- /#state-card -->
+    </div><!-- /.flight-card -->
 
   </div><!-- /.app-shell -->
 </div><!-- /#view-main -->
@@ -205,7 +215,7 @@
     <div class="about-block">
       <div class="about-block-title">How it works</div>
       <ul class="feature-list">
-        <li>An airline is picked randomly from a database of ~400 worldwide operators</li>
+        <li>An airline is picked randomly from a database of ~1,000 worldwide operators</li>
         <li>An aircraft is selected, filtered by your chosen simulator and flight type</li>
         <li>A departure airport is chosen at random — restricted to airports with active commercial service by default, or the full ICAO database when set to All</li>
         <li>A destination is picked within aircraft range and minimum runway requirements</li>

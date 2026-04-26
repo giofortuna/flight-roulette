@@ -391,4 +391,6 @@ async function main() {
     console.log(`  ${r.padEnd(16)} ${c}`);
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  main().catch(err => { console.error(err); process.exit(1); });
+}
