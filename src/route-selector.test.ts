@@ -186,5 +186,5 @@ test('pickRoute — routes beyond 80% utilisation buffer are excluded without re
 test('pickRoute — distanceNm is within 80% of range_nm under normal conditions', () => {
   const aircraft = makeAircraft({ range_nm: 3000 });
   const route = pickRoute(INPUT, [aircraft], [makeAirline()], [NEAR_A, NEAR_B]);
-  assert.ok(route.distanceNm <= aircraft.range_nm * 0.80 * 1.2); // within relaxed ceiling
+  assert.ok(route.distanceNm <= aircraft.range_nm * 0.80); // within strict ceiling
 });
