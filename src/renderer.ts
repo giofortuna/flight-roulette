@@ -66,7 +66,7 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
   }
   for (let i = chars.length; i < minTiles; i++) {
     const blank = document.createElement('span');
-    blank.className = `flap-char flap-${size}`;
+    blank.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
     target.appendChild(blank);
   }
 }

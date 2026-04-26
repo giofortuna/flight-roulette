@@ -1,14 +1,16 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { planFlight } from '../dist/flight-planner.js';
+import { planFlight } from './flight-planner.js';
+import type { Airline } from './airline-db.js';
+import type { Aircraft } from './aircraft-db.js';
 
-const AIRLINE = {
+const AIRLINE: Airline = {
   icao: 'BAW', iata: 'BA', name: 'British Airways', callsign: 'SPEEDBIRD',
   country: 'GB', region: 'europe', hub: ['EGLL'], type: 'passenger',
   simbrief_id: 'BA', fleet: [],
 };
 
-const AIRCRAFT = {
+const AIRCRAFT: Aircraft = {
   icao_type: 'B738', type_name: '737-800', airframe_name: 'Test',
   flight_type: 'passenger', simulator: ['msfs2020'],
   range_nm: 3000, min_runway_m: 2000,

@@ -100,7 +100,7 @@ export function buildRunwayMap(runwayRows) {
     if (rwy.closed === '1') continue;
     if (!isHardSurface(rwy.surface)) continue;
     const lengthM = Math.round(parseFloat(rwy.length_ft) * 0.3048);
-    if (!lengthM || lengthM <= 0) continue;
+    if (!Number.isFinite(lengthM) || lengthM <= 0) continue;
     const prev = runwayMap.get(rwy.airport_ident) ?? 0;
     if (lengthM > prev) runwayMap.set(rwy.airport_ident, lengthM);
   }
