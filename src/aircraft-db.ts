@@ -9,7 +9,6 @@ export interface Aircraft {
   simulator: Simulator[];
   range_nm: number;
   min_runway_m: number;
-  cruise_ft: number;
   cruise_kts: number;
   category: 'narrowbody' | 'widebody' | 'regional' | 'turboprop';
   max_pax: number;
@@ -37,7 +36,6 @@ export function validate(data: unknown): Aircraft[] {
      || !(item.simulator as unknown[]).every(s => typeof s === 'string' && s in VALID_SIMULATORS)
      || !Number.isFinite(item.range_nm)       || item.range_nm <= 0
      || !Number.isFinite(item.min_runway_m)   || item.min_runway_m < 0
-     || !Number.isFinite(item.cruise_ft)
      || !Number.isFinite(item.cruise_kts)     || item.cruise_kts <= 0
      || !(item.category in VALID_CATEGORIES)
      || !Number.isFinite(item.max_pax)        || item.max_pax < 0 || item.max_pax > 999

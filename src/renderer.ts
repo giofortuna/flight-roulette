@@ -113,14 +113,13 @@ function setBlankTiles(target: HTMLElement, count: number, size: FlapSize): void
 
 function setFlapsNumber(target: HTMLElement, numStr: string, numWidth: number, size: FlapSize): void {
   target.innerHTML = '';
-  const upper = numStr.toUpperCase();
-  const pad = Math.max(0, numWidth - upper.length);
+  const pad = Math.max(0, numWidth - numStr.length);
   for (let i = 0; i < pad; i++) {
     const blank = document.createElement('span');
     blank.className = `flap-char flap-${size}`;
     target.appendChild(blank);
   }
-  for (const ch of upper) {
+  for (const ch of numStr) {
     const span = document.createElement('span');
     span.className = `flap-char flap-${size}`;
     span.textContent = ch;
