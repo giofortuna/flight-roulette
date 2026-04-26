@@ -21,9 +21,9 @@ function validate(data: unknown, region: AirportRegion): Airport[] {
      || typeof item.name !== 'string'
      || typeof item.city !== 'string'
      || typeof item.country !== 'string'
-     || typeof item.lat !== 'number'
-     || typeof item.lon !== 'number'
-     || typeof item.max_runway_m !== 'number')
+     || !Number.isFinite(item.lat)
+     || !Number.isFinite(item.lon)
+     || !Number.isFinite(item.max_runway_m)   || item.max_runway_m < 0)
       throw new Error(`airports-${region}.json: invalid entry "${item.icao}"`);
   }
   return data as Airport[];
