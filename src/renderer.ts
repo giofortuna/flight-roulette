@@ -81,9 +81,9 @@ function resolveField(target: HTMLElement, finalChars: string[], fieldDelay: num
   });
 }
 
-function resolveText(target: HTMLElement, value: string, delay: number): void {
-  const t = setTimeout(() => { target.textContent = value; }, delay);
-  _pending.push(t);
+function revealText(target: HTMLElement, value: string): void {
+  target.textContent = value;
+  requestAnimationFrame(() => requestAnimationFrame(() => { target.style.opacity = ''; }));
 }
 
 function minFinalChars(text: string, minTiles: number): string[] {
@@ -173,14 +173,17 @@ function blankFlaps(): void {
 }
 
 function blankText(): void {
-  el('card-dep-name').textContent      = '';
-  el('card-dep-country').textContent   = '';
-  el('card-dest-name').textContent     = '';
-  el('card-dest-country').textContent  = '';
-  el('card-aircraft-type').textContent  = '';
-  el('card-aircraft-frame').textContent = '';
-  el('card-pax-max').textContent   = '';
-  el('card-cargo-max').textContent = '';
+  const ids = [
+    'card-dep-name', 'card-dep-country',
+    'card-dest-name', 'card-dest-country',
+    'card-aircraft-type', 'card-aircraft-frame',
+    'card-pax-max', 'card-cargo-max',
+  ];
+  for (const id of ids) {
+    const e = el(id);
+    e.textContent = '';
+    e.style.opacity = '0';
+  }
 }
 
 // --- Public render functions ---
@@ -238,25 +241,25 @@ export function renderFlight(flight: GeneratedFlight): void {
 
   resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, 4),   f(2));
   resolveField(el('card-dep-city'),  minFinalChars(route.departure.city, 12),  f(2));
-  resolveText(el('card-dep-name'),    route.departure.name,                    f(2));
-  resolveText(el('card-dep-country'), countryName(route.departure.country),    f(2));
+  revealText(el('card-dep-name'),    route.departure.name);
+  revealText(el('card-dep-country'), countryName(route.departure.country));
 
   resolveField(el('card-dest-icao'), minFinalChars(route.destination.icao, 4),   f(3));
   resolveField(el('card-dest-city'), minFinalChars(route.destination.city, 12),  f(3));
-  resolveText(el('card-dest-name'),    route.destination.name,                   f(3));
-  resolveText(el('card-dest-country'), countryName(route.destination.country),   f(3));
+  revealText(el('card-dest-name'),    route.destination.name);
+  revealText(el('card-dest-country'), countryName(route.destination.country));
 
   resolveField(el('card-distance'),  numFinalChars(distStr, DIST_WIDTH), f(4));
   resolveField(el('card-blocktime'), numFinalChars(blkStr,  BLK_WIDTH),  f(4));
 
-  resolveText(el('card-aircraft-type'),  route.aircraft.type_name,     f(5));
-  resolveText(el('card-aircraft-frame'), route.aircraft.airframe_name, f(5));
+  revealText(el('card-aircraft-type'),  route.aircraft.type_name);
+  revealText(el('card-aircraft-frame'), route.aircraft.airframe_name);
 
   resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? 0), PAX_WIDTH), f(6));
-  resolveText(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`, f(6));
+  revealText(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`);
 
   resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(7));
-  resolveText(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`, f(7));
+  revealText(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);
 
   // Enable dispatch button after the last tile (cargo field) has fully resolved
   const lastTileDelay = f(7) + (CARGO_WIDTH - 1) * TILE_MS + 50;
