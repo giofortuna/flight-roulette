@@ -195,7 +195,6 @@ export function renderBlank(): void {
   el('btn-dispatch').removeAttribute('href');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
-  el('flight-card').classList.remove('is-loading');
   el('status-msg').classList.add('hidden');
 }
 
@@ -218,7 +217,6 @@ export function renderLoading(): void {
   el('btn-dispatch').removeAttribute('href');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
-  el('flight-card').classList.remove('is-loading');
   el('status-msg').classList.add('hidden');
 }
 
@@ -232,7 +230,8 @@ export function renderFlight(flight: GeneratedFlight): void {
 
   // Field resolution order (f(n) = n * FIELD_MS):
   // 0: fltnum, 1: airline, 2: dep-icao + dep-city, 3: dest-icao + dest-city,
-  // 4: distance + blocktime, 5: aircraft text, 6: pax, 7: cargo
+  // 4: distance + blocktime, 5: pax, 6: cargo
+  // (aircraft text is revealed immediately via revealText, not staggered)
 
   const f = (n: number) => n * FIELD_MS;
 
@@ -255,14 +254,14 @@ export function renderFlight(flight: GeneratedFlight): void {
   revealText(el('card-aircraft-type'),  route.aircraft.type_name);
   revealText(el('card-aircraft-frame'), route.aircraft.airframe_name);
 
-  resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? 0), PAX_WIDTH), f(6));
+  resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? 0), PAX_WIDTH), f(5));
   revealText(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`);
 
-  resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(7));
+  resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(6));
   revealText(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);
 
   // Enable dispatch button after the last tile (cargo field) has fully resolved
-  const lastTileDelay = f(7) + (CARGO_WIDTH - 1) * TILE_MS + 50;
+  const lastTileDelay = f(6) + (CARGO_WIDTH - 1) * TILE_MS + 50;
   const t = setTimeout(() => {
     (el('btn-dispatch') as HTMLAnchorElement).href = flight.simbriefUrl;
     el('btn-dispatch').classList.remove('is-disabled');
@@ -270,7 +269,6 @@ export function renderFlight(flight: GeneratedFlight): void {
   }, lastTileDelay);
   _pending.push(t);
 
-  el('flight-card').classList.remove('is-loading');
   el('status-msg').classList.add('hidden');
 }
 
@@ -282,7 +280,6 @@ export function renderEmpty(message: string): void {
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
-  el('flight-card').classList.remove('is-loading');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
 }
