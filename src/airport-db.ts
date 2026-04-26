@@ -14,8 +14,8 @@ export interface Airport {
 const _cache = new Map<AirportRegion, Airport[]>();
 
 function validate(data: unknown, region: AirportRegion): Airport[] {
-  if (!Array.isArray(data))
-    throw new Error(`airports-${region}.json: expected array`);
+  if (!Array.isArray(data) || data.length === 0)
+    throw new Error(`airports-${region}.json: expected non-empty array`);
   for (const item of data) {
     if (typeof item.icao !== 'string'
      || typeof item.name !== 'string'
