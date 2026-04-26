@@ -62,3 +62,21 @@ test('validate — throws when simulator is not an array', () => {
 test('validate — throws when simulator is an empty array', () => {
   assert.throws(() => validate([makeAircraft({ simulator: [] })]), /invalid entry/);
 });
+
+test('validate — throws when cruise_kts is zero or negative', () => {
+  assert.throws(() => validate([makeAircraft({ cruise_kts: 0 })]),    /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ cruise_kts: -100 })]), /invalid entry/);
+});
+
+test('validate — throws when range_nm is zero or negative', () => {
+  assert.throws(() => validate([makeAircraft({ range_nm: 0 })]),   /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ range_nm: -1 })]),  /invalid entry/);
+});
+
+test('validate — throws when min_runway_m is negative', () => {
+  assert.throws(() => validate([makeAircraft({ min_runway_m: -1 })]), /invalid entry/);
+});
+
+test('validate — accepts min_runway_m of zero', () => {
+  assert.doesNotThrow(() => validate([makeAircraft({ min_runway_m: 0 })]));
+});
