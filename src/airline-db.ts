@@ -14,8 +14,8 @@ export interface Airline {
   fleet: string[];
 }
 
-const VALID_REGIONS: readonly Region[]      = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam', 'caribbean'];
-const VALID_TYPES:   readonly AirlineType[] = ['passenger', 'cargo', 'both'];
+const VALID_REGIONS: Record<Region, 1>      = { europe: 1, namerica: 1, asia: 1, africa: 1, pacific: 1, sam: 1, caribbean: 1 };
+const VALID_TYPES:   Record<AirlineType, 1> = { passenger: 1, cargo: 1, both: 1 };
 
 let _cache: Airline[] | null = null;
 
@@ -28,9 +28,9 @@ export function validate(data: unknown): Airline[] {
      || typeof item.name !== 'string'
      || typeof item.callsign !== 'string'
      || typeof item.country !== 'string'
-     || !(VALID_REGIONS as readonly string[]).includes(item.region)
+     || !(item.region in VALID_REGIONS)
      || !Array.isArray(item.hub)
-     || !(VALID_TYPES as readonly string[]).includes(item.type)
+     || !(item.type in VALID_TYPES)
      || typeof item.simbrief_id !== 'string'
      || !Array.isArray(item.fleet))
       throw new Error(`airlines.json: invalid entry "${item.icao}"`);
