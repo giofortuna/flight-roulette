@@ -1,10 +1,6 @@
 import type { FlightType, Simulator } from './types.js';
 export type { FlightType, Simulator };
 
-const VALID_FLIGHT_TYPES: Record<FlightType, 1>          = { passenger: 1, cargo: 1 };
-const VALID_CATEGORIES:   Record<Aircraft['category'], 1> = { narrowbody: 1, widebody: 1, regional: 1, turboprop: 1 };
-const VALID_SIMULATORS:   Record<Simulator, 1>            = { msfs2020: 1, msfs2024: 1, xplane12: 1 };
-
 export interface Aircraft {
   icao_type: string;
   type_name: string;
@@ -21,6 +17,10 @@ export interface Aircraft {
   simbrief_type: string;
   simbrief_airframe_id: string;
 }
+
+const VALID_FLIGHT_TYPES: Record<FlightType, 1>          = { passenger: 1, cargo: 1 };
+const VALID_CATEGORIES:   Record<Aircraft['category'], 1> = { narrowbody: 1, widebody: 1, regional: 1, turboprop: 1 };
+const VALID_SIMULATORS:   Record<Simulator, 1>            = { msfs2020: 1, msfs2024: 1, xplane12: 1 };
 
 let _cache: Aircraft[] | null = null;
 
