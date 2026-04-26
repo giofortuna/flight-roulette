@@ -35,13 +35,13 @@ export function validate(data: unknown): Aircraft[] {
      || !Array.isArray(item.simulator)
      || item.simulator.length === 0
      || !(item.simulator as unknown[]).every(s => typeof s === 'string' && s in VALID_SIMULATORS)
-     || typeof item.range_nm !== 'number'    || item.range_nm <= 0
-     || typeof item.min_runway_m !== 'number' || item.min_runway_m < 0
-     || typeof item.cruise_ft !== 'number'
-     || typeof item.cruise_kts !== 'number'   || item.cruise_kts <= 0
+     || !Number.isFinite(item.range_nm)       || item.range_nm <= 0
+     || !Number.isFinite(item.min_runway_m)   || item.min_runway_m < 0
+     || !Number.isFinite(item.cruise_ft)
+     || !Number.isFinite(item.cruise_kts)     || item.cruise_kts <= 0
      || !(item.category in VALID_CATEGORIES)
-     || typeof item.max_pax !== 'number'
-     || typeof item.max_cargo_kg !== 'number'
+     || !Number.isFinite(item.max_pax)        || item.max_pax < 0
+     || !Number.isFinite(item.max_cargo_kg)   || item.max_cargo_kg < 0
      || typeof item.simbrief_type !== 'string'
      || typeof item.simbrief_airframe_id !== 'string')
       throw new Error(`aircraft.json: invalid entry "${item.icao_type}"`);

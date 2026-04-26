@@ -63,14 +63,18 @@ test('validate — throws when simulator is an empty array', () => {
   assert.throws(() => validate([makeAircraft({ simulator: [] })]), /invalid entry/);
 });
 
-test('validate — throws when cruise_kts is zero or negative', () => {
-  assert.throws(() => validate([makeAircraft({ cruise_kts: 0 })]),    /invalid entry/);
-  assert.throws(() => validate([makeAircraft({ cruise_kts: -100 })]), /invalid entry/);
+test('validate — throws when cruise_kts is zero, negative, or NaN', () => {
+  assert.throws(() => validate([makeAircraft({ cruise_kts: 0 })]),        /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ cruise_kts: -100 })]),     /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ cruise_kts: NaN })]),      /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ cruise_kts: Infinity })]), /invalid entry/);
 });
 
-test('validate — throws when range_nm is zero or negative', () => {
-  assert.throws(() => validate([makeAircraft({ range_nm: 0 })]),   /invalid entry/);
-  assert.throws(() => validate([makeAircraft({ range_nm: -1 })]),  /invalid entry/);
+test('validate — throws when range_nm is zero, negative, or NaN', () => {
+  assert.throws(() => validate([makeAircraft({ range_nm: 0 })]),        /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ range_nm: -1 })]),       /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ range_nm: NaN })]),      /invalid entry/);
+  assert.throws(() => validate([makeAircraft({ range_nm: Infinity })]), /invalid entry/);
 });
 
 test('validate — throws when min_runway_m is negative', () => {
