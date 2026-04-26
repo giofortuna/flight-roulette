@@ -5,6 +5,7 @@
   "description": "Random flight generator for flight simulator pilots",
   "scripts": {
     "build": "tsc",
+    "typecheck": "tsc -p tsconfig.test.json",
     "test": "tsx --test",
     "dev": "serve ."
   },
