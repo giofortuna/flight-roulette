@@ -39,10 +39,14 @@ export async function loadRegion(region: AirportRegion): Promise<Airport[]> {
   return airports;
 }
 
+// Record<AirportRegion, 1> enforces exhaustiveness: TypeScript errors here if AirportRegion gains a new member.
+const ALL_REGIONS: Record<AirportRegion, 1> = {
+  europe: 1, namerica: 1, asia: 1, africa: 1, pacific: 1, sam: 1,
+};
+
 export async function loadAll(): Promise<Airport[]> {
   // 'caribbean' has no airport file — T-prefix airports are mapped to 'sam' by the build script
-  const regions: AirportRegion[] = ['europe', 'namerica', 'asia', 'africa', 'pacific', 'sam'];
-  const chunks = await Promise.all(regions.map(loadRegion));
+  const chunks = await Promise.all((Object.keys(ALL_REGIONS) as AirportRegion[]).map(loadRegion));
   return chunks.flat();
 }
 
