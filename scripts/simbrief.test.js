@@ -63,3 +63,9 @@ test('buildSimbriefUrl — cargo below 1 ton is expressed as decimal', () => {
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, { pax: 100, cargo_kg: 340 }, { useRandomPayload: true }));
   assert.equal(params.get('cargo'), '0.34');
 });
+
+test('buildSimbriefUrl — airline param omitted when simbrief_id is empty', () => {
+  const routeNoId = { ...ROUTE, airline: { ...ROUTE.airline, simbrief_id: '' } };
+  const { params } = parseUrl(buildSimbriefUrl(routeNoId, PLAN, PAYLOAD_PAX, { useRandomPayload: false }));
+  assert.equal(params.get('airline'), null);
+});

@@ -84,25 +84,33 @@ const CARGO_WIDTH   = 7;
 // (820px card − 36px section padding = 784px; ⌊784/25⌋ = 31 lg tiles = 773px)
 const AIRLINE_TILES = 31;
 
-export function renderBlank(): void {
+function blankFlaps(): void {
   setBlankTiles(el('card-fltnum'),    6, 'xl');
   setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
-  setBlankTiles(el('card-dep-icao'),  4,  'xl');
+  setBlankTiles(el('card-dep-icao'),  4, 'xl');
   setFlapsMin(el('card-dep-city'),   '', 'lg', 12);
-  el('card-dep-name').textContent    = '';
-  el('card-dep-country').textContent = '';
-  setBlankTiles(el('card-dest-icao'), 4,  'xl');
+  setBlankTiles(el('card-dest-icao'), 4, 'xl');
   setFlapsMin(el('card-dest-city'),  '', 'lg', 12);
-  el('card-dest-name').textContent    = '';
-  el('card-dest-country').textContent = '';
   setFlapsNumber(el('card-distance'),  '00,000', DIST_WIDTH, 'md');
   setFlapsNumber(el('card-blocktime'), '00+00',  BLK_WIDTH,  'md');
+  setFlapsNumber(el('card-pax'),   '000',     PAX_WIDTH,   'lg');
+  setFlapsNumber(el('card-cargo'), '000,000', CARGO_WIDTH, 'lg');
+}
+
+function blankText(): void {
+  el('card-dep-name').textContent      = '';
+  el('card-dep-country').textContent   = '';
+  el('card-dest-name').textContent     = '';
+  el('card-dest-country').textContent  = '';
   el('card-aircraft-type').textContent  = '';
   el('card-aircraft-frame').textContent = '';
-  setFlapsNumber(el('card-pax'),   '000',     PAX_WIDTH,   'lg');
-  el('card-pax-max').textContent  = '';
-  setFlapsNumber(el('card-cargo'), '000,000', CARGO_WIDTH, 'lg');
+  el('card-pax-max').textContent   = '';
   el('card-cargo-max').textContent = '';
+}
+
+export function renderBlank(): void {
+  blankFlaps();
+  blankText();
   (el('btn-dispatch') as HTMLAnchorElement).href = '#';
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
@@ -152,14 +160,8 @@ export function renderFlight(flight: GeneratedFlight): void {
 }
 
 export function renderLoading(): void {
-  el('card-dep-name').textContent     = '';
-  el('card-dep-country').textContent  = '';
-  el('card-dest-name').textContent    = '';
-  el('card-dest-country').textContent = '';
-  el('card-aircraft-type').textContent  = '';
-  el('card-aircraft-frame').textContent = '';
-  el('card-pax-max').textContent   = '';
-  el('card-cargo-max').textContent = '';
+  blankFlaps();
+  blankText();
   el('flight-card').classList.add('is-loading');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
@@ -167,6 +169,8 @@ export function renderLoading(): void {
 }
 
 export function renderEmpty(message: string): void {
+  blankFlaps();
+  blankText();
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
