@@ -1,6 +1,10 @@
 import type { FlightType, Simulator } from './types.js';
 export type { FlightType, Simulator };
 
+const VALID_FLIGHT_TYPES: Record<FlightType, 1>          = { passenger: 1, cargo: 1 };
+const VALID_CATEGORIES:   Record<Aircraft['category'], 1> = { narrowbody: 1, widebody: 1, regional: 1, turboprop: 1 };
+const VALID_SIMULATORS:   Record<Simulator, 1>            = { msfs2020: 1, msfs2024: 1, xplane12: 1 };
+
 export interface Aircraft {
   icao_type: string;
   type_name: string;
@@ -18,13 +22,9 @@ export interface Aircraft {
   simbrief_airframe_id: string;
 }
 
-const VALID_FLIGHT_TYPES: Record<FlightType, 1>          = { passenger: 1, cargo: 1 };
-const VALID_CATEGORIES:   Record<Aircraft['category'], 1> = { narrowbody: 1, widebody: 1, regional: 1, turboprop: 1 };
-const VALID_SIMULATORS:   Record<Simulator, 1>            = { msfs2020: 1, msfs2024: 1, xplane12: 1 };
-
 let _cache: Aircraft[] | null = null;
 
-export function validate(data: unknown): Aircraft[] {
+function validate(data: unknown): Aircraft[] {
   if (!Array.isArray(data) || data.length === 0)
     throw new Error('aircraft.json: expected non-empty array');
   for (const item of data) {
@@ -33,15 +33,14 @@ export function validate(data: unknown): Aircraft[] {
      || typeof item.airframe_name !== 'string'
      || !(item.flight_type in VALID_FLIGHT_TYPES)
      || !Array.isArray(item.simulator)
-     || item.simulator.length === 0
      || !(item.simulator as unknown[]).every(s => typeof s === 'string' && s in VALID_SIMULATORS)
-     || !Number.isFinite(item.range_nm)       || item.range_nm <= 0
-     || !Number.isFinite(item.min_runway_m)   || item.min_runway_m < 0
-     || !Number.isFinite(item.cruise_ft)
-     || !Number.isFinite(item.cruise_kts)     || item.cruise_kts <= 0
+     || typeof item.range_nm !== 'number'
+     || typeof item.min_runway_m !== 'number'
+     || typeof item.cruise_ft !== 'number'
+     || typeof item.cruise_kts !== 'number'
      || !(item.category in VALID_CATEGORIES)
-     || !Number.isFinite(item.max_pax)        || item.max_pax < 0
-     || !Number.isFinite(item.max_cargo_kg)   || item.max_cargo_kg < 0
+     || typeof item.max_pax !== 'number'
+     || typeof item.max_cargo_kg !== 'number'
      || typeof item.simbrief_type !== 'string'
      || typeof item.simbrief_airframe_id !== 'string')
       throw new Error(`aircraft.json: invalid entry "${item.icao_type}"`);
