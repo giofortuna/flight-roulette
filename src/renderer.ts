@@ -72,6 +72,8 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
 }
 
 
+// STD: always exactly "HHMM" = 4 chars
+const STD_WIDTH     = 4;
 // Distance: number part padded to 6 chars (covers up to "15,000" for future widebodies)
 const DIST_WIDTH    = 6;
 // Block time: always exactly "XX+XX" = 5 chars
@@ -86,6 +88,7 @@ const AIRLINE_TILES = 31;
 
 function blankFlaps(): void {
   setBlankTiles(el('card-fltnum'),    6, 'xl');
+  setBlankTiles(el('card-std'),       STD_WIDTH, 'xl');
   setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
   setBlankTiles(el('card-dep-icao'),  4, 'xl');
   setFlapsMin(el('card-dep-city'),   '', 'lg', 12);
@@ -162,6 +165,7 @@ export function renderFlight(flight: GeneratedFlight): void {
 export function renderLoading(): void {
   blankFlaps();
   blankText();
+  (el('btn-dispatch') as HTMLAnchorElement).href = '#';
   el('flight-card').classList.add('is-loading');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
@@ -171,6 +175,7 @@ export function renderLoading(): void {
 export function renderEmpty(message: string): void {
   blankFlaps();
   blankText();
+  (el('btn-dispatch') as HTMLAnchorElement).href = '#';
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
