@@ -35,10 +35,10 @@ export function validate(data: unknown): Aircraft[] {
      || !Array.isArray(item.simulator)
      || item.simulator.length === 0
      || !(item.simulator as unknown[]).every(s => typeof s === 'string' && s in VALID_SIMULATORS)
-     || typeof item.range_nm !== 'number'
-     || typeof item.min_runway_m !== 'number'
+     || typeof item.range_nm !== 'number'    || item.range_nm <= 0
+     || typeof item.min_runway_m !== 'number' || item.min_runway_m < 0
      || typeof item.cruise_ft !== 'number'
-     || typeof item.cruise_kts !== 'number'
+     || typeof item.cruise_kts !== 'number'   || item.cruise_kts <= 0
      || !(item.category in VALID_CATEGORIES)
      || typeof item.max_pax !== 'number'
      || typeof item.max_cargo_kg !== 'number'

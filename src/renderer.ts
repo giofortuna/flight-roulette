@@ -114,7 +114,7 @@ function blankText(): void {
 export function renderBlank(): void {
   blankFlaps();
   blankText();
-  (el('btn-dispatch') as HTMLAnchorElement).href = '#';
+  el('btn-dispatch').removeAttribute('href');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
   el('flight-card').classList.remove('is-loading');
@@ -165,7 +165,7 @@ export function renderFlight(flight: GeneratedFlight): void {
 export function renderLoading(): void {
   blankFlaps();
   blankText();
-  (el('btn-dispatch') as HTMLAnchorElement).href = '#';
+  el('btn-dispatch').removeAttribute('href');
   el('flight-card').classList.add('is-loading');
   el('btn-dispatch').classList.add('is-disabled');
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
@@ -175,7 +175,7 @@ export function renderLoading(): void {
 export function renderEmpty(message: string): void {
   blankFlaps();
   blankText();
-  (el('btn-dispatch') as HTMLAnchorElement).href = '#';
+  el('btn-dispatch').removeAttribute('href');
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
