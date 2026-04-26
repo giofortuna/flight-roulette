@@ -5,7 +5,7 @@ import { selectRoute, NoRouteError } from './route-selector.js';
 import { planFlight } from './flight-planner.js';
 import { generatePayload } from './payload-gen.js';
 import { buildSimbriefUrl } from './simbrief.js';
-import { renderFlight, renderBlank, renderEmpty, renderLoading } from './renderer.js';
+import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim } from './renderer.js';
 
 // Warm the caches before the user clicks Generate
 Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
@@ -68,6 +68,7 @@ const viewMain  = document.getElementById('view-main')!;
 const viewAbout = document.getElementById('view-about')!;
 
 document.getElementById('nav-about')!.addEventListener('click', () => {
+  cancelAnim();
   viewMain.classList.add('hidden');
   viewAbout.classList.remove('hidden');
 });

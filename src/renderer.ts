@@ -24,29 +24,26 @@ function el(id: string): HTMLElement {
 
 // --- Animation state ---
 
-const FLIP_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 /-';
+const FLIP_CHARS     = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 /-';
+const FLIP_CHARS_NUM = '0123456789';
 const CYCLE_MS = 60;
 const TILE_MS  = 35;
 const FIELD_MS = 80;
-
-function randChar(): string {
-  return FLIP_CHARS[Math.floor(Math.random() * FLIP_CHARS.length)];
-}
 
 interface CycleEntry { span: HTMLSpanElement; id: ReturnType<typeof setInterval> }
 let _cycles:  CycleEntry[]                    = [];
 let _pending: ReturnType<typeof setTimeout>[] = [];
 
-function cancelAnim(): void {
+export function cancelAnim(): void {
   for (const { id } of _cycles) clearInterval(id);
   _cycles = [];
   for (const t of _pending) clearTimeout(t);
   _pending = [];
 }
 
-function cycleSpan(span: HTMLSpanElement): void {
+function cycleSpan(span: HTMLSpanElement, chars = FLIP_CHARS): void {
   const id = setInterval(() => {
-    const ch = randChar();
+    const ch = chars[Math.floor(Math.random() * chars.length)];
     span.textContent = ch === ' ' ? '' : ch;
     span.style.transform = 'scaleY(0.85)';
     requestAnimationFrame(() => requestAnimationFrame(() => { span.style.transform = ''; }));
@@ -54,13 +51,13 @@ function cycleSpan(span: HTMLSpanElement): void {
   _cycles.push({ span, id });
 }
 
-function cycleField(target: HTMLElement, count: number, size: FlapSize, amber = false): void {
+function cycleField(target: HTMLElement, count: number, size: FlapSize, amber = false, chars = FLIP_CHARS): void {
   target.innerHTML = '';
   for (let i = 0; i < count; i++) {
     const span = document.createElement('span');
     span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
     target.appendChild(span);
-    cycleSpan(span);
+    cycleSpan(span, chars);
   }
 }
 
@@ -151,7 +148,10 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
 
 // --- Field size constants ---
 
+const FLTNUM_TILES  = 6;
 const STD_WIDTH     = 4;
+const ICAO_TILES    = 4;
+const CITY_TILES    = 12;
 const DIST_WIDTH    = 6;
 const BLK_WIDTH     = 5;
 const PAX_WIDTH     = 3;
@@ -159,13 +159,13 @@ const CARGO_WIDTH   = 7;
 const AIRLINE_TILES = 31;
 
 function blankFlaps(): void {
-  setBlankTiles(el('card-fltnum'),    6, 'xl');
-  setBlankTiles(el('card-std'),       STD_WIDTH, 'xl');
+  setBlankTiles(el('card-fltnum'),    FLTNUM_TILES,  'xl');
+  setBlankTiles(el('card-std'),       STD_WIDTH,     'xl');
   setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
-  setBlankTiles(el('card-dep-icao'),  4, 'xl');
-  setFlapsMin(el('card-dep-city'),   '', 'lg', 12);
-  setBlankTiles(el('card-dest-icao'), 4, 'xl');
-  setFlapsMin(el('card-dest-city'),  '', 'lg', 12);
+  setBlankTiles(el('card-dep-icao'),  ICAO_TILES,    'xl');
+  setFlapsMin(el('card-dep-city'),   '', 'lg', CITY_TILES);
+  setBlankTiles(el('card-dest-icao'), ICAO_TILES,    'xl');
+  setFlapsMin(el('card-dest-city'),  '', 'lg', CITY_TILES);
   setFlapsNumber(el('card-distance'),  '00,000', DIST_WIDTH, 'md');
   setFlapsNumber(el('card-blocktime'), '00+00',  BLK_WIDTH,  'md');
   setFlapsNumber(el('card-pax'),   '000',     PAX_WIDTH,   'lg');
@@ -204,16 +204,16 @@ export function renderLoading(): void {
   blankText();
 
   // card-std is hidden (awaiting issue #34) — skip cycling to avoid perpetual intervals
-  cycleField(el('card-fltnum'),    6,            'xl');
+  cycleField(el('card-fltnum'),    FLTNUM_TILES,  'xl');
   cycleField(el('card-airline'),   AIRLINE_TILES, 'lg');
-  cycleField(el('card-dep-icao'),  4,            'xl');
-  cycleField(el('card-dep-city'),  12,           'lg');
-  cycleField(el('card-dest-icao'), 4,            'xl');
-  cycleField(el('card-dest-city'), 12,           'lg');
-  cycleField(el('card-distance'),  DIST_WIDTH,   'md');
-  cycleField(el('card-blocktime'), BLK_WIDTH,    'md');
-  cycleField(el('card-pax'),       PAX_WIDTH,    'lg');
-  cycleField(el('card-cargo'),     CARGO_WIDTH,  'lg');
+  cycleField(el('card-dep-icao'),  ICAO_TILES,   'xl');
+  cycleField(el('card-dep-city'),  CITY_TILES,   'lg');
+  cycleField(el('card-dest-icao'), ICAO_TILES,   'xl');
+  cycleField(el('card-dest-city'), CITY_TILES,   'lg');
+  cycleField(el('card-distance'),  DIST_WIDTH,   'md', false, FLIP_CHARS_NUM);
+  cycleField(el('card-blocktime'), BLK_WIDTH,    'md', false, FLIP_CHARS_NUM);
+  cycleField(el('card-pax'),       PAX_WIDTH,    'lg', false, FLIP_CHARS_NUM);
+  cycleField(el('card-cargo'),     CARGO_WIDTH,  'lg', false, FLIP_CHARS_NUM);
 
   el('btn-dispatch').removeAttribute('href');
   el('btn-dispatch').classList.add('is-disabled');
@@ -236,16 +236,16 @@ export function renderFlight(flight: GeneratedFlight): void {
 
   const f = (n: number) => n * FIELD_MS;
 
-  resolveField(el('card-fltnum'),    minFinalChars(plan.flight_number, 6),              f(0));
+  resolveField(el('card-fltnum'),    minFinalChars(plan.flight_number, FLTNUM_TILES),   f(0));
   resolveField(el('card-airline'),   minFinalChars(route.airline.name, AIRLINE_TILES),  f(1));
 
-  resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, 4),   f(2));
-  resolveField(el('card-dep-city'),  minFinalChars(route.departure.city, 12),  f(2));
+  resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, ICAO_TILES),  f(2));
+  resolveField(el('card-dep-city'),  minFinalChars(route.departure.city, CITY_TILES),  f(2));
   revealText(el('card-dep-name'),    route.departure.name);
   revealText(el('card-dep-country'), countryName(route.departure.country));
 
-  resolveField(el('card-dest-icao'), minFinalChars(route.destination.icao, 4),   f(3));
-  resolveField(el('card-dest-city'), minFinalChars(route.destination.city, 12),  f(3));
+  resolveField(el('card-dest-icao'), minFinalChars(route.destination.icao, ICAO_TILES), f(3));
+  resolveField(el('card-dest-city'), minFinalChars(route.destination.city, CITY_TILES), f(3));
   revealText(el('card-dest-name'),    route.destination.name);
   revealText(el('card-dest-country'), countryName(route.destination.country));
 

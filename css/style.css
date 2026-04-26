@@ -298,8 +298,6 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 /* ════════════════════════════════════════
    FLIGHT CARD — split-flap board style
 ════════════════════════════════════════ */
-.flight-card.is-loading .flap-char { opacity: 0.25; transition: opacity 0.2s; }
-
 .flight-card {
   background: var(--flap-bg);
   border: 1px solid #1e1e1e;
