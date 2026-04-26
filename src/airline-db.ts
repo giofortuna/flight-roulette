@@ -24,6 +24,7 @@ export function validate(data: unknown): Airline[] {
     throw new Error('airlines.json: expected non-empty array');
   for (const item of data) {
     if (typeof item.icao !== 'string'
+     || !/^[A-Z]{3}$/.test(item.icao)
      || typeof item.iata !== 'string'
      || typeof item.name !== 'string'
      || typeof item.callsign !== 'string'
