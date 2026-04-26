@@ -24,7 +24,7 @@ export interface Aircraft {
 
 let _cache: Aircraft[] | null = null;
 
-function validate(data: unknown): Aircraft[] {
+export function validate(data: unknown): Aircraft[] {
   if (!Array.isArray(data) || data.length === 0)
     throw new Error('aircraft.json: expected non-empty array');
   for (const item of data) {
