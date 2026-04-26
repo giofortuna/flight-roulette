@@ -14,13 +14,13 @@ export function buildSimbriefUrl(
   options: DispatchOptions,
 ): string {
   const params = new URLSearchParams({
-    orig:    route.departure.icao,
-    dest:    route.destination.icao,
-    type:    route.aircraft.simbrief_type,
-    airline: route.airline.simbrief_id,
-    fltnum:  plan.flight_number,
-    units:   'KGS',
+    orig:   route.departure.icao,
+    dest:   route.destination.icao,
+    type:   route.aircraft.simbrief_type,
+    fltnum: plan.flight_number,
+    units:  'KGS',
   });
+  if (route.airline.simbrief_id) params.set('airline', route.airline.simbrief_id);
 
   if (options.useRandomPayload) {
     if (payload.pax !== null) params.set('pax', String(payload.pax));

@@ -344,15 +344,6 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .flap-char.flap-sm { width: 12px; height: 19px; font-size: 11px; color: var(--flap-sub); }
 .flap-char.flap-sm.flap-amber { color: var(--amber); }
 
-/* Word groups prevent mid-word line breaks */
-.flap-word { display: inline-flex; flex-shrink: 0; gap: 2px; }
-
-/* Gaps between words */
-.flap-gap-xl { display: inline-block; width: 10px; }
-.flap-gap-lg { display: inline-block; width: 7px; }
-.flap-gap-md { display: inline-block; width: 5px; }
-.flap-gap-sm { display: inline-block; width: 4px; }
-
 /* ── Field label ── */
 .flap-label {
   font-family: 'Orbitron', monospace;
