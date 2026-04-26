@@ -33,6 +33,7 @@ export function validate(data: unknown): Aircraft[] {
      || typeof item.airframe_name !== 'string'
      || !(item.flight_type in VALID_FLIGHT_TYPES)
      || !Array.isArray(item.simulator)
+     || item.simulator.length === 0
      || !(item.simulator as unknown[]).every(s => typeof s === 'string' && s in VALID_SIMULATORS)
      || typeof item.range_nm !== 'number'
      || typeof item.min_runway_m !== 'number'

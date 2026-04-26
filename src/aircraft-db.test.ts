@@ -58,3 +58,7 @@ test('validate — accepts all valid simulator values', () => {
 test('validate — throws when simulator is not an array', () => {
   assert.throws(() => validate([makeAircraft({ simulator: 'msfs2020' })]), /invalid entry/);
 });
+
+test('validate — throws when simulator is an empty array', () => {
+  assert.throws(() => validate([makeAircraft({ simulator: [] })]), /invalid entry/);
+});
