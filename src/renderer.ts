@@ -93,9 +93,11 @@ function minFinalChars(text: string, minTiles: number): string[] {
 }
 
 function numFinalChars(numStr: string, numWidth: number): string[] {
-  const upper = numStr.toUpperCase();
-  const pad = Math.max(0, numWidth - upper.length);
-  return [...Array<string>(pad).fill(''), ...[...upper]];
+  // Validator enforces field limits so overflow shouldn't occur;
+  // truncate from the right defensively rather than produce out-of-bounds spans.
+  const s = numStr.length > numWidth ? numStr.slice(0, numWidth) : numStr;
+  const pad = numWidth - s.length;
+  return [...Array<string>(pad).fill(''), ...[...s]];
 }
 
 // --- Static helpers (used for blank/empty states) ---
@@ -147,6 +149,11 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
 }
 
 // --- Field size constants ---
+// Numeric fields have hard display limits tied to their tile count:
+//   DIST_WIDTH=6  → max "99,999" NM  (longest real route ~9,500 NM; safe)
+//   BLK_WIDTH=5   → max "99+59"      (longest real flight ~24h; safe)
+//   PAX_WIDTH=3   → max 999 pax      — enforced by aircraft-db validator
+//   CARGO_WIDTH=7 → max 999,999 kg   — enforced by aircraft-db validator
 
 const FLTNUM_TILES  = 6;
 const STD_WIDTH     = 4;
