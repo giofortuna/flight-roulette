@@ -134,5 +134,5 @@ export async function selectRoute(input: SelectionInput): Promise<SelectedRoute>
     loadAll(),
     input.departureRegion ? loadRegion(input.departureRegion) : Promise.resolve(undefined),
   ]);
-  return pickRoute(input, allAircraft, allAirlines, allAirports, depAirports ?? undefined);
+  return pickRoute(input, allAircraft, allAirlines, allAirports, depAirports);
 }

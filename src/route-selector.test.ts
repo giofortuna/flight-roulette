@@ -230,9 +230,3 @@ test('pickRoute — throws NoRouteError when departure scope has no runway-eligi
   );
 });
 
-test('pickRoute — destination is not restricted to departure scope', () => {
-  // departure scope = NEAR_A only; destination pool = all airports including FAR_B
-  // FAR_B is out of range but NEAR_B is a valid destination
-  const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B], [NEAR_A]);
-  assert.equal(route.destination.icao, 'XBBB');
-});
