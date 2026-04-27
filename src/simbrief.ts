@@ -2,6 +2,19 @@ import type { SelectedRoute } from './route-selector.js';
 import type { FlightPlan } from './flight-planner.js';
 import type { Payload } from './payload-gen.js';
 
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// Format: "27 Apr 2026 - 08:13" (UTC date + UTC time); URLSearchParams encodes spaces as +
+function simbriefDateStr(std: { hour: number; min: number }): string {
+  const d = new Date();
+  const day   = d.getUTCDate();
+  const month = MONTHS[d.getUTCMonth()];
+  const year  = d.getUTCFullYear();
+  const h     = String(std.hour).padStart(2, '0');
+  const m     = String(std.min).padStart(2, '0');
+  return `${day} ${month} ${year} - ${h}:${m}`;
+}
+
 export interface DispatchOptions {
   useRandomPayload: boolean;
 }
@@ -21,9 +34,7 @@ export function buildSimbriefUrl(
   });
   if (route.airline.simbrief_id) params.set('airline', route.airline.simbrief_id);
 
-  // TODO: verify dephour/depmin parameter names against SimBrief documentation
-  params.set('dephour', String(plan.std_utc.hour));
-  params.set('depmin',  String(plan.std_utc.min));
+  params.set('date', simbriefDateStr(plan.std_utc));
 
   if (options.useRandomPayload) {
     if (payload.pax !== null) params.set('pax', String(payload.pax));

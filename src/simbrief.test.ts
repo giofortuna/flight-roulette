@@ -73,15 +73,23 @@ test('buildSimbriefUrl — airline param omitted when simbrief_id is empty', () 
   assert.equal(params.get('airline'), null);
 });
 
-test('buildSimbriefUrl — dephour and depmin passed as UTC integers', () => {
+test('buildSimbriefUrl — date param contains UTC time as HH:MM', () => {
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, PAYLOAD_PAX, { useRandomPayload: false }));
-  assert.equal(params.get('dephour'), '14');
-  assert.equal(params.get('depmin'),  '30');
+  const date = params.get('date') ?? '';
+  assert.ok(date.includes('14:30'), `expected time 14:30 in date param, got "${date}"`);
 });
 
-test('buildSimbriefUrl — dephour 0 is passed as "0", not omitted', () => {
+test('buildSimbriefUrl — date param contains current UTC date', () => {
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, PAYLOAD_PAX, { useRandomPayload: false }));
+  const date = params.get('date') ?? '';
+  const now = new Date();
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  assert.ok(date.includes(String(now.getUTCFullYear())), `year missing in "${date}"`);
+  assert.ok(date.includes(months[now.getUTCMonth()]),    `month missing in "${date}"`);
+});
+
+test('buildSimbriefUrl — midnight UTC is formatted as 00:00', () => {
   const plan = { ...PLAN, std_utc: { hour: 0, min: 0 } };
   const { params } = parseUrl(buildSimbriefUrl(ROUTE, plan, PAYLOAD_PAX, { useRandomPayload: false }));
-  assert.equal(params.get('dephour'), '0');
-  assert.equal(params.get('depmin'),  '0');
+  assert.ok((params.get('date') ?? '').includes('00:00'));
 });
