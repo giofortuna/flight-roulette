@@ -12,12 +12,16 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean } {
+function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number } {
   const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
   const useRandomPayload = (document.querySelector('input[name="payload"]:checked') as HTMLInputElement).value === 'random';
   const scheduledOnly    = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
-  return { flightType, simulator, useRandomPayload, scheduledOnly };
+  const minRaw = (document.getElementById('filter-min') as HTMLInputElement).value;
+  const maxRaw = (document.getElementById('filter-max') as HTMLInputElement).value;
+  const minBlockH = minRaw ? Number(minRaw) : undefined;
+  const maxBlockH = maxRaw ? Number(maxRaw) : undefined;
+  return { flightType, simulator, useRandomPayload, scheduledOnly, minBlockH, maxBlockH };
 }
 
 let generating = false;
@@ -40,14 +44,17 @@ async function generate(): Promise<void> {
     renderLoading();
 
     try {
-      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly });
+      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH });
       const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
       const payload = generatePayload(route.aircraft, settings.flightType);
       const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
       renderFlight({ route, plan, payload, simbriefUrl });
     } catch (err) {
       if (err instanceof NoRouteError) {
-        const hint = settings.scheduledOnly ? ' Try switching Airports to All in Options.' : '';
+        const hasBlockFilter = settings.minBlockH !== undefined || settings.maxBlockH !== undefined;
+        const hint = hasBlockFilter
+          ? ' Try widening or clearing the block time filter.'
+          : settings.scheduledOnly ? ' Try switching Airports to All in Options.' : '';
         renderEmpty(`Could not generate a route.${hint} Please try again.`);
         console.error(err);
       } else {
@@ -77,3 +84,16 @@ document.getElementById('nav-back')!.addEventListener('click', () => {
   viewAbout.classList.add('hidden');
   viewMain.classList.remove('hidden');
 });
+
+// ── Block time filter — restore and persist ───────────────────────────────────
+
+const filterMinEl = document.getElementById('filter-min') as HTMLInputElement;
+const filterMaxEl = document.getElementById('filter-max') as HTMLInputElement;
+
+const savedMin = localStorage.getItem('disp-filter-min');
+const savedMax = localStorage.getItem('disp-filter-max');
+if (savedMin) filterMinEl.value = savedMin;
+if (savedMax) filterMaxEl.value = savedMax;
+
+filterMinEl.addEventListener('input', () => localStorage.setItem('disp-filter-min', filterMinEl.value));
+filterMaxEl.addEventListener('input', () => localStorage.setItem('disp-filter-max', filterMaxEl.value));

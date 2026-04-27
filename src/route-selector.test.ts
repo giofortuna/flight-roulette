@@ -188,3 +188,27 @@ test('pickRoute — distanceNm is within 80% of range_nm under normal conditions
   const route = pickRoute(INPUT, [aircraft], [makeAirline()], [NEAR_A, NEAR_B]);
   assert.ok(route.distanceNm <= aircraft.range_nm * 0.80); // within strict ceiling
 });
+
+// ── block time filter ─────────────────────────────────────────────────────────
+
+test('pickRoute — minBlockH excludes routes shorter than minimum hours', () => {
+  // NEAR_A and NEAR_B are ~90nm apart: ~0.7h at 450kts; minBlockH=4 eliminates them
+  assert.throws(
+    () => pickRoute({ ...INPUT, minBlockH: 4 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
+test('pickRoute — maxBlockH excludes routes longer than maximum hours', () => {
+  // ~0.7h; maxBlockH=0.1 eliminates them
+  assert.throws(
+    () => pickRoute({ ...INPUT, maxBlockH: 0.1 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
+test('pickRoute — route within block time window is found', () => {
+  // ~90nm at 450kts ≈ 0.7h — within [0.5, 2]
+  const route = pickRoute({ ...INPUT, minBlockH: 0.5, maxBlockH: 2 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]);
+  assert.ok(route.distanceNm > 0);
+});

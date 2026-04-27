@@ -12,6 +12,8 @@ export interface SelectionInput {
   flightType: FlightType;
   simulator: Simulator;
   scheduledOnly: boolean;
+  minBlockH?: number;
+  maxBlockH?: number;
 }
 
 export interface SelectedRoute {
@@ -94,7 +96,16 @@ export function pickRoute(
         const candidates = eligibleAirports
           .filter(a => a.icao !== departure.icao)
           .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
-          .filter(({ distNm }) => distNm >= MIN_DISTANCE_NM && distNm <= rangeNm);
+          .filter(({ distNm }) => {
+            if (distNm < MIN_DISTANCE_NM || distNm > rangeNm) return false;
+            const { minBlockH, maxBlockH } = input;
+            if (minBlockH !== undefined || maxBlockH !== undefined) {
+              const blockH = distNm / pickedAircraft.cruise_kts + 0.5;
+              if (minBlockH !== undefined && blockH < minBlockH) return false;
+              if (maxBlockH !== undefined && blockH > maxBlockH) return false;
+            }
+            return true;
+          });
 
         if (candidates.length === 0) continue;
 
