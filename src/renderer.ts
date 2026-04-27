@@ -246,41 +246,41 @@ export function renderFlight(flight: GeneratedFlight): void {
   const { h: stdH, m: stdM } = stdLocalHM(plan.std_ms);
 
   // Field resolution order (f(n) = n * FIELD_MS):
-  // 0: fltnum + std, 1: airline, 2: dep-icao + dep-city, 3: dest-icao + dest-city,
-  // 4: distance + blocktime, 5: pax, 6: cargo
+  // 0: fltnum, 1: std, 2: airline, 3: dep-icao + dep-city, 4: dest-icao + dest-city,
+  // 5: distance + blocktime, 6: pax, 7: cargo
   // (aircraft text is revealed immediately via revealText, not staggered)
 
   const f = (n: number) => n * FIELD_MS;
 
   resolveField(el('card-fltnum'),    minFinalChars(plan.flight_number, FLTNUM_TILES),   f(0));
-  resolveField(el('card-std-h'),     [...stdH],                                         f(0));
-  resolveField(el('card-std-m'),     [...stdM],                                         f(0));
-  resolveField(el('card-airline'),   minFinalChars(route.airline.name, AIRLINE_TILES),  f(1));
+  resolveField(el('card-std-h'),     [...stdH],                                         f(1));
+  resolveField(el('card-std-m'),     [...stdM],                                         f(1));
+  resolveField(el('card-airline'),   minFinalChars(route.airline.name, AIRLINE_TILES),  f(2));
 
-  resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, ICAO_TILES),  f(2));
-  resolveField(el('card-dep-city'),  minFinalChars(route.departure.city, CITY_TILES),  f(2));
+  resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, ICAO_TILES),  f(3));
+  resolveField(el('card-dep-city'),  minFinalChars(route.departure.city, CITY_TILES),  f(3));
   revealText(el('card-dep-name'),    route.departure.name);
   revealText(el('card-dep-country'), countryName(route.departure.country));
 
-  resolveField(el('card-dest-icao'), minFinalChars(route.destination.icao, ICAO_TILES), f(3));
-  resolveField(el('card-dest-city'), minFinalChars(route.destination.city, CITY_TILES), f(3));
+  resolveField(el('card-dest-icao'), minFinalChars(route.destination.icao, ICAO_TILES), f(4));
+  resolveField(el('card-dest-city'), minFinalChars(route.destination.city, CITY_TILES), f(4));
   revealText(el('card-dest-name'),    route.destination.name);
   revealText(el('card-dest-country'), countryName(route.destination.country));
 
-  resolveField(el('card-distance'),  numFinalChars(distStr, DIST_WIDTH), f(4));
-  resolveField(el('card-blocktime'), numFinalChars(blkStr,  BLK_WIDTH),  f(4));
+  resolveField(el('card-distance'),  numFinalChars(distStr, DIST_WIDTH), f(5));
+  resolveField(el('card-blocktime'), numFinalChars(blkStr,  BLK_WIDTH),  f(5));
 
   revealText(el('card-aircraft-type'),  route.aircraft.type_name);
   revealText(el('card-aircraft-frame'), route.aircraft.airframe_name);
 
-  resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? ''), PAX_WIDTH), f(5));
+  resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? ''), PAX_WIDTH), f(6));
   revealText(el('card-pax-max'), payload.pax !== null ? `/ ${route.aircraft.max_pax} MAX` : '');
 
-  resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(6));
+  resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(7));
   revealText(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);
 
   // Enable dispatch button after the last tile (cargo field) has fully resolved
-  const lastTileDelay = f(6) + (CARGO_WIDTH - 1) * TILE_MS + 50;
+  const lastTileDelay = f(7) + (CARGO_WIDTH - 1) * TILE_MS + 50;
   const t = setTimeout(() => {
     (el('btn-dispatch') as HTMLAnchorElement).href = flight.simbriefUrl;
     el('btn-dispatch').classList.remove('is-disabled');
