@@ -7,7 +7,7 @@ import type { Aircraft } from './aircraft-db.js';
 const AIRLINE: Airline = {
   icao: 'BAW', iata: 'BA', name: 'British Airways', callsign: 'SPEEDBIRD',
   country: 'GB', region: 'europe', hub: ['EGLL'], type: 'passenger',
-  simbrief_id: 'BA', fleet: [],
+  simbrief_id: 'BAW', fleet: [],
 };
 
 const AIRCRAFT: Aircraft = {
@@ -36,26 +36,17 @@ test('planFlight — distance_nm echoes the input', () => {
   assert.equal(plan.distance_nm, DISTANCE_NM);
 });
 
-test('planFlight — flight_number starts with airline IATA when present', () => {
+test('planFlight — flight_number starts with airline ICAO', () => {
   for (let i = 0; i < 20; i++) {
     const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
-    assert.ok(plan.flight_number.startsWith(AIRLINE.iata), `got ${plan.flight_number}`);
-  }
-});
-
-test('planFlight — flight_number falls back to ICAO when IATA is empty', () => {
-  const noIata = { ...AIRLINE, iata: '' };
-  for (let i = 0; i < 20; i++) {
-    const plan = planFlight(noIata, AIRCRAFT, DISTANCE_NM);
     assert.ok(plan.flight_number.startsWith(AIRLINE.icao), `got ${plan.flight_number}`);
   }
 });
 
 test('planFlight — flight_number suffix is a 3-digit number in [100, 999]', () => {
-  const designator = AIRLINE.iata || AIRLINE.icao;
   for (let i = 0; i < 20; i++) {
     const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
-    const suffix = Number(plan.flight_number.slice(designator.length));
+    const suffix = Number(plan.flight_number.slice(AIRLINE.icao.length));
     assert.ok(suffix >= 100 && suffix <= 999, `suffix ${suffix} out of range`);
   }
 });

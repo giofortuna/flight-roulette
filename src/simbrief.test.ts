@@ -6,7 +6,7 @@ import type { FlightPlan } from './flight-planner.js';
 import type { Payload } from './payload-gen.js';
 
 const ROUTE: SelectedRoute = {
-  airline:  { icao: 'BAW', iata: 'BA', name: 'British Airways', callsign: 'SPEEDBIRD', country: 'GB', region: 'europe', hub: ['EGLL'], type: 'passenger', simbrief_id: 'BA', fleet: [] },
+  airline:  { icao: 'BAW', iata: 'BA', name: 'British Airways', callsign: 'SPEEDBIRD', country: 'GB', region: 'europe', hub: ['EGLL'], type: 'passenger', simbrief_id: 'BAW', fleet: [] },
   aircraft: { icao_type: 'B738', type_name: '737-800', airframe_name: 'Test', flight_type: 'passenger', simulator: ['msfs2020'], range_nm: 3000, min_runway_m: 2000, cruise_kts: 450, category: 'narrowbody', max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '' },
   departure:   { icao: 'EGLL', name: 'Heathrow',  city: 'London',    country: 'GB', lat: 51.477, lon: -0.461, max_runway_m: 3902 },
   destination: { icao: 'EHAM', name: 'Amsterdam', city: 'Amsterdam', country: 'NL', lat: 52.308, lon:  4.764, max_runway_m: 3800 },
@@ -32,7 +32,7 @@ test('buildSimbriefUrl — required params always present', () => {
   assert.equal(params.get('orig'),    'EGLL');
   assert.equal(params.get('dest'),    'EHAM');
   assert.equal(params.get('type'),    'B738');
-  assert.equal(params.get('airline'), 'BA');
+  assert.equal(params.get('airline'), 'BAW');
   assert.equal(params.get('fltnum'),  'BAW442');
   assert.equal(params.get('fl'),      null);
   assert.equal(params.get('route'),   null);

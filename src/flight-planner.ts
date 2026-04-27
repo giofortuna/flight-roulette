@@ -13,7 +13,6 @@ export function planFlight(
   distanceNm: number,
 ): FlightPlan {
   const block_time_min = Math.round((distanceNm / aircraft.cruise_kts) * 60 + 30);
-  const designator = airline.iata || airline.icao;
-  const flight_number = designator + String(100 + Math.floor(Math.random() * 900));
+  const flight_number = airline.icao + String(100 + Math.floor(Math.random() * 900));
   return { distance_nm: distanceNm, block_time_min, flight_number };
 }
