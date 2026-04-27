@@ -34,8 +34,6 @@ export function generateStd(
     const localMin = start + Math.floor(Math.random() * slots) * 5;
     const d = new Date();
     d.setHours(Math.floor(localMin / 60) % 24, localMin % 60, 0, 0);
-    // If the chosen local time has already passed today, it belongs to tomorrow
-    if (d.getTime() < Date.now()) d.setDate(d.getDate() + 1);
     return Math.round(d.getTime() / FIVE_MIN_MS) * FIVE_MIN_MS;
   }
 
