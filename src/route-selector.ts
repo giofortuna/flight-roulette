@@ -1,9 +1,9 @@
-import type { FlightType, Simulator } from './types.js';
+import type { FlightType, Simulator, AirportRegion } from './types.js';
 import { loadAircraft } from './aircraft-db.js';
 import type { Aircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
 import type { Airline } from './airline-db.js';
-import { loadAll, filterByRunway } from './airport-db.js';
+import { loadAll, loadRegion, filterByRunway } from './airport-db.js';
 import type { Airport } from './airport-db.js';
 
 export type { Aircraft, Airline, Airport };
@@ -14,6 +14,7 @@ export interface SelectionInput {
   scheduledOnly: boolean;
   minBlockH?: number;
   maxBlockH?: number;
+  departureRegion?: AirportRegion;
 }
 
 export interface SelectedRoute {
@@ -57,6 +58,7 @@ export function pickRoute(
   allAircraft: Aircraft[],
   allAirlines: Airline[],
   allAirports: Airport[],
+  departureScopeAirports?: Airport[],
 ): SelectedRoute {
   const airlines = allAirlines.filter(a =>
     a.type === input.flightType || a.type === 'both'
@@ -70,7 +72,9 @@ export function pickRoute(
   if (airlines.length === 0)
     throw new NoRouteError(`no airlines available for flight type ${input.flightType}`);
 
-  const pool = input.scheduledOnly ? allAirports.filter(a => a.scheduled !== false) : allAirports;
+  const schedFilter = (a: Airport) => !input.scheduledOnly || a.scheduled !== false;
+  const destPool = allAirports.filter(schedFilter);
+  const depPool  = (departureScopeAirports ?? allAirports).filter(schedFilter);
 
   // Shuffle aircraft so all types are tried in random order before giving up (Fisher-Yates)
   const shuffledAircraft = [...aircraft];
@@ -82,18 +86,19 @@ export function pickRoute(
   const pickedAirline = pickRandom(airlines as [Airline, ...Airline[]]);
 
   for (const pickedAircraft of shuffledAircraft) {
-    const eligibleAirports = filterByRunway(pool, pickedAircraft.min_runway_m);
-    if (eligibleAirports.length < 2) continue;
+    const eligibleDep  = filterByRunway(depPool,  pickedAircraft.min_runway_m);
+    const eligibleDest = filterByRunway(destPool, pickedAircraft.min_runway_m);
+    if (eligibleDep.length < 1 || eligibleDest.length < 2) continue;
 
     // Length checked above — safe to treat as non-empty
-    const eligible = eligibleAirports as [Airport, ...Airport[]];
+    const eligible = eligibleDep as [Airport, ...Airport[]];
 
     for (let relaxed = 0; relaxed <= 1; relaxed++) {
       const rangeNm = pickedAircraft.range_nm * RANGE_UTILISATION * (relaxed ? RANGE_RELAXATION : 1);
 
       for (let attempt = 0; attempt < MAX_DEPARTURE_ATTEMPTS; attempt++) {
         const departure = pickRandom(eligible);
-        const candidates = eligibleAirports
+        const candidates = eligibleDest
           .filter(a => a.icao !== departure.icao)
           .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
           .filter(({ distNm }) => {
@@ -123,10 +128,11 @@ export function pickRoute(
 }
 
 export async function selectRoute(input: SelectionInput): Promise<SelectedRoute> {
-  const [allAircraft, allAirlines, allAirports] = await Promise.all([
+  const [allAircraft, allAirlines, allAirports, depAirports] = await Promise.all([
     loadAircraft(),
     loadAirlines(),
     loadAll(),
+    input.departureRegion ? loadRegion(input.departureRegion) : Promise.resolve(undefined),
   ]);
-  return pickRoute(input, allAircraft, allAirlines, allAirports);
+  return pickRoute(input, allAircraft, allAirlines, allAirports, depAirports);
 }

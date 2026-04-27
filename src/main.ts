@@ -1,4 +1,4 @@
-import type { FlightType, Simulator } from './types.js';
+import type { FlightType, Simulator, AirportRegion } from './types.js';
 import { loadAircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
 import { selectRoute, NoRouteError } from './route-selector.js';
@@ -12,7 +12,7 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number } {
+function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; departureRegion?: AirportRegion } {
   const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
   const useRandomPayload = (document.querySelector('input[name="payload"]:checked') as HTMLInputElement).value === 'random';
@@ -21,7 +21,9 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; useRando
   const maxRaw = (document.getElementById('filter-max') as HTMLInputElement).value;
   const minBlockH = minRaw ? Number(minRaw) : undefined;
   const maxBlockH = maxRaw ? Number(maxRaw) : undefined;
-  return { flightType, simulator, useRandomPayload, scheduledOnly, minBlockH, maxBlockH };
+  const regionRaw = (document.getElementById('filter-region') as HTMLSelectElement).value;
+  const departureRegion = regionRaw ? (regionRaw as AirportRegion) : undefined;
+  return { flightType, simulator, useRandomPayload, scheduledOnly, minBlockH, maxBlockH, departureRegion };
 }
 
 let generating = false;
@@ -44,17 +46,21 @@ async function generate(): Promise<void> {
     renderLoading();
 
     try {
-      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH });
+      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, departureRegion: settings.departureRegion });
       const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
       const payload = generatePayload(route.aircraft, settings.flightType);
       const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
       renderFlight({ route, plan, payload, simbriefUrl });
     } catch (err) {
       if (err instanceof NoRouteError) {
-        const hasBlockFilter = settings.minBlockH !== undefined || settings.maxBlockH !== undefined;
-        const hint = hasBlockFilter
-          ? ' Try widening or clearing the block time filter.'
-          : settings.scheduledOnly ? ' Try switching Airports to All in Options.' : '';
+        const hints: string[] = [];
+        if (settings.minBlockH !== undefined || settings.maxBlockH !== undefined)
+          hints.push('widening the block time filter');
+        if (settings.scheduledOnly)
+          hints.push('switching Airports to All');
+        if (settings.departureRegion !== undefined)
+          hints.push('selecting a different or no departure region');
+        const hint = hints.length > 0 ? ` Try ${hints.join(', or ')} in Options.` : '';
         renderEmpty(`Could not generate a route.${hint} Please try again.`);
         console.error(err);
       } else {
@@ -97,3 +103,8 @@ if (savedMax) filterMaxEl.value = savedMax;
 
 filterMinEl.addEventListener('input', () => localStorage.setItem('disp-filter-min', filterMinEl.value));
 filterMaxEl.addEventListener('input', () => localStorage.setItem('disp-filter-max', filterMaxEl.value));
+
+const filterRegionEl = document.getElementById('filter-region') as HTMLSelectElement;
+const savedRegion = localStorage.getItem('disp-filter-region');
+if (savedRegion) filterRegionEl.value = savedRegion;
+filterRegionEl.addEventListener('change', () => localStorage.setItem('disp-filter-region', filterRegionEl.value));

@@ -212,3 +212,21 @@ test('pickRoute — route within block time window is found', () => {
   const route = pickRoute({ ...INPUT, minBlockH: 0.5, maxBlockH: 2 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]);
   assert.ok(route.distanceNm > 0);
 });
+
+// ── departure region filter ───────────────────────────────────────────────────
+
+test('pickRoute — departure scoped to provided pool', () => {
+  // NEAR_A is the only departure candidate; NEAR_B is destination-only
+  const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B], [NEAR_A]);
+  assert.equal(route.departure.icao, 'XAAA');
+  assert.equal(route.destination.icao, 'XBBB');
+});
+
+test('pickRoute — throws NoRouteError when departure scope has no runway-eligible airports', () => {
+  const tinyRunway = makeAirport('XTNY', 0, 0.5, { max_runway_m: 100 });
+  assert.throws(
+    () => pickRoute(INPUT, [makeAircraft({ min_runway_m: 2000 })], [makeAirline()], [NEAR_A, NEAR_B], [tinyRunway]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
