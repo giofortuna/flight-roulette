@@ -119,8 +119,8 @@ const stdPeriodRow = document.getElementById('std-period-row')!;
 
 function syncPeriodRow(): void {
   const mode = (document.querySelector('input[name="std-mode"]:checked') as HTMLInputElement).value;
-  if (mode === 'period') stdPeriodRow.removeAttribute('hidden');
-  else stdPeriodRow.setAttribute('hidden', '');
+  if (mode === 'period') stdPeriodRow.classList.remove('hidden');
+  else stdPeriodRow.classList.add('hidden');
 }
 
 document.querySelectorAll('input[name="std-mode"]').forEach(radio => {
