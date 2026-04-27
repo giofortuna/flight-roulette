@@ -81,6 +81,12 @@ test('buildSimbriefUrl — date param reflects UTC date and time of std_ms', () 
   assert.equal(params.get('date'), '27 Apr 2026 - 14:30');
 });
 
+test('buildSimbriefUrl — single-digit day is zero-padded', () => {
+  const plan = { ...PLAN, std_ms: Date.UTC(2026, 3, 5, 8, 0) }; // 2026-04-05 08:00 UTC
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, plan, PAYLOAD_PAX, { useRandomPayload: false }));
+  assert.equal(params.get('date'), '05 Apr 2026 - 08:00');
+});
+
 test('buildSimbriefUrl — date rolls back correctly when UTC is previous day', () => {
   // 2026-04-27 01:55 local (UTC+5) = 2026-04-26 20:55 UTC
   const plan = { ...PLAN, std_ms: Date.UTC(2026, 3, 26, 20, 55) };

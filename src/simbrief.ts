@@ -7,7 +7,7 @@ const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov
 // Format: "27 Apr 2026 - 08:13" (UTC date + UTC time); URLSearchParams encodes spaces as +
 function simbriefDateStr(stdMs: number): string {
   const d     = new Date(stdMs);
-  const day   = d.getUTCDate();
+  const day   = String(d.getUTCDate()).padStart(2, '0');
   const month = MONTHS[d.getUTCMonth()];
   const year  = d.getUTCFullYear();
   const h     = String(d.getUTCHours()).padStart(2, '0');

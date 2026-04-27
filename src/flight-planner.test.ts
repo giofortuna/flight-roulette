@@ -69,6 +69,9 @@ test('generateStd — random returns a 5-min boundary epoch', () => {
   for (let i = 0; i < 50; i++) assertValidStdMs(generateStd('random'), 'random');
 });
 
+// NOTE: this test only catches a setUTCHours regression in non-UTC environments.
+// In UTC (e.g. GitHub Actions default), setHours === setUTCHours so a revert would
+// still pass. There is no clean fix without timezone mocking.
 test('generateStd — random uses today\'s local date', () => {
   const now = new Date();
   for (let i = 0; i < 50; i++) {
