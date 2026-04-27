@@ -46,6 +46,19 @@ test('validate — throws when hub is not an array', () => {
   );
 });
 
+test('validate — throws on invalid iata format', () => {
+  assert.throws(() => validate([makeAirline({ iata: '--' })]),   /invalid entry/); // sentinel from data
+  assert.throws(() => validate([makeAirline({ iata: 'BAW' })]), /invalid entry/); // 3 chars
+  assert.throws(() => validate([makeAirline({ iata: 'ba' })]),  /invalid entry/); // lowercase
+  assert.throws(() => validate([makeAirline({ iata: 'B' })]),   /invalid entry/); // 1 char
+});
+
+test('validate — accepts valid iata values', () => {
+  assert.doesNotThrow(() => validate([makeAirline({ iata: '' })]));   // no IATA code
+  assert.doesNotThrow(() => validate([makeAirline({ iata: 'BA' })])); // 2 letters
+  assert.doesNotThrow(() => validate([makeAirline({ iata: '5X' })])); // digit + letter (UPS)
+});
+
 test('validate — throws when icao is not 3 uppercase letters', () => {
   assert.throws(() => validate([makeAirline({ icao: 'BA' })]),    /invalid entry/);
   assert.throws(() => validate([makeAirline({ icao: 'BAWA' })]),  /invalid entry/);

@@ -69,7 +69,7 @@ function makeAircraft(overrides: Partial<Aircraft> = {}): Aircraft {
     icao_type: 'B738', type_name: '737-800', airframe_name: 'Test 737',
     flight_type: 'passenger', simulator: ['msfs2020', 'msfs2024'],
     range_nm: 3000, min_runway_m: 2000,
-    cruise_ft: 35000, cruise_kts: 450, category: 'narrowbody',
+    cruise_kts: 450, category: 'narrowbody',
     max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '',
     ...overrides,
   };
@@ -186,5 +186,5 @@ test('pickRoute — routes beyond 80% utilisation buffer are excluded without re
 test('pickRoute — distanceNm is within 80% of range_nm under normal conditions', () => {
   const aircraft = makeAircraft({ range_nm: 3000 });
   const route = pickRoute(INPUT, [aircraft], [makeAirline()], [NEAR_A, NEAR_B]);
-  assert.ok(route.distanceNm <= aircraft.range_nm * 0.80 * 1.2); // within relaxed ceiling
+  assert.ok(route.distanceNm <= aircraft.range_nm * 0.80); // within strict ceiling
 });

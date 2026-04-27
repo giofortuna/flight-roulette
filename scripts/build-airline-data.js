@@ -338,7 +338,7 @@ async function main() {
   const skipped = { noIcao: 0, inactive: 0, noName: 0, unknownCountry: 0, duplicate: 0 };
 
   for (const row of rows) {
-    const icao = sanitize(row.icao)?.toUpperCase();
+    const icao = sanitize(row.icao).toUpperCase();
     if (!icao || !/^[A-Z]{3}$/.test(icao)) { skipped.noIcao++; continue; }
 
     if (row.active !== 'Y' && row.active !== 'Yes') { skipped.inactive++; continue; }

@@ -178,10 +178,12 @@ async function main() {
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
   console.log('\n── Build complete ──────────────────');
+  const ALL_KNOWN_REGIONS = [...new Set(Object.values(PREFIX_REGION))];
   let total = 0;
   let lowCount = false;
-  for (const [region, airports] of Object.entries(regions)) {
-    if (airports.length === 0) {
+  for (const region of ALL_KNOWN_REGIONS) {
+    const airports = regions[region];
+    if (!airports || airports.length === 0) {
       console.warn(`  ⚠ ${region}: no airports — skipping file`);
       lowCount = true;
       continue;

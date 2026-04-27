@@ -298,8 +298,6 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 /* ════════════════════════════════════════
    FLIGHT CARD — split-flap board style
 ════════════════════════════════════════ */
-.flight-card.is-loading .flap-char { opacity: 0.25; transition: opacity 0.2s; }
-
 .flight-card {
   background: var(--flap-bg);
   border: 1px solid #1e1e1e;
@@ -396,6 +394,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   max-width: 298px;
   overflow: hidden;
   white-space: nowrap;
+  transition: opacity 200ms ease;
 }
 
 .route-mid {
@@ -447,6 +446,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   font-size: 22px;
   letter-spacing: 0.06em;
   color: var(--flap-text);
+  transition: opacity 200ms ease;
 }
 
 .stat-sub {
@@ -456,6 +456,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   color: #6e6c64;
   margin-top: 5px;
   white-space: nowrap;
+  transition: opacity 200ms ease;
 }
 
 /* ── Card footer ── */
