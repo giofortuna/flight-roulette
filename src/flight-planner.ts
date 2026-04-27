@@ -6,7 +6,7 @@ export interface FlightPlan {
   distance_nm: number;
   block_time_min: number;
   flight_number: string;
-  std_utc: { hour: number; min: number };
+  std_ms: number; // UTC epoch ms; use new Date(std_ms) to get correct date + time
 }
 
 // Local-time minute ranges [start, exclusive_end) for each period, stepped to 5 min.
@@ -18,15 +18,14 @@ const PERIOD_MINUTES: Record<DeparturePeriod, [number, number]> = {
   night:     [22 * 60, 30 * 60],
 };
 
+const FIVE_MIN_MS = 5 * 60 * 1000;
+
 export function generateStd(
   mode: DepartureTimeMode,
   period?: DeparturePeriod,
-): { hour: number; min: number } {
+): number {
   if (mode === 'now+45') {
-    const fiveMin = 5 * 60 * 1000;
-    const roundedMs = Math.round((Date.now() + 45 * 60 * 1000) / fiveMin) * fiveMin;
-    const d = new Date(roundedMs);
-    return { hour: d.getUTCHours(), min: d.getUTCMinutes() };
+    return Math.round((Date.now() + 45 * 60 * 1000) / FIVE_MIN_MS) * FIVE_MIN_MS;
   }
 
   if (mode === 'period') {
@@ -35,14 +34,15 @@ export function generateStd(
     const localMin = start + Math.floor(Math.random() * slots) * 5;
     const d = new Date();
     d.setHours(Math.floor(localMin / 60) % 24, localMin % 60, 0, 0);
-    return { hour: d.getUTCHours(), min: d.getUTCMinutes() };
+    // If the chosen local time has already passed today, it belongs to tomorrow
+    if (d.getTime() < Date.now()) d.setDate(d.getDate() + 1);
+    return Math.round(d.getTime() / FIVE_MIN_MS) * FIVE_MIN_MS;
   }
 
-  // random
-  return {
-    hour: Math.floor(Math.random() * 24),
-    min:  Math.floor(Math.random() * 12) * 5,
-  };
+  // random: random UTC hour/min on today's UTC date
+  const d = new Date();
+  d.setUTCHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 12) * 5, 0, 0);
+  return d.getTime();
 }
 
 export function planFlight(
@@ -54,6 +54,6 @@ export function planFlight(
 ): FlightPlan {
   const block_time_min = Math.round((distanceNm / aircraft.cruise_kts) * 60 + 30);
   const flight_number = airline.icao + String(100 + Math.floor(Math.random() * 900));
-  const std_utc = generateStd(stdMode, stdPeriod);
-  return { distance_nm: distanceNm, block_time_min, flight_number, std_utc };
+  const std_ms = generateStd(stdMode, stdPeriod);
+  return { distance_nm: distanceNm, block_time_min, flight_number, std_ms };
 }

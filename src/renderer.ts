@@ -228,9 +228,8 @@ export function renderLoading(): void {
   el('status-msg').classList.add('hidden');
 }
 
-function stdLocalHM(utcHour: number, utcMin: number): { h: string; m: string } {
-  const d = new Date();
-  d.setUTCHours(utcHour, utcMin, 0, 0);
+function stdLocalHM(stdMs: number): { h: string; m: string } {
+  const d = new Date(stdMs);
   return {
     h: String(d.getHours()).padStart(2, '0'),
     m: String(d.getMinutes()).padStart(2, '0'),
@@ -244,7 +243,7 @@ export function renderFlight(flight: GeneratedFlight): void {
   const blkH = Math.floor(plan.block_time_min / 60);
   const blkM = plan.block_time_min % 60;
   const blkStr = `${String(blkH).padStart(2, '0')}+${String(blkM).padStart(2, '0')}`;
-  const { h: stdH, m: stdM } = stdLocalHM(plan.std_utc.hour, plan.std_utc.min);
+  const { h: stdH, m: stdM } = stdLocalHM(plan.std_ms);
 
   // Field resolution order (f(n) = n * FIELD_MS):
   // 0: fltnum + std, 1: airline, 2: dep-icao + dep-city, 3: dest-icao + dest-city,

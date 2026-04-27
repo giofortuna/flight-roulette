@@ -52,63 +52,54 @@ test('planFlight — flight_number suffix is a 3-digit number in [100, 999]', ()
   }
 });
 
-test('planFlight — std_utc has valid hour and min', () => {
+test('planFlight — std_ms is a UTC epoch timestamp on a 5-min boundary', () => {
   const plan = planFlight(AIRLINE, AIRCRAFT, DISTANCE_NM);
-  assert.ok(plan.std_utc.hour >= 0 && plan.std_utc.hour <= 23);
-  assert.ok(plan.std_utc.min  >= 0 && plan.std_utc.min  <= 55);
-  assert.equal(plan.std_utc.min % 5, 0);
+  assert.ok(typeof plan.std_ms === 'number' && plan.std_ms > 0);
+  assert.equal(plan.std_ms % (5 * 60 * 1000), 0);
 });
 
 // ── generateStd ───────────────────────────────────────────────────────────────
 
-function assertValidStd({ hour, min }: { hour: number; min: number }, label: string): void {
-  assert.ok(hour >= 0 && hour <= 23, `${label}: hour ${hour} out of range`);
-  assert.ok(min  >= 0 && min  <= 55, `${label}: min ${min} out of range`);
-  assert.equal(min % 5, 0,           `${label}: min ${min} not a 5-min step`);
+function assertValidStdMs(ms: number, label: string): void {
+  assert.ok(typeof ms === 'number' && ms > 0, `${label}: not a positive number`);
+  assert.equal(ms % (5 * 60 * 1000), 0, `${label}: not on a 5-min boundary`);
 }
 
-test('generateStd — random produces valid UTC hour and 5-min step', () => {
-  for (let i = 0; i < 50; i++) assertValidStd(generateStd('random'), 'random');
+test('generateStd — random returns a 5-min boundary epoch', () => {
+  for (let i = 0; i < 50; i++) assertValidStdMs(generateStd('random'), 'random');
 });
 
-test('generateStd — now+45 produces valid UTC hour and 5-min step', () => {
-  assertValidStd(generateStd('now+45'), 'now+45');
+test('generateStd — now+45 returns a 5-min boundary epoch', () => {
+  assertValidStdMs(generateStd('now+45'), 'now+45');
 });
 
 test('generateStd — now+45 is within 10 minutes of expected UTC time', () => {
   const fiveMin = 5 * 60 * 1000;
   const before = Date.now();
-  const result = generateStd('now+45');
-  const after  = Date.now();
-  const resultTotalMin = result.hour * 60 + result.min;
-  const expectedMs = Math.round((before + 45 * 60 * 1000) / fiveMin) * fiveMin;
-  const expectedTotalMin = Math.floor(expectedMs / 60000) % (24 * 60);
-  // Allow ±10 min to account for rounding and midnight wrap comparisons
-  const diff = Math.abs(resultTotalMin - expectedTotalMin);
-  assert.ok(diff <= 10 || diff >= 24 * 60 - 10, `expected ~${expectedTotalMin} min, got ${resultTotalMin}`);
+  const ms = generateStd('now+45');
+  const expected = Math.round((before + 45 * 60 * 1000) / fiveMin) * fiveMin;
+  assert.ok(Math.abs(ms - expected) <= fiveMin, `expected ~${expected}, got ${ms}`);
 });
 
 const PERIOD_LOCAL_RANGES: Record<DeparturePeriod, [number, number]> = {
   morning:   [6 * 60,  12 * 60],
   afternoon: [12 * 60, 18 * 60],
   evening:   [18 * 60, 22 * 60],
-  night:     [22 * 60, 30 * 60], // 30*60 means wrap past midnight to 06:00
+  night:     [22 * 60, 30 * 60], // 30*60 wraps past midnight to 06:00
 };
 
 test('generateStd — period mode returns time within the correct local window', () => {
   const periods: DeparturePeriod[] = ['morning', 'afternoon', 'evening', 'night'];
   for (const period of periods) {
     for (let i = 0; i < 30; i++) {
-      const std = generateStd('period', period);
-      assertValidStd(std, `period:${period}`);
-      // Convert UTC result back to local minutes to verify the window
-      const d = new Date();
-      d.setUTCHours(std.hour, std.min, 0, 0);
+      const ms = generateStd('period', period);
+      assertValidStdMs(ms, `period:${period}`);
+      const d = new Date(ms);
       const localMin = d.getHours() * 60 + d.getMinutes();
       const [start, end] = PERIOD_LOCAL_RANGES[period];
       const inRange = end <= 24 * 60
         ? localMin >= start && localMin < end
-        : localMin >= start || localMin < end - 24 * 60; // night wraps midnight
+        : localMin >= start || localMin < end - 24 * 60;
       assert.ok(inRange, `period:${period} — local ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} outside window`);
     }
   }
@@ -116,9 +107,7 @@ test('generateStd — period mode returns time within the correct local window',
 
 test('generateStd — period mode defaults to morning when period is undefined', () => {
   for (let i = 0; i < 20; i++) {
-    const std = generateStd('period');
-    const d = new Date();
-    d.setUTCHours(std.hour, std.min, 0, 0);
+    const d = new Date(generateStd('period'));
     const localMin = d.getHours() * 60 + d.getMinutes();
     assert.ok(localMin >= 6 * 60 && localMin < 12 * 60,
       `expected morning, got local ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`);

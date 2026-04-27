@@ -5,13 +5,13 @@ import type { Payload } from './payload-gen.js';
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 // Format: "27 Apr 2026 - 08:13" (UTC date + UTC time); URLSearchParams encodes spaces as +
-function simbriefDateStr(std: { hour: number; min: number }): string {
-  const d = new Date();
+function simbriefDateStr(stdMs: number): string {
+  const d     = new Date(stdMs);
   const day   = d.getUTCDate();
   const month = MONTHS[d.getUTCMonth()];
   const year  = d.getUTCFullYear();
-  const h     = String(std.hour).padStart(2, '0');
-  const m     = String(std.min).padStart(2, '0');
+  const h     = String(d.getUTCHours()).padStart(2, '0');
+  const m     = String(d.getUTCMinutes()).padStart(2, '0');
   return `${day} ${month} ${year} - ${h}:${m}`;
 }
 
@@ -34,7 +34,7 @@ export function buildSimbriefUrl(
   });
   if (route.airline.simbrief_id) params.set('airline', route.airline.simbrief_id);
 
-  params.set('date', simbriefDateStr(plan.std_utc));
+  params.set('date', simbriefDateStr(plan.std_ms));
 
   if (options.useRandomPayload) {
     if (payload.pax !== null) params.set('pax', String(payload.pax));
