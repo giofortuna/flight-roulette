@@ -37,10 +37,10 @@ export function generateStd(
     return Math.round(d.getTime() / FIVE_MIN_MS) * FIVE_MIN_MS;
   }
 
-  // random: random UTC hour/min on today's UTC date
+  // random: random local hour/min on today's local date
   const d = new Date();
-  d.setUTCHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 12) * 5, 0, 0);
-  return d.getTime();
+  d.setHours(Math.floor(Math.random() * 24), Math.floor(Math.random() * 12) * 5, 0, 0);
+  return Math.round(d.getTime() / FIVE_MIN_MS) * FIVE_MIN_MS;
 }
 
 export function planFlight(
