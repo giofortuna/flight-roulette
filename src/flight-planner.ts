@@ -34,6 +34,9 @@ export function generateStd(
     const localMin = start + Math.floor(Math.random() * slots) * 5;
     const d = new Date();
     d.setHours(Math.floor(localMin / 60) % 24, localMin % 60, 0, 0);
+    // Advance to tomorrow only when the slot genuinely passed (> 5-min rounding window).
+    // A slot that's a few ms in the past is a rounding artifact, not yesterday's flight.
+    if (d.getTime() < Date.now() - FIVE_MIN_MS) d.setDate(d.getDate() + 1);
     return Math.round(d.getTime() / FIVE_MIN_MS) * FIVE_MIN_MS;
   }
 

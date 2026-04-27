@@ -69,6 +69,16 @@ test('generateStd — random returns a 5-min boundary epoch', () => {
   for (let i = 0; i < 50; i++) assertValidStdMs(generateStd('random'), 'random');
 });
 
+test('generateStd — random uses today\'s local date', () => {
+  const now = new Date();
+  for (let i = 0; i < 50; i++) {
+    const d = new Date(generateStd('random'));
+    assert.equal(d.getFullYear(), now.getFullYear(), 'year mismatch');
+    assert.equal(d.getMonth(),    now.getMonth(),    'month mismatch');
+    assert.equal(d.getDate(),     now.getDate(),     'day mismatch');
+  }
+});
+
 test('generateStd — now+45 returns a 5-min boundary epoch', () => {
   assertValidStdMs(generateStd('now+45'), 'now+45');
 });
@@ -87,6 +97,19 @@ const PERIOD_LOCAL_RANGES: Record<DeparturePeriod, [number, number]> = {
   evening:   [18 * 60, 22 * 60],
   night:     [22 * 60, 30 * 60], // 30*60 wraps past midnight to 06:00
 };
+
+test('generateStd — period mode slot is never more than 5 min in the past', () => {
+  const periods: DeparturePeriod[] = ['morning', 'afternoon', 'evening', 'night'];
+  const fiveMinMs = 5 * 60 * 1000;
+  for (const period of periods) {
+    for (let i = 0; i < 10; i++) {
+      const before = Date.now();
+      const ms = generateStd('period', period);
+      assert.ok(ms >= before - fiveMinMs,
+        `period:${period} — slot ${new Date(ms).toISOString()} is more than 5 min before generation`);
+    }
+  }
+});
 
 test('generateStd — period mode returns time within the correct local window', () => {
   const periods: DeparturePeriod[] = ['morning', 'afternoon', 'evening', 'night'];
