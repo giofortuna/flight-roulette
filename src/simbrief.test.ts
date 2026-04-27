@@ -13,7 +13,7 @@ const ROUTE: SelectedRoute = {
   distanceNm: 200,
 };
 
-const PLAN: FlightPlan     = { distance_nm: 200, block_time_min: 57, flight_number: 'BAW442' };
+const PLAN: FlightPlan     = { distance_nm: 200, block_time_min: 57, flight_number: 'BAW442', std_utc: { hour: 14, min: 30 } };
 const PAYLOAD_PAX: Payload   = { pax: 130,  cargo_kg: 5000  };
 const PAYLOAD_CARGO: Payload = { pax: null, cargo_kg: 18000 };
 
@@ -71,4 +71,17 @@ test('buildSimbriefUrl — airline param omitted when simbrief_id is empty', () 
   const routeNoId = { ...ROUTE, airline: { ...ROUTE.airline, simbrief_id: '' } };
   const { params } = parseUrl(buildSimbriefUrl(routeNoId, PLAN, PAYLOAD_PAX, { useRandomPayload: false }));
   assert.equal(params.get('airline'), null);
+});
+
+test('buildSimbriefUrl — dephour and depmin passed as UTC integers', () => {
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, PLAN, PAYLOAD_PAX, { useRandomPayload: false }));
+  assert.equal(params.get('dephour'), '14');
+  assert.equal(params.get('depmin'),  '30');
+});
+
+test('buildSimbriefUrl — dephour 0 is passed as "0", not omitted', () => {
+  const plan = { ...PLAN, std_utc: { hour: 0, min: 0 } };
+  const { params } = parseUrl(buildSimbriefUrl(ROUTE, plan, PAYLOAD_PAX, { useRandomPayload: false }));
+  assert.equal(params.get('dephour'), '0');
+  assert.equal(params.get('depmin'),  '0');
 });

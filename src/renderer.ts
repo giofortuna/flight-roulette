@@ -102,11 +102,11 @@ function numFinalChars(numStr: string, numWidth: number): string[] {
 
 // --- Static helpers (used for blank/empty states) ---
 
-function setBlankTiles(target: HTMLElement, count: number, size: FlapSize): void {
+function setBlankTiles(target: HTMLElement, count: number, size: FlapSize, amber = false): void {
   target.innerHTML = '';
   for (let i = 0; i < count; i++) {
     const span = document.createElement('span');
-    span.className = `flap-char flap-${size}`;
+    span.className = `flap-char flap-${size}${amber ? ' flap-amber' : ''}`;
     target.appendChild(span);
   }
 }
@@ -155,7 +155,7 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
 //   CARGO_WIDTH=7 → max 999,999 kg   — enforced by aircraft-db validator
 
 const FLTNUM_TILES  = 6;
-const STD_WIDTH     = 4;
+const STD_TILES     = 2; // tiles per half (H and M rendered separately)
 const ICAO_TILES    = 4;
 const CITY_TILES    = 12;
 const DIST_WIDTH    = 6;
@@ -166,7 +166,8 @@ const AIRLINE_TILES = 31;
 
 function blankFlaps(): void {
   setBlankTiles(el('card-fltnum'),    FLTNUM_TILES,  'xl');
-  setBlankTiles(el('card-std'),       STD_WIDTH,     'xl');
+  setBlankTiles(el('card-std-h'),     STD_TILES,     'xl', true);
+  setBlankTiles(el('card-std-m'),     STD_TILES,     'xl', true);
   setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
   setBlankTiles(el('card-dep-icao'),  ICAO_TILES,    'xl');
   setFlapsMin(el('card-dep-city'),   '', 'lg', CITY_TILES);
@@ -208,8 +209,9 @@ export function renderLoading(): void {
   cancelAnim();
   blankText();
 
-  // card-std is hidden (awaiting issue #34) — skip cycling to avoid perpetual intervals
   cycleField(el('card-fltnum'),    FLTNUM_TILES,  'xl');
+  cycleField(el('card-std-h'),     STD_TILES,     'xl', true, FLIP_CHARS_NUM);
+  cycleField(el('card-std-m'),     STD_TILES,     'xl', true, FLIP_CHARS_NUM);
   cycleField(el('card-airline'),   AIRLINE_TILES, 'lg');
   cycleField(el('card-dep-icao'),  ICAO_TILES,   'xl');
   cycleField(el('card-dep-city'),  CITY_TILES,   'lg');
@@ -226,6 +228,15 @@ export function renderLoading(): void {
   el('status-msg').classList.add('hidden');
 }
 
+function stdLocalHM(utcHour: number, utcMin: number): { h: string; m: string } {
+  const d = new Date();
+  d.setUTCHours(utcHour, utcMin, 0, 0);
+  return {
+    h: String(d.getHours()).padStart(2, '0'),
+    m: String(d.getMinutes()).padStart(2, '0'),
+  };
+}
+
 export function renderFlight(flight: GeneratedFlight): void {
   const { route, plan, payload } = flight;
 
@@ -233,15 +244,18 @@ export function renderFlight(flight: GeneratedFlight): void {
   const blkH = Math.floor(plan.block_time_min / 60);
   const blkM = plan.block_time_min % 60;
   const blkStr = `${String(blkH).padStart(2, '0')}+${String(blkM).padStart(2, '0')}`;
+  const { h: stdH, m: stdM } = stdLocalHM(plan.std_utc.hour, plan.std_utc.min);
 
   // Field resolution order (f(n) = n * FIELD_MS):
-  // 0: fltnum, 1: airline, 2: dep-icao + dep-city, 3: dest-icao + dest-city,
+  // 0: fltnum + std, 1: airline, 2: dep-icao + dep-city, 3: dest-icao + dest-city,
   // 4: distance + blocktime, 5: pax, 6: cargo
   // (aircraft text is revealed immediately via revealText, not staggered)
 
   const f = (n: number) => n * FIELD_MS;
 
   resolveField(el('card-fltnum'),    minFinalChars(plan.flight_number, FLTNUM_TILES),   f(0));
+  resolveField(el('card-std-h'),     [...stdH],                                         f(0));
+  resolveField(el('card-std-m'),     [...stdM],                                         f(0));
   resolveField(el('card-airline'),   minFinalChars(route.airline.name, AIRLINE_TILES),  f(1));
 
   resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, ICAO_TILES),  f(2));

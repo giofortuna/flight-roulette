@@ -21,6 +21,10 @@ export function buildSimbriefUrl(
   });
   if (route.airline.simbrief_id) params.set('airline', route.airline.simbrief_id);
 
+  // TODO: verify dephour/depmin parameter names against SimBrief documentation
+  params.set('dephour', String(plan.std_utc.hour));
+  params.set('depmin',  String(plan.std_utc.min));
+
   if (options.useRandomPayload) {
     if (payload.pax !== null) params.set('pax', String(payload.pax));
     params.set('cargo', String(payload.cargo_kg / 1000));

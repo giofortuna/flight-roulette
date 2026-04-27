@@ -437,6 +437,8 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .card-header-row2 { /* airline — full width, second line */ }
 
+.std-time { display: flex; align-items: center; gap: 2px; justify-content: flex-end; }
+
 /* ── Route section ── */
 .card-route {
   display: grid;
