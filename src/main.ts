@@ -1,4 +1,4 @@
-import type { FlightType, Simulator, AirportRegion } from './types.js';
+import type { FlightType, Simulator, AirportRegion, DepartureTimeMode, DeparturePeriod } from './types.js';
 import { loadAircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
 import { selectRoute, NoRouteError } from './route-selector.js';
@@ -12,7 +12,7 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; departureRegion?: AirportRegion } {
+function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
   const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
   const useRandomPayload = (document.querySelector('input[name="payload"]:checked') as HTMLInputElement).value === 'random';
@@ -23,7 +23,11 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; useRando
   const maxBlockH = maxRaw ? Number(maxRaw) : undefined;
   const regionRaw = (document.getElementById('filter-region') as HTMLSelectElement).value;
   const departureRegion = regionRaw ? (regionRaw as AirportRegion) : undefined;
-  return { flightType, simulator, useRandomPayload, scheduledOnly, minBlockH, maxBlockH, departureRegion };
+  const stdMode = (document.querySelector('input[name="std-mode"]:checked') as HTMLInputElement).value as DepartureTimeMode;
+  const stdPeriod = stdMode === 'period'
+    ? (document.querySelector('input[name="std-period"]:checked') as HTMLInputElement).value as DeparturePeriod
+    : undefined;
+  return { flightType, simulator, useRandomPayload, scheduledOnly, minBlockH, maxBlockH, departureRegion, stdMode, stdPeriod };
 }
 
 let generating = false;
@@ -47,7 +51,7 @@ async function generate(): Promise<void> {
 
     try {
       const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, departureRegion: settings.departureRegion });
-      const plan    = planFlight(route.airline, route.aircraft, route.distanceNm);
+      const plan    = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
       const payload = generatePayload(route.aircraft, settings.flightType);
       const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
       renderFlight({ route, plan, payload, simbriefUrl });
@@ -108,3 +112,35 @@ const filterRegionEl = document.getElementById('filter-region') as HTMLSelectEle
 const savedRegion = localStorage.getItem('disp-filter-region');
 if (savedRegion) filterRegionEl.value = savedRegion;
 filterRegionEl.addEventListener('change', () => localStorage.setItem('disp-filter-region', filterRegionEl.value));
+
+// ── Departure time — period row toggle + persist ───────────────────────────────
+
+const stdPeriodRow = document.getElementById('std-period-row')!;
+
+function syncPeriodRow(): void {
+  const mode = (document.querySelector('input[name="std-mode"]:checked') as HTMLInputElement).value;
+  if (mode === 'period') stdPeriodRow.classList.remove('hidden');
+  else stdPeriodRow.classList.add('hidden');
+}
+
+document.querySelectorAll('input[name="std-mode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    syncPeriodRow();
+    localStorage.setItem('disp-std-mode', (radio as HTMLInputElement).value);
+  });
+});
+
+document.querySelectorAll('input[name="std-period"]').forEach(radio => {
+  radio.addEventListener('change', () => localStorage.setItem('disp-std-period', (radio as HTMLInputElement).value));
+});
+
+const savedStdMode   = localStorage.getItem('disp-std-mode');
+const savedStdPeriod = localStorage.getItem('disp-std-period');
+if (savedStdMode) {
+  const el = document.getElementById(`std-${savedStdMode}`) as HTMLInputElement | null;
+  if (el) { el.checked = true; syncPeriodRow(); }
+}
+if (savedStdPeriod) {
+  const el = document.getElementById(`per-${savedStdPeriod}`) as HTMLInputElement | null;
+  if (el) el.checked = true;
+}
