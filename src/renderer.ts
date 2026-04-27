@@ -260,8 +260,8 @@ export function renderFlight(flight: GeneratedFlight): void {
   revealText(el('card-aircraft-type'),  route.aircraft.type_name);
   revealText(el('card-aircraft-frame'), route.aircraft.airframe_name);
 
-  resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? 0), PAX_WIDTH), f(5));
-  revealText(el('card-pax-max'), `/ ${route.aircraft.max_pax} MAX`);
+  resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? ''), PAX_WIDTH), f(5));
+  revealText(el('card-pax-max'), payload.pax !== null ? `/ ${route.aircraft.max_pax} MAX` : '');
 
   resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(6));
   revealText(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);

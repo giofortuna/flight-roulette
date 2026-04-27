@@ -25,7 +25,7 @@ export function validate(data: unknown): Airline[] {
   for (const item of data) {
     if (typeof item.icao !== 'string'
      || !/^[A-Z]{3}$/.test(item.icao)
-     || typeof item.iata !== 'string'
+     || typeof item.iata !== 'string' || (item.iata !== '' && !/^[A-Z0-9]{2}$/.test(item.iata))
      || typeof item.name !== 'string'
      || typeof item.callsign !== 'string'
      || typeof item.country !== 'string'
