@@ -301,6 +301,32 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   flex-shrink: 0;
 }
 
+/* Departure region select */
+.region-select {
+  flex: 1;
+  background: var(--flap-tile);
+  border: 1px solid #0c0c0c;
+  color: var(--amber);
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 6px;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.region-select:focus { border-color: var(--amber-dim); }
+
+.region-select option {
+  background: #1a1a1a;
+  color: var(--amber);
+  text-transform: uppercase;
+}
+
 /* Generate button */
 .btn-generate {
   background: var(--amber);
