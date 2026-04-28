@@ -14,7 +14,7 @@ No test runner or linter is configured yet. TypeScript strict mode is the primar
 
 ## Architecture
 
-**DISPATCH** is a pure client-side random flight generator for flight simulator pilots. No backend, no auth. Hosted on GitHub Pages.
+**Flight Roulette** is a pure client-side random flight generator for flight simulator pilots. No backend, no auth. Hosted on GitHub Pages.
 
 ### How a flight is generated
 
