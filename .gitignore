@@ -1,6 +1,8 @@
 node_modules/
 dist/
+dist-test/
 data/raw/
+.commit-msg.txt
 
 npm-debug.log*
 yarn-debug.log*
