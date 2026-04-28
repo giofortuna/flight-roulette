@@ -1,4 +1,4 @@
-# DISPATCH — Random Flight Generator
+# Flight Roulette — Random Flight Generator
 
 A random flight assignment tool for flight simulator pilots. Pick your simulator, press Generate, and get a realistic route dispatched directly to SimBrief.
 
