@@ -747,6 +747,38 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   border-color: var(--amber-dim);
 }
 
+/* ── Re-roll buttons ── */
+.label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 7px;
+}
+
+.label-row .flap-label {
+  margin-bottom: 0;
+}
+
+.label-row-right {
+  justify-content: flex-end;
+}
+
+.btn-reroll {
+  background: none;
+  border: none;
+  color: var(--flap-label);
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.12s;
+  font-family: 'Share Tech Mono', monospace;
+}
+
+.btn-reroll:hover {
+  color: var(--amber);
+}
+
 /* ── Animations ── */
 @keyframes flicker {
   0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
