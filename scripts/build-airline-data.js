@@ -270,6 +270,14 @@ function sanitize(val) {
   return val.trim();
 }
 
+function normalizeIata(raw, icao) {
+  const v = sanitize(raw).toUpperCase();
+  if (v === '') return '';
+  if (/^[A-Z0-9]{2}$/.test(v)) return v;
+  console.warn(`  WARN [${icao}] invalid IATA '${v}' — cleared`);
+  return '';
+}
+
 // Cargo-only carriers whose names don't contain 'cargo'/'freight'/'freighter'.
 // Checked against OpenFlights airlines.dat — extend as new carriers are added.
 const CARGO_ICAOS = new Set([
@@ -356,7 +364,7 @@ async function main() {
 
     airlines.set(icao, {
       icao,
-      iata:        sanitize(row.iata),
+      iata:        normalizeIata(row.iata, icao),
       name,
       callsign:    sanitize(row.callsign),
       country,
