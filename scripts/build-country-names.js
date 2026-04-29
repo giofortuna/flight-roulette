@@ -2,28 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { fileURLToPath } from 'url';
+import { parseCSVLine } from './csv-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CSV  = path.join(__dirname, '..', 'data', 'raw', 'countries.csv');
 const OUT  = path.join(__dirname, '..', 'src', 'country-names.ts');
 
-function parseCSVLine(line) {
-  const fields = [];
-  let field = '';
-  let inQuote = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuote && line[i + 1] === '"') { field += '"'; i++; continue; }
-      inQuote = !inQuote;
-      continue;
-    }
-    if (ch === ',' && !inQuote) { fields.push(field); field = ''; continue; }
-    field += ch;
-  }
-  fields.push(field);
-  return fields;
-}
 
 async function main() {
   if (!fs.existsSync(CSV)) {

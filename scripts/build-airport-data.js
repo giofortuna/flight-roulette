@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { fileURLToPath } from 'url';
+import { parseCSVLine } from './csv-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RAW_DIR  = path.join(__dirname, '..', 'data', 'raw');
@@ -41,26 +42,6 @@ const HARD_SURFACE_PREFIXES = ['ASP', 'CON', 'BIT', 'BRI', 'MAC', 'HLA'];
 
 const MIN_AIRPORT_COUNT = 200; // warn + exit non-zero if any region falls below this
 
-// ── CSV parser ───────────────────────────────────────────────────────────────
-
-export function parseCSVLine(line) {
-  const fields = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(current); current = '';
-    } else {
-      current += ch;
-    }
-  }
-  fields.push(current);
-  return fields;
-}
 
 async function readCSV(filePath) {
   const rl = readline.createInterface({ input: fs.createReadStream(filePath), crlfDelay: Infinity });
