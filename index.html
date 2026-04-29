@@ -150,7 +150,10 @@
             </div>
           </div>
           <div class="card-header-row2">
-            <div class="flap-label">Airline</div>
+            <div class="label-row">
+              <div class="flap-label">Airline</div>
+              <button class="btn-reroll hidden" id="btn-reroll-airline" title="Re-roll airline">↺</button>
+            </div>
             <div class="flap-row" id="card-airline"></div>
           </div>
         </div>
@@ -159,7 +162,10 @@
         <div class="card-section route-section">
           <div class="card-route">
             <div class="apt">
-              <div class="flap-label">From</div>
+              <div class="label-row">
+                <div class="flap-label">From</div>
+                <button class="btn-reroll hidden" id="btn-reroll-dep" title="Re-roll departure">↺</button>
+              </div>
               <div class="flap-row" id="card-dep-icao"></div>
               <div class="flap-row" id="card-dep-city"></div>
               <div class="apt-sub" id="card-dep-name"></div>
@@ -187,7 +193,10 @@
             </div>
 
             <div class="apt right">
-              <div class="flap-label" style="text-align:right;">To</div>
+              <div class="label-row label-row-right">
+                <button class="btn-reroll hidden" id="btn-reroll-dest" title="Re-roll destination">↺</button>
+                <div class="flap-label">To</div>
+              </div>
               <div class="flap-row" id="card-dest-icao"></div>
               <div class="flap-row" id="card-dest-city"></div>
               <div class="apt-sub" id="card-dest-name"></div>
@@ -199,7 +208,10 @@
         <!-- Stats: aircraft / pax / cargo -->
         <div class="card-stats">
           <div class="stat-cell">
-            <div class="flap-label">Aircraft</div>
+            <div class="label-row">
+              <div class="flap-label">Aircraft</div>
+              <button class="btn-reroll hidden" id="btn-reroll-aircraft" title="Re-roll aircraft">↺</button>
+            </div>
             <div class="aircraft-type" id="card-aircraft-type"></div>
             <div class="stat-sub" id="card-aircraft-frame"></div>
           </div>

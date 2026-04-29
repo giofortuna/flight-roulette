@@ -44,14 +44,71 @@ export function haversineNm(aLat: number, aLon: number, bLat: number, bLon: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function pickRandom<T>(arr: [T, ...T[]]): T {
+const MAX_DEPARTURE_ATTEMPTS = 10;
+export const RANGE_UTILISATION = 0.80; // leave headroom for airways routing, winds, and fuel reserves
+export const RANGE_RELAXATION  = 1.2;
+const MIN_DISTANCE_NM   = 50;  // discard adjacent-airport hops that produce nonsense flight plans
+
+export function pickRandom<T>(arr: [T, ...T[]]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-const MAX_DEPARTURE_ATTEMPTS = 10;
-const RANGE_UTILISATION = 0.80; // leave headroom for airways routing, winds, and fuel reserves
-const RANGE_RELAXATION  = 1.2;
-const MIN_DISTANCE_NM   = 50;  // discard adjacent-airport hops that produce nonsense flight plans
+export function findDestinationFor(
+  departure: Airport,
+  aircraft: Aircraft,
+  destPool: Airport[],
+  minBlockH?: number,
+  maxBlockH?: number,
+): { destination: Airport; distanceNm: number } | null {
+  const eligible = filterByRunway(destPool, aircraft.min_runway_m);
+  for (let relaxed = 0; relaxed <= 1; relaxed++) {
+    const rangeNm = aircraft.range_nm * RANGE_UTILISATION * (relaxed ? RANGE_RELAXATION : 1);
+    const candidates = eligible
+      .filter(a => a.icao !== departure.icao)
+      .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
+      .filter(({ distNm }) => {
+        if (distNm < MIN_DISTANCE_NM || distNm > rangeNm) return false;
+        if (minBlockH !== undefined || maxBlockH !== undefined) {
+          const blockH = distNm / aircraft.cruise_kts + 0.5;
+          if (minBlockH !== undefined && blockH < minBlockH) return false;
+          if (maxBlockH !== undefined && blockH > maxBlockH) return false;
+        }
+        return true;
+      });
+    if (candidates.length > 0) {
+      type C = (typeof candidates)[number];
+      const { airport: destination, distNm } = pickRandom(candidates as [C, ...C[]]);
+      return { destination, distanceNm: Math.round(distNm) };
+    }
+  }
+  return null;
+}
+
+export function findDepartureForDest(
+  destination: Airport,
+  aircraft: Aircraft,
+  depPool: Airport[],
+  minBlockH?: number,
+  maxBlockH?: number,
+): { departure: Airport; distanceNm: number } | null {
+  const maxRange = aircraft.range_nm * RANGE_UTILISATION * RANGE_RELAXATION;
+  const candidates = filterByRunway(depPool, aircraft.min_runway_m)
+    .filter(a => a.icao !== destination.icao)
+    .map(a => ({ airport: a, distNm: haversineNm(a.lat, a.lon, destination.lat, destination.lon) }))
+    .filter(({ distNm }) => {
+      if (distNm < MIN_DISTANCE_NM || distNm > maxRange) return false;
+      if (minBlockH !== undefined || maxBlockH !== undefined) {
+        const blockH = distNm / aircraft.cruise_kts + 0.5;
+        if (minBlockH !== undefined && blockH < minBlockH) return false;
+        if (maxBlockH !== undefined && blockH > maxBlockH) return false;
+      }
+      return true;
+    });
+  if (candidates.length === 0) return null;
+  type C = (typeof candidates)[number];
+  const { airport: departure, distNm } = pickRandom(candidates as [C, ...C[]]);
+  return { departure, distanceNm: Math.round(distNm) };
+}
 
 export function pickRoute(
   input: SelectionInput,

@@ -1,4 +1,4 @@
-import type { SelectedRoute } from './route-selector.js';
+import type { SelectedRoute, Airport, Aircraft } from './route-selector.js';
 import type { FlightPlan } from './flight-planner.js';
 import type { Payload } from './payload-gen.js';
 import { COUNTRY_NAMES } from './country-names.js';
@@ -100,6 +100,29 @@ function numFinalChars(numStr: string, numWidth: number): string[] {
   return [...Array<string>(pad).fill(''), ...[...s]];
 }
 
+// --- Dispatch button helpers ---
+
+function fmtBlk(blockTimeMin: number): string {
+  const h = Math.floor(blockTimeMin / 60);
+  const m = blockTimeMin % 60;
+  return `${String(h).padStart(2, '0')}+${String(m).padStart(2, '0')}`;
+}
+
+function disableDispatch(): void {
+  el('btn-dispatch').removeAttribute('href');
+  el('btn-dispatch').classList.add('is-disabled');
+  el('btn-dispatch').setAttribute('aria-disabled', 'true');
+}
+
+function scheduleDispatchEnable(url: string, delay: number): void {
+  const t = setTimeout(() => {
+    (el('btn-dispatch') as HTMLAnchorElement).href = url;
+    el('btn-dispatch').classList.remove('is-disabled');
+    el('btn-dispatch').removeAttribute('aria-disabled');
+  }, delay);
+  _pending.push(t);
+}
+
 // --- Static helpers (used for blank/empty states) ---
 
 function setBlankTiles(target: HTMLElement, count: number, size: FlapSize, amber = false): void {
@@ -199,9 +222,7 @@ export function renderBlank(): void {
   cancelAnim();
   blankFlaps();
   blankText();
-  el('btn-dispatch').removeAttribute('href');
-  el('btn-dispatch').classList.add('is-disabled');
-  el('btn-dispatch').setAttribute('aria-disabled', 'true');
+  disableDispatch();
   el('status-msg').classList.add('hidden');
 }
 
@@ -222,9 +243,7 @@ export function renderLoading(): void {
   cycleField(el('card-pax'),       PAX_WIDTH,    'lg', false, FLIP_CHARS_NUM);
   cycleField(el('card-cargo'),     CARGO_WIDTH,  'lg', false, FLIP_CHARS_NUM);
 
-  el('btn-dispatch').removeAttribute('href');
-  el('btn-dispatch').classList.add('is-disabled');
-  el('btn-dispatch').setAttribute('aria-disabled', 'true');
+  disableDispatch();
   el('status-msg').classList.add('hidden');
 }
 
@@ -240,9 +259,7 @@ export function renderFlight(flight: GeneratedFlight): void {
   const { route, plan, payload } = flight;
 
   const distStr = plan.distance_nm.toLocaleString('en-US');
-  const blkH = Math.floor(plan.block_time_min / 60);
-  const blkM = plan.block_time_min % 60;
-  const blkStr = `${String(blkH).padStart(2, '0')}+${String(blkM).padStart(2, '0')}`;
+  const blkStr  = fmtBlk(plan.block_time_min);
   const { h: stdH, m: stdM } = stdLocalHM(plan.std_ms);
 
   // Field resolution order (f(n) = n * FIELD_MS):
@@ -279,15 +296,7 @@ export function renderFlight(flight: GeneratedFlight): void {
   resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(7));
   revealText(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);
 
-  // Enable dispatch button after the last tile (cargo field) has fully resolved
-  const lastTileDelay = f(7) + (CARGO_WIDTH - 1) * TILE_MS + 50;
-  const t = setTimeout(() => {
-    (el('btn-dispatch') as HTMLAnchorElement).href = flight.simbriefUrl;
-    el('btn-dispatch').classList.remove('is-disabled');
-    el('btn-dispatch').removeAttribute('aria-disabled');
-  }, lastTileDelay);
-  _pending.push(t);
-
+  scheduleDispatchEnable(flight.simbriefUrl, f(7) + (CARGO_WIDTH - 1) * TILE_MS + 50);
   el('status-msg').classList.add('hidden');
 }
 
@@ -295,10 +304,94 @@ export function renderEmpty(message: string): void {
   cancelAnim();
   blankFlaps();
   blankText();
-  el('btn-dispatch').removeAttribute('href');
+  disableDispatch();
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
-  el('btn-dispatch').classList.add('is-disabled');
-  el('btn-dispatch').setAttribute('aria-disabled', 'true');
+}
+
+// --- Partial re-renders for individual field re-rolls ---
+
+export function reRenderAirline(flightNumber: string, airlineName: string, simbriefUrl: string): void {
+  cancelAnim();
+  disableDispatch();
+  const f = (n: number) => n * FIELD_MS;
+  cycleField(el('card-fltnum'),  FLTNUM_TILES,  'xl');
+  cycleField(el('card-airline'), AIRLINE_TILES, 'lg');
+  resolveField(el('card-fltnum'),  minFinalChars(flightNumber, FLTNUM_TILES),  f(0));
+  resolveField(el('card-airline'), minFinalChars(airlineName,  AIRLINE_TILES), f(1));
+  scheduleDispatchEnable(simbriefUrl, f(1) + (AIRLINE_TILES - 1) * TILE_MS + 50);
+}
+
+export function reRenderDestination(
+  dest: Airport,
+  distanceNm: number,
+  blockTimeMin: number,
+  simbriefUrl: string,
+): void {
+  cancelAnim();
+  disableDispatch();
+  const f = (n: number) => n * FIELD_MS;
+  el('card-dest-name').style.opacity    = '0';
+  el('card-dest-country').style.opacity = '0';
+  cycleField(el('card-dest-icao'), ICAO_TILES, 'xl');
+  cycleField(el('card-dest-city'), CITY_TILES, 'lg');
+  cycleField(el('card-distance'),  DIST_WIDTH, 'md', false, FLIP_CHARS_NUM);
+  cycleField(el('card-blocktime'), BLK_WIDTH,  'md', false, FLIP_CHARS_NUM);
+  resolveField(el('card-dest-icao'), minFinalChars(dest.icao, ICAO_TILES),                         f(0));
+  resolveField(el('card-dest-city'), minFinalChars(dest.city, CITY_TILES),                         f(0));
+  resolveField(el('card-distance'),  numFinalChars(distanceNm.toLocaleString('en-US'), DIST_WIDTH), f(1));
+  resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),               f(1));
+  revealText(el('card-dest-name'),    dest.name);
+  revealText(el('card-dest-country'), countryName(dest.country));
+  scheduleDispatchEnable(simbriefUrl, f(0) + (CITY_TILES - 1) * TILE_MS + 50);
+}
+
+export function reRenderDeparture(
+  dep: Airport,
+  distanceNm: number,
+  blockTimeMin: number,
+  flightNumber: string,
+  simbriefUrl: string,
+): void {
+  cancelAnim();
+  disableDispatch();
+  const f = (n: number) => n * FIELD_MS;
+  el('card-dep-name').style.opacity    = '0';
+  el('card-dep-country').style.opacity = '0';
+  cycleField(el('card-fltnum'),    FLTNUM_TILES, 'xl');
+  cycleField(el('card-dep-icao'),  ICAO_TILES,   'xl');
+  cycleField(el('card-dep-city'),  CITY_TILES,   'lg');
+  cycleField(el('card-distance'),  DIST_WIDTH,   'md', false, FLIP_CHARS_NUM);
+  cycleField(el('card-blocktime'), BLK_WIDTH,    'md', false, FLIP_CHARS_NUM);
+  resolveField(el('card-fltnum'),   minFinalChars(flightNumber, FLTNUM_TILES),                     f(0));
+  resolveField(el('card-dep-icao'), minFinalChars(dep.icao,     ICAO_TILES),                       f(1));
+  resolveField(el('card-dep-city'), minFinalChars(dep.city,     CITY_TILES),                       f(1));
+  resolveField(el('card-distance'), numFinalChars(distanceNm.toLocaleString('en-US'), DIST_WIDTH), f(2));
+  resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),              f(2));
+  revealText(el('card-dep-name'),    dep.name);
+  revealText(el('card-dep-country'), countryName(dep.country));
+  scheduleDispatchEnable(simbriefUrl, f(1) + (CITY_TILES - 1) * TILE_MS + 50);
+}
+
+export function reRenderAircraft(
+  aircraft: Aircraft,
+  payload: Payload,
+  blockTimeMin: number,
+  simbriefUrl: string,
+): void {
+  cancelAnim();
+  disableDispatch();
+  const f = (n: number) => n * FIELD_MS;
+  revealText(el('card-aircraft-type'),  aircraft.type_name);
+  revealText(el('card-aircraft-frame'), aircraft.airframe_name);
+  revealText(el('card-pax-max'),   payload.pax !== null ? `/ ${aircraft.max_pax} MAX` : '');
+  revealText(el('card-cargo-max'), `/ ${aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);
+  cycleField(el('card-pax'),       PAX_WIDTH,   'lg', false, FLIP_CHARS_NUM);
+  cycleField(el('card-cargo'),     CARGO_WIDTH, 'lg', false, FLIP_CHARS_NUM);
+  cycleField(el('card-blocktime'), BLK_WIDTH,   'md', false, FLIP_CHARS_NUM);
+  resolveField(el('card-pax'),       numFinalChars(String(payload.pax ?? ''), PAX_WIDTH),               f(0));
+  resolveField(el('card-cargo'),     numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(1));
+  resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),                   f(1));
+  scheduleDispatchEnable(simbriefUrl, f(1) + (CARGO_WIDTH - 1) * TILE_MS + 50);
 }

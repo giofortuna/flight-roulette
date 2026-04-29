@@ -1,11 +1,15 @@
 import type { FlightType, Simulator, AirportRegion, DepartureTimeMode, DeparturePeriod } from './types.js';
 import { loadAircraft } from './aircraft-db.js';
+import type { Aircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
-import { selectRoute, NoRouteError } from './route-selector.js';
+import type { Airline } from './airline-db.js';
+import { loadAll, loadRegion } from './airport-db.js';
+import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, RANGE_UTILISATION, RANGE_RELAXATION } from './route-selector.js';
 import { planFlight } from './flight-planner.js';
 import { generatePayload } from './payload-gen.js';
 import { buildSimbriefUrl } from './simbrief.js';
-import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim } from './renderer.js';
+import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
+import type { GeneratedFlight } from './renderer.js';
 
 // Warm the caches before the user clicks Generate
 Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
@@ -31,6 +35,15 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; useRando
 }
 
 let generating = false;
+let currentFlight: GeneratedFlight | null = null;
+
+function showRerollButtons(): void {
+  document.querySelectorAll('.btn-reroll').forEach(b => b.classList.remove('hidden'));
+}
+
+function hideRerollButtons(): void {
+  document.querySelectorAll('.btn-reroll').forEach(b => b.classList.add('hidden'));
+}
 
 async function generate(): Promise<void> {
   if (generating) return;
@@ -39,14 +52,19 @@ async function generate(): Promise<void> {
     const settings = getSettings();
 
     if (settings.simulator === 'xplane12') {
+      hideRerollButtons();
+      currentFlight = null;
       renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
       return;
     }
     if (settings.flightType === 'cargo') {
+      hideRerollButtons();
+      currentFlight = null;
       renderEmpty('Cargo flights are coming soon. Please select Passenger for now.');
       return;
     }
 
+    hideRerollButtons();
     renderLoading();
 
     try {
@@ -54,8 +72,12 @@ async function generate(): Promise<void> {
       const plan    = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
       const payload = generatePayload(route.aircraft, settings.flightType);
       const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
-      renderFlight({ route, plan, payload, simbriefUrl });
+      const flight = { route, plan, payload, simbriefUrl };
+      currentFlight = flight;
+      renderFlight(flight);
+      showRerollButtons();
     } catch (err) {
+      currentFlight = null;
       if (err instanceof NoRouteError) {
         const hints: string[] = [];
         if (settings.minBlockH !== undefined || settings.maxBlockH !== undefined)
@@ -77,9 +99,115 @@ async function generate(): Promise<void> {
   }
 }
 
+async function handleRerollAirline(): Promise<void> {
+  if (generating || !currentFlight) return;
+  generating = true;
+  try {
+    const settings = getSettings();
+    const { route, plan, payload } = currentFlight;
+    const allAirlines = await loadAirlines();
+    const pool = allAirlines.filter(a => a.type === settings.flightType || a.type === 'both');
+    const candidates = pool.filter(a => a.icao !== route.airline.icao);
+    const src = (candidates.length > 0 ? candidates : pool) as [Airline, ...Airline[]];
+    const newAirline = pickRandom(src);
+    const newFlightNumber = newAirline.icao + String(100 + Math.floor(Math.random() * 900));
+    const newRoute = { ...route, airline: newAirline };
+    const newPlan  = { ...plan, flight_number: newFlightNumber };
+    const newUrl   = buildSimbriefUrl(newRoute, newPlan, payload, { useRandomPayload: settings.useRandomPayload });
+    currentFlight  = { route: newRoute, plan: newPlan, payload, simbriefUrl: newUrl };
+    reRenderAirline(newFlightNumber, newAirline.name, newUrl);
+  } finally {
+    generating = false;
+  }
+}
+
+async function handleRerollDestination(): Promise<void> {
+  if (generating || !currentFlight) return;
+  generating = true;
+  try {
+    const settings = getSettings();
+    const { route, plan, payload } = currentFlight;
+    const allAirports = await loadAll();
+    const destPool = allAirports.filter(a => !settings.scheduledOnly || a.scheduled !== false);
+    const result = findDestinationFor(route.departure, route.aircraft, destPool, settings.minBlockH, settings.maxBlockH);
+    if (!result) return;
+    const { destination, distanceNm } = result;
+    const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
+    const newRoute = { ...route, destination, distanceNm };
+    const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin };
+    const newUrl   = buildSimbriefUrl(newRoute, newPlan, payload, { useRandomPayload: settings.useRandomPayload });
+    currentFlight  = { route: newRoute, plan: newPlan, payload, simbriefUrl: newUrl };
+    reRenderDestination(destination, distanceNm, blockTimeMin, newUrl);
+  } finally {
+    generating = false;
+  }
+}
+
+async function handleRerollDeparture(): Promise<void> {
+  if (generating || !currentFlight) return;
+  generating = true;
+  try {
+    const settings = getSettings();
+    const { route, plan, payload } = currentFlight;
+    const [allAirports, depAirports] = await Promise.all([
+      loadAll(),
+      settings.departureRegion ? loadRegion(settings.departureRegion) : Promise.resolve(undefined),
+    ]);
+    const schedFilter = (a: { scheduled?: boolean }) => !settings.scheduledOnly || a.scheduled !== false;
+    const depPool = (depAirports ?? allAirports).filter(schedFilter);
+    const result = findDepartureForDest(route.destination, route.aircraft, depPool, settings.minBlockH, settings.maxBlockH);
+    if (!result) return;
+    const { departure, distanceNm } = result;
+    const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
+    const newFlightNumber = route.airline.icao + String(100 + Math.floor(Math.random() * 900));
+    const newRoute = { ...route, departure, distanceNm };
+    const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin, flight_number: newFlightNumber };
+    const newUrl   = buildSimbriefUrl(newRoute, newPlan, payload, { useRandomPayload: settings.useRandomPayload });
+    currentFlight  = { route: newRoute, plan: newPlan, payload, simbriefUrl: newUrl };
+    reRenderDeparture(departure, distanceNm, blockTimeMin, newFlightNumber, newUrl);
+  } finally {
+    generating = false;
+  }
+}
+
+async function handleRerollAircraft(): Promise<void> {
+  if (generating || !currentFlight) return;
+  generating = true;
+  try {
+    const settings = getSettings();
+    const { route, plan } = currentFlight;
+    const { distanceNm } = route;
+    const allAircraftList = await loadAircraft();
+    const maxRange = RANGE_UTILISATION * RANGE_RELAXATION;
+    const pool = allAircraftList.filter(a =>
+      a.flight_type === settings.flightType &&
+      a.simulator.includes(settings.simulator) &&
+      a.icao_type !== route.aircraft.icao_type &&
+      distanceNm <= a.range_nm * maxRange &&
+      route.departure.max_runway_m   >= a.min_runway_m &&
+      route.destination.max_runway_m >= a.min_runway_m
+    );
+    if (pool.length === 0) return;
+    const newAircraft  = pickRandom(pool as [Aircraft, ...Aircraft[]]);
+    const blockTimeMin = Math.round((distanceNm / newAircraft.cruise_kts) * 60 + 30);
+    const newPayload   = generatePayload(newAircraft, settings.flightType);
+    const newRoute     = { ...route, aircraft: newAircraft };
+    const newPlan      = { ...plan, block_time_min: blockTimeMin };
+    const newUrl       = buildSimbriefUrl(newRoute, newPlan, newPayload, { useRandomPayload: settings.useRandomPayload });
+    currentFlight      = { route: newRoute, plan: newPlan, payload: newPayload, simbriefUrl: newUrl };
+    reRenderAircraft(newAircraft, newPayload, blockTimeMin, newUrl);
+  } finally {
+    generating = false;
+  }
+}
+
 renderBlank();
 
 document.getElementById('btn-generate')!.addEventListener('click', generate);
+document.getElementById('btn-reroll-airline')!.addEventListener('click', handleRerollAirline);
+document.getElementById('btn-reroll-dest')!.addEventListener('click', handleRerollDestination);
+document.getElementById('btn-reroll-dep')!.addEventListener('click', handleRerollDeparture);
+document.getElementById('btn-reroll-aircraft')!.addEventListener('click', handleRerollAircraft);
 
 const viewMain  = document.getElementById('view-main')!;
 const viewAbout = document.getElementById('view-about')!;
