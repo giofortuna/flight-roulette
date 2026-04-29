@@ -23,8 +23,10 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; useRando
   const scheduledOnly    = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
   const minRaw = (document.getElementById('filter-min') as HTMLInputElement).value;
   const maxRaw = (document.getElementById('filter-max') as HTMLInputElement).value;
-  const minBlockH = minRaw ? Number(minRaw) : undefined;
-  const maxBlockH = maxRaw ? Number(maxRaw) : undefined;
+  const minParsed = Number(minRaw);
+  const maxParsed = Number(maxRaw);
+  const minBlockH = minRaw && minParsed >= 0 ? minParsed : undefined;
+  const maxBlockH = maxRaw && maxParsed >= 0 ? maxParsed : undefined;
   const regionRaw = (document.getElementById('filter-region') as HTMLSelectElement).value;
   const departureRegion = regionRaw ? (regionRaw as AirportRegion) : undefined;
   const stdMode = (document.querySelector('input[name="std-mode"]:checked') as HTMLInputElement).value as DepartureTimeMode;
