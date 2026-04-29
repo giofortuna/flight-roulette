@@ -44,6 +44,11 @@ export function haversineNm(aLat: number, aLon: number, bLat: number, bLon: numb
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+const MAX_DEPARTURE_ATTEMPTS = 10;
+export const RANGE_UTILISATION = 0.80; // leave headroom for airways routing, winds, and fuel reserves
+export const RANGE_RELAXATION  = 1.2;
+const MIN_DISTANCE_NM   = 50;  // discard adjacent-airport hops that produce nonsense flight plans
+
 export function pickRandom<T>(arr: [T, ...T[]]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -95,11 +100,6 @@ export function findDepartureFor(
   }
   return null;
 }
-
-const MAX_DEPARTURE_ATTEMPTS = 10;
-export const RANGE_UTILISATION = 0.80; // leave headroom for airways routing, winds, and fuel reserves
-export const RANGE_RELAXATION  = 1.2;
-const MIN_DISTANCE_NM   = 50;  // discard adjacent-airport hops that produce nonsense flight plans
 
 export function pickRoute(
   input: SelectionInput,

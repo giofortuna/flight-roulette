@@ -344,7 +344,7 @@ export function reRenderDestination(
   resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),               f(1));
   revealText(el('card-dest-name'),    dest.name);
   revealText(el('card-dest-country'), countryName(dest.country));
-  scheduleDispatchEnable(simbriefUrl, f(1) + (DIST_WIDTH - 1) * TILE_MS + 50);
+  scheduleDispatchEnable(simbriefUrl, f(0) + (CITY_TILES - 1) * TILE_MS + 50);
 }
 
 export function reRenderDeparture(
@@ -380,7 +380,7 @@ export function reRenderDeparture(
   revealText(el('card-dep-country'),  countryName(dep.country));
   revealText(el('card-dest-name'),    dest.name);
   revealText(el('card-dest-country'), countryName(dest.country));
-  scheduleDispatchEnable(simbriefUrl, f(3) + (DIST_WIDTH - 1) * TILE_MS + 50);
+  scheduleDispatchEnable(simbriefUrl, f(2) + (CITY_TILES - 1) * TILE_MS + 50);
 }
 
 export function reRenderAircraft(
