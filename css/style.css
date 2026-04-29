@@ -160,9 +160,9 @@ body::after {
 
 .setting-label {
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
-  letter-spacing: 0.28em;
-  color: var(--flap-label);
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--flap-sub);
   text-transform: uppercase;
   flex-shrink: 0;
   width: 100px;
