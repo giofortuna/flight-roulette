@@ -270,8 +270,22 @@ function sanitize(val) {
   return val.trim();
 }
 
-function inferType(name) {
-  if (/\bcargo\b|\bfreight\b|\bfreighter\b/i.test(name)) return 'cargo';
+// Cargo-only carriers whose names don't contain 'cargo'/'freight'/'freighter'.
+// Checked against OpenFlights airlines.dat — extend as new carriers are added.
+const CARGO_ICAOS = new Set([
+  'ABX', // ABX Air
+  'CKS', // Kalitta Air
+  'DHK', // DHL Aviation (EEMEA)
+  'DHX', // DHL Air UK
+  'FDX', // FedEx Express
+  'GTI', // Atlas Air
+  'SRR', // Southern Air
+  'UPS', // UPS Airlines
+]);
+
+function inferType(icao, name) {
+  if (CARGO_ICAOS.has(icao)) return 'cargo';
+  if (/\bcargo\b|\bfreight\b|\bfreighter\b|\bdhl\b|\bfedex\b/i.test(name)) return 'cargo';
   return 'passenger';
 }
 
@@ -348,7 +362,7 @@ async function main() {
       country,
       region,
       hub:         [],
-      type:        inferType(name),
+      type:        inferType(icao, name),
       simbrief_id: icao,
       fleet:       [],
     });
