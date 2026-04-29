@@ -84,21 +84,30 @@ export function findDestinationFor(
   return null;
 }
 
-export function findDepartureFor(
+export function findDepartureForDest(
+  destination: Airport,
   aircraft: Aircraft,
   depPool: Airport[],
-  destPool: Airport[],
   minBlockH?: number,
   maxBlockH?: number,
-): { departure: Airport; destination: Airport; distanceNm: number } | null {
-  const eligible = filterByRunway(depPool, aircraft.min_runway_m);
-  if (eligible.length === 0) return null;
-  for (let attempt = 0; attempt < MAX_DEPARTURE_ATTEMPTS; attempt++) {
-    const departure = pickRandom(eligible as [Airport, ...Airport[]]);
-    const result = findDestinationFor(departure, aircraft, destPool, minBlockH, maxBlockH);
-    if (result) return { departure, ...result };
-  }
-  return null;
+): { departure: Airport; distanceNm: number } | null {
+  const maxRange = aircraft.range_nm * RANGE_UTILISATION * RANGE_RELAXATION;
+  const candidates = filterByRunway(depPool, aircraft.min_runway_m)
+    .filter(a => a.icao !== destination.icao)
+    .map(a => ({ airport: a, distNm: haversineNm(a.lat, a.lon, destination.lat, destination.lon) }))
+    .filter(({ distNm }) => {
+      if (distNm < MIN_DISTANCE_NM || distNm > maxRange) return false;
+      if (minBlockH !== undefined || maxBlockH !== undefined) {
+        const blockH = distNm / aircraft.cruise_kts + 0.5;
+        if (minBlockH !== undefined && blockH < minBlockH) return false;
+        if (maxBlockH !== undefined && blockH > maxBlockH) return false;
+      }
+      return true;
+    });
+  if (candidates.length === 0) return null;
+  type C = (typeof candidates)[number];
+  const { airport: departure, distNm } = pickRandom(candidates as [C, ...C[]]);
+  return { departure, distanceNm: Math.round(distNm) };
 }
 
 export function pickRoute(

@@ -4,7 +4,7 @@ import type { Aircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
 import type { Airline } from './airline-db.js';
 import { loadAll, loadRegion } from './airport-db.js';
-import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureFor, RANGE_UTILISATION, RANGE_RELAXATION } from './route-selector.js';
+import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, RANGE_UTILISATION, RANGE_RELAXATION } from './route-selector.js';
 import { planFlight } from './flight-planner.js';
 import { generatePayload } from './payload-gen.js';
 import { buildSimbriefUrl } from './simbrief.js';
@@ -154,18 +154,17 @@ async function handleRerollDeparture(): Promise<void> {
       settings.departureRegion ? loadRegion(settings.departureRegion) : Promise.resolve(undefined),
     ]);
     const schedFilter = (a: { scheduled?: boolean }) => !settings.scheduledOnly || a.scheduled !== false;
-    const depPool  = (depAirports ?? allAirports).filter(schedFilter);
-    const destPool = allAirports.filter(schedFilter);
-    const result = findDepartureFor(route.aircraft, depPool, destPool, settings.minBlockH, settings.maxBlockH);
+    const depPool = (depAirports ?? allAirports).filter(schedFilter);
+    const result = findDepartureForDest(route.destination, route.aircraft, depPool, settings.minBlockH, settings.maxBlockH);
     if (!result) return;
-    const { departure, destination, distanceNm } = result;
+    const { departure, distanceNm } = result;
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
     const newFlightNumber = route.airline.icao + String(100 + Math.floor(Math.random() * 900));
-    const newRoute = { ...route, departure, destination, distanceNm };
+    const newRoute = { ...route, departure, distanceNm };
     const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin, flight_number: newFlightNumber };
     const newUrl   = buildSimbriefUrl(newRoute, newPlan, payload, { useRandomPayload: settings.useRandomPayload });
     currentFlight  = { route: newRoute, plan: newPlan, payload, simbriefUrl: newUrl };
-    reRenderDeparture(departure, destination, distanceNm, blockTimeMin, newFlightNumber, newUrl);
+    reRenderDeparture(departure, distanceNm, blockTimeMin, newFlightNumber, newUrl);
   } finally {
     generating = false;
   }

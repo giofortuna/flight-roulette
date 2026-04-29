@@ -349,7 +349,6 @@ export function reRenderDestination(
 
 export function reRenderDeparture(
   dep: Airport,
-  dest: Airport,
   distanceNm: number,
   blockTimeMin: number,
   flightNumber: string,
@@ -358,29 +357,21 @@ export function reRenderDeparture(
   cancelAnim();
   disableDispatch();
   const f = (n: number) => n * FIELD_MS;
-  el('card-dep-name').style.opacity     = '0';
-  el('card-dep-country').style.opacity  = '0';
-  el('card-dest-name').style.opacity    = '0';
-  el('card-dest-country').style.opacity = '0';
+  el('card-dep-name').style.opacity    = '0';
+  el('card-dep-country').style.opacity = '0';
   cycleField(el('card-fltnum'),    FLTNUM_TILES, 'xl');
   cycleField(el('card-dep-icao'),  ICAO_TILES,   'xl');
   cycleField(el('card-dep-city'),  CITY_TILES,   'lg');
-  cycleField(el('card-dest-icao'), ICAO_TILES,   'xl');
-  cycleField(el('card-dest-city'), CITY_TILES,   'lg');
   cycleField(el('card-distance'),  DIST_WIDTH,   'md', false, FLIP_CHARS_NUM);
   cycleField(el('card-blocktime'), BLK_WIDTH,    'md', false, FLIP_CHARS_NUM);
-  resolveField(el('card-fltnum'),    minFinalChars(flightNumber, FLTNUM_TILES),                     f(0));
-  resolveField(el('card-dep-icao'),  minFinalChars(dep.icao,     ICAO_TILES),                       f(1));
-  resolveField(el('card-dep-city'),  minFinalChars(dep.city,     CITY_TILES),                       f(1));
-  resolveField(el('card-dest-icao'), minFinalChars(dest.icao,    ICAO_TILES),                       f(2));
-  resolveField(el('card-dest-city'), minFinalChars(dest.city,    CITY_TILES),                       f(2));
-  resolveField(el('card-distance'),  numFinalChars(distanceNm.toLocaleString('en-US'), DIST_WIDTH), f(3));
-  resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),               f(3));
-  revealText(el('card-dep-name'),     dep.name);
-  revealText(el('card-dep-country'),  countryName(dep.country));
-  revealText(el('card-dest-name'),    dest.name);
-  revealText(el('card-dest-country'), countryName(dest.country));
-  scheduleDispatchEnable(simbriefUrl, f(2) + (CITY_TILES - 1) * TILE_MS + 50);
+  resolveField(el('card-fltnum'),   minFinalChars(flightNumber, FLTNUM_TILES),                     f(0));
+  resolveField(el('card-dep-icao'), minFinalChars(dep.icao,     ICAO_TILES),                       f(1));
+  resolveField(el('card-dep-city'), minFinalChars(dep.city,     CITY_TILES),                       f(1));
+  resolveField(el('card-distance'), numFinalChars(distanceNm.toLocaleString('en-US'), DIST_WIDTH), f(2));
+  resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),              f(2));
+  revealText(el('card-dep-name'),    dep.name);
+  revealText(el('card-dep-country'), countryName(dep.country));
+  scheduleDispatchEnable(simbriefUrl, f(1) + (CITY_TILES - 1) * TILE_MS + 50);
 }
 
 export function reRenderAircraft(
