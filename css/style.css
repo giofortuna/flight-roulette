@@ -162,7 +162,7 @@ body::after {
   font-family: 'Orbitron', monospace;
   font-size: 8px;
   letter-spacing: 0.28em;
-  color: var(--flap-label);
+  color: var(--flap-sub);
   text-transform: uppercase;
   flex-shrink: 0;
   width: 100px;
@@ -412,7 +412,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   font-family: 'Orbitron', monospace;
   font-size: 7px;
   letter-spacing: 0.28em;
-  color: var(--flap-label);
+  color: var(--flap-sub);
   text-transform: uppercase;
   margin-bottom: 7px;
 }
