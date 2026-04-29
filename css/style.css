@@ -187,7 +187,7 @@ body::after {
   font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--flap-sub);
+  color: var(--flap-text);
   background: var(--flap-tile);
   cursor: pointer;
   transition: color 0.12s, background 0.12s;
@@ -309,7 +309,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   background-repeat: no-repeat;
   background-position: right 8px center;
   border: 1px solid #0c0c0c;
-  color: var(--amber);
+  color: var(--flap-text);
   font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   font-weight: 700;
   font-size: 11px;
