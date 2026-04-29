@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import readline from 'readline';
 import { fileURLToPath } from 'url';
+import { parseCSVLine } from './csv-utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const RAW_DIR  = path.join(__dirname, '..', 'data', 'raw');
@@ -263,25 +264,6 @@ const COUNTRY_REGION = {
   'Wallis and Futuna': 'pacific', 'WF': 'pacific',
 };
 
-// ── CSV parser (same logic as build-airport-data.js) ─────────────────────────
-function parseCSVLine(line) {
-  const fields = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const ch = line[i];
-    if (ch === '"') {
-      if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-      else inQuotes = !inQuotes;
-    } else if (ch === ',' && !inQuotes) {
-      fields.push(current); current = '';
-    } else {
-      current += ch;
-    }
-  }
-  fields.push(current);
-  return fields;
-}
 
 function sanitize(val) {
   if (!val || val === '\\N' || val === 'N/A' || val === '-') return '';

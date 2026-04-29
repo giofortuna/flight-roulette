@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCSVLine, isHardSurface, round4, buildRunwayMap, processAirports } from './build-airport-data.js';
+import { parseCSVLine } from './csv-utils.js';
+import { isHardSurface, round4, buildRunwayMap, processAirports } from './build-airport-data.js';
 
 // ── parseCSVLine ─────────────────────────────────────────────────────────────
 
