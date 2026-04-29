@@ -144,3 +144,11 @@ if (savedStdPeriod) {
   const el = document.getElementById(`per-${savedStdPeriod}`) as HTMLInputElement | null;
   if (el) el.checked = true;
 }
+
+// ── Options panel — restore and persist open/closed state ────────────────────
+
+const optionsPanelEl = document.querySelector('.advanced-section') as HTMLDetailsElement;
+if (localStorage.getItem('disp-options-open') === '1') optionsPanelEl.open = true;
+optionsPanelEl.addEventListener('toggle', () =>
+  localStorage.setItem('disp-options-open', optionsPanelEl.open ? '1' : '0')
+);
