@@ -494,19 +494,15 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   animation: float 3s ease-in-out infinite;
 }
 
-/* ── Stats strip (aircraft / pax / cargo) ── */
+/* ── Stats strip (aircraft) ── */
 .card-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .stat-cell {
   padding: 13px 18px;
-  height: 100px;
-  overflow: hidden;
-  border-right: 1px solid var(--flap-divider);
 }
-.stat-cell:last-child { border-right: none; }
 
 .aircraft-type {
   font-family: 'Share Tech Mono', monospace;

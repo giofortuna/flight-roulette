@@ -1,6 +1,5 @@
 import type { SelectedRoute } from './route-selector.js';
 import type { FlightPlan } from './flight-planner.js';
-import type { Payload } from './payload-gen.js';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
@@ -15,16 +14,7 @@ function simbriefDateStr(stdMs: number): string {
   return `${day} ${month} ${year} - ${h}:${m}`;
 }
 
-export interface DispatchOptions {
-  useRandomPayload: boolean;
-}
-
-export function buildSimbriefUrl(
-  route: SelectedRoute,
-  plan: FlightPlan,
-  payload: Payload,
-  options: DispatchOptions,
-): string {
+export function buildSimbriefUrl(route: SelectedRoute, plan: FlightPlan): string {
   const params = new URLSearchParams({
     orig:   route.departure.icao,
     dest:   route.destination.icao,
@@ -33,13 +23,6 @@ export function buildSimbriefUrl(
     units:  'KGS',
   });
   if (route.airline.simbrief_id) params.set('airline', route.airline.simbrief_id);
-
   params.set('date', simbriefDateStr(plan.std_ms));
-
-  if (options.useRandomPayload) {
-    if (payload.pax !== null) params.set('pax', String(payload.pax));
-    params.set('cargo', String(payload.cargo_kg / 1000));
-  }
-
   return `https://www.simbrief.com/system/dispatch.php?${params.toString()}`;
 }

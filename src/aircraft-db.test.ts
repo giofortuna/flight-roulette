@@ -8,7 +8,6 @@ function makeAircraft(overrides: Record<string, unknown> = {}) {
     flight_type: 'passenger', simulator: ['msfs2020', 'msfs2024'],
     range_nm: 3000, min_runway_m: 2000,
     cruise_kts: 450, category: 'narrowbody',
-    max_pax: 162, max_cargo_kg: 20000,
     simbrief_type: 'B738', simbrief_airframe_id: '',
     ...overrides,
   };
@@ -83,20 +82,4 @@ test('validate — throws when min_runway_m is negative', () => {
 
 test('validate — accepts min_runway_m of zero', () => {
   assert.doesNotThrow(() => validate([makeAircraft({ min_runway_m: 0 })]));
-});
-
-test('validate — throws when max_pax exceeds 999', () => {
-  assert.throws(() => validate([makeAircraft({ max_pax: 1000 })]), /invalid entry/);
-});
-
-test('validate — accepts max_pax of exactly 999', () => {
-  assert.doesNotThrow(() => validate([makeAircraft({ max_pax: 999 })]));
-});
-
-test('validate — throws when max_cargo_kg exceeds 999999', () => {
-  assert.throws(() => validate([makeAircraft({ max_cargo_kg: 1_000_000 })]), /invalid entry/);
-});
-
-test('validate — accepts max_cargo_kg of exactly 999999', () => {
-  assert.doesNotThrow(() => validate([makeAircraft({ max_cargo_kg: 999_999 })]));
 });
