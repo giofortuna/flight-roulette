@@ -65,13 +65,17 @@ body.electron #view-about {
   overflow-y: auto;
 }
 
+body.electron .app-shell {
+  padding-bottom: 32px;
+}
+
 /* ════════════════════════════════════════
    SHARED LAYOUT
 ════════════════════════════════════════ */
 .app-shell {
   max-width: 860px;
   margin: 0 auto;
-  padding: 0 20px 32px;
+  padding: 0 20px 100px;
 }
 
 /* ── App header ── */

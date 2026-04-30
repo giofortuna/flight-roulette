@@ -41,6 +41,7 @@ function createWindow() {
     });
   });
 
+  ipcMain.removeAllListeners('resize-to-height');
   ipcMain.on('resize-to-height', (_, contentH) => {
     const [outerW, outerH] = win.getSize();
     const [, innerH] = win.getContentSize();
