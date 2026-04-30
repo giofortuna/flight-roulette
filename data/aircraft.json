@@ -2,7 +2,7 @@
   {
     "icao_type": "AT46",
     "type_name": "ATR 42-600",
-    "airframe_name": "Asobo",
+    "airframe_name": "Hans Hartmann",
     "flight_type": "passenger",
     "simulator": ["msfs2020", "msfs2024"],
     "range_nm": 762,
@@ -15,7 +15,7 @@
   {
     "icao_type": "AT76",
     "type_name": "ATR 72-600",
-    "airframe_name": "Asobo",
+    "airframe_name": "Hans Hartmann",
     "flight_type": "passenger",
     "simulator": ["msfs2020", "msfs2024"],
     "range_nm": 900,
@@ -251,7 +251,7 @@
     "type_name": "Airbus A340-300",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": ["msfs2024"],
     "range_nm": 7400,
     "min_runway_m": 2134,
     "cruise_kts": 459,
@@ -303,7 +303,7 @@
     "type_name": "Lockheed L-1011-500 TriStar",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": ["msfs2024"],
     "range_nm": 5345,
     "min_runway_m": 2134,
     "cruise_kts": 476,
@@ -340,7 +340,7 @@
   {
     "icao_type": "B748",
     "type_name": "Boeing 747-8I",
-    "airframe_name": "Asobo",
+    "airframe_name": "Microsoft",
     "flight_type": "passenger",
     "simulator": ["msfs2020", "msfs2024"],
     "range_nm": 8000,
@@ -366,7 +366,7 @@
   {
     "icao_type": "B78X",
     "type_name": "Boeing 787-10 Dreamliner",
-    "airframe_name": "Asobo",
+    "airframe_name": "Microsoft",
     "flight_type": "passenger",
     "simulator": ["msfs2020", "msfs2024"],
     "range_nm": 6300,
