@@ -6,7 +6,6 @@ import type { Airline } from './airline-db.js';
 import { loadAll, loadRegion } from './airport-db.js';
 import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, RANGE_UTILISATION, RANGE_RELAXATION } from './route-selector.js';
 import { planFlight } from './flight-planner.js';
-import { generatePayload } from './payload-gen.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
@@ -16,10 +15,9 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; useRandomPayload: boolean; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
+function getSettings(): { flightType: FlightType; simulator: Simulator; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
   const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
-  const useRandomPayload = (document.querySelector('input[name="payload"]:checked') as HTMLInputElement).value === 'random';
   const scheduledOnly    = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
   const minRaw = (document.getElementById('filter-min') as HTMLInputElement).value;
   const maxRaw = (document.getElementById('filter-max') as HTMLInputElement).value;
@@ -33,7 +31,7 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; useRando
   const stdPeriod = stdMode === 'period'
     ? (document.querySelector('input[name="std-period"]:checked') as HTMLInputElement).value as DeparturePeriod
     : undefined;
-  return { flightType, simulator, useRandomPayload, scheduledOnly, minBlockH, maxBlockH, departureRegion, stdMode, stdPeriod };
+  return { flightType, simulator, scheduledOnly, minBlockH, maxBlockH, departureRegion, stdMode, stdPeriod };
 }
 
 let generating = false;
@@ -71,10 +69,9 @@ async function generate(): Promise<void> {
 
     try {
       const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, departureRegion: settings.departureRegion });
-      const plan    = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
-      const payload = generatePayload(route.aircraft, settings.flightType);
-      const simbriefUrl = buildSimbriefUrl(route, plan, payload, { useRandomPayload: settings.useRandomPayload });
-      const flight = { route, plan, payload, simbriefUrl };
+      const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
+      const simbriefUrl = buildSimbriefUrl(route, plan);
+      const flight = { route, plan, simbriefUrl };
       currentFlight = flight;
       renderFlight(flight);
       showRerollButtons();
@@ -106,7 +103,7 @@ async function handleRerollAirline(): Promise<void> {
   generating = true;
   try {
     const settings = getSettings();
-    const { route, plan, payload } = currentFlight;
+    const { route, plan } = currentFlight;
     const allAirlines = await loadAirlines();
     const pool = allAirlines.filter(a => a.type === settings.flightType || a.type === 'both');
     const candidates = pool.filter(a => a.icao !== route.airline.icao);
@@ -115,8 +112,8 @@ async function handleRerollAirline(): Promise<void> {
     const newFlightNumber = newAirline.icao + String(100 + Math.floor(Math.random() * 900));
     const newRoute = { ...route, airline: newAirline };
     const newPlan  = { ...plan, flight_number: newFlightNumber };
-    const newUrl   = buildSimbriefUrl(newRoute, newPlan, payload, { useRandomPayload: settings.useRandomPayload });
-    currentFlight  = { route: newRoute, plan: newPlan, payload, simbriefUrl: newUrl };
+    const newUrl   = buildSimbriefUrl(newRoute, newPlan);
+    currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
     reRenderAirline(newFlightNumber, newAirline.name, newUrl);
   } finally {
     generating = false;
@@ -128,7 +125,7 @@ async function handleRerollDestination(): Promise<void> {
   generating = true;
   try {
     const settings = getSettings();
-    const { route, plan, payload } = currentFlight;
+    const { route, plan } = currentFlight;
     const allAirports = await loadAll();
     const destPool = allAirports.filter(a => !settings.scheduledOnly || a.scheduled !== false);
     const result = findDestinationFor(route.departure, route.aircraft, destPool, settings.minBlockH, settings.maxBlockH);
@@ -137,8 +134,8 @@ async function handleRerollDestination(): Promise<void> {
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
     const newRoute = { ...route, destination, distanceNm };
     const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin };
-    const newUrl   = buildSimbriefUrl(newRoute, newPlan, payload, { useRandomPayload: settings.useRandomPayload });
-    currentFlight  = { route: newRoute, plan: newPlan, payload, simbriefUrl: newUrl };
+    const newUrl   = buildSimbriefUrl(newRoute, newPlan);
+    currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
     reRenderDestination(destination, distanceNm, blockTimeMin, newUrl);
   } finally {
     generating = false;
@@ -150,7 +147,7 @@ async function handleRerollDeparture(): Promise<void> {
   generating = true;
   try {
     const settings = getSettings();
-    const { route, plan, payload } = currentFlight;
+    const { route, plan } = currentFlight;
     const [allAirports, depAirports] = await Promise.all([
       loadAll(),
       settings.departureRegion ? loadRegion(settings.departureRegion) : Promise.resolve(undefined),
@@ -164,8 +161,8 @@ async function handleRerollDeparture(): Promise<void> {
     const newFlightNumber = route.airline.icao + String(100 + Math.floor(Math.random() * 900));
     const newRoute = { ...route, departure, distanceNm };
     const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin, flight_number: newFlightNumber };
-    const newUrl   = buildSimbriefUrl(newRoute, newPlan, payload, { useRandomPayload: settings.useRandomPayload });
-    currentFlight  = { route: newRoute, plan: newPlan, payload, simbriefUrl: newUrl };
+    const newUrl   = buildSimbriefUrl(newRoute, newPlan);
+    currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
     reRenderDeparture(departure, distanceNm, blockTimeMin, newFlightNumber, newUrl);
   } finally {
     generating = false;
@@ -192,12 +189,11 @@ async function handleRerollAircraft(): Promise<void> {
     if (pool.length === 0) return;
     const newAircraft  = pickRandom(pool as [Aircraft, ...Aircraft[]]);
     const blockTimeMin = Math.round((distanceNm / newAircraft.cruise_kts) * 60 + 30);
-    const newPayload   = generatePayload(newAircraft, settings.flightType);
     const newRoute     = { ...route, aircraft: newAircraft };
     const newPlan      = { ...plan, block_time_min: blockTimeMin };
-    const newUrl       = buildSimbriefUrl(newRoute, newPlan, newPayload, { useRandomPayload: settings.useRandomPayload });
-    currentFlight      = { route: newRoute, plan: newPlan, payload: newPayload, simbriefUrl: newUrl };
-    reRenderAircraft(newAircraft, newPayload, blockTimeMin, newUrl);
+    const newUrl       = buildSimbriefUrl(newRoute, newPlan);
+    currentFlight      = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    reRenderAircraft(newAircraft, blockTimeMin, newUrl);
   } finally {
     generating = false;
   }

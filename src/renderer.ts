@@ -1,6 +1,5 @@
 import type { SelectedRoute, Airport, Aircraft } from './route-selector.js';
 import type { FlightPlan } from './flight-planner.js';
-import type { Payload } from './payload-gen.js';
 import { COUNTRY_NAMES } from './country-names.js';
 
 function countryName(code: string): string {
@@ -10,7 +9,6 @@ function countryName(code: string): string {
 export interface GeneratedFlight {
   route: SelectedRoute;
   plan: FlightPlan;
-  payload: Payload;
   simbriefUrl: string;
 }
 
@@ -172,10 +170,8 @@ function setFlapsMin(target: HTMLElement, text: string, size: FlapSize, minTiles
 
 // --- Field size constants ---
 // Numeric fields have hard display limits tied to their tile count:
-//   DIST_WIDTH=6  → max "99,999" NM  (longest real route ~9,500 NM; safe)
-//   BLK_WIDTH=5   → max "99+59"      (longest real flight ~24h; safe)
-//   PAX_WIDTH=3   → max 999 pax      — enforced by aircraft-db validator
-//   CARGO_WIDTH=7 → max 999,999 kg   — enforced by aircraft-db validator
+//   DIST_WIDTH=6 → max "99,999" NM  (longest real route ~9,500 NM; safe)
+//   BLK_WIDTH=5  → max "99+59"      (longest real flight ~24h; safe)
 
 const FLTNUM_TILES  = 6;
 const STD_TILES     = 2; // tiles per half (H and M rendered separately)
@@ -183,8 +179,6 @@ const ICAO_TILES    = 4;
 const CITY_TILES    = 12;
 const DIST_WIDTH    = 6;
 const BLK_WIDTH     = 5;
-const PAX_WIDTH     = 3;
-const CARGO_WIDTH   = 7;
 const AIRLINE_TILES = 31;
 
 function blankFlaps(): void {
@@ -198,8 +192,6 @@ function blankFlaps(): void {
   setFlapsMin(el('card-dest-city'),  '', 'lg', CITY_TILES);
   setFlapsNumber(el('card-distance'),  '00,000', DIST_WIDTH, 'md');
   setFlapsNumber(el('card-blocktime'), '00+00',  BLK_WIDTH,  'md');
-  setFlapsNumber(el('card-pax'),   '000',     PAX_WIDTH,   'lg');
-  setFlapsNumber(el('card-cargo'), '000,000', CARGO_WIDTH, 'lg');
 }
 
 function blankText(): void {
@@ -207,7 +199,6 @@ function blankText(): void {
     'card-dep-name', 'card-dep-country',
     'card-dest-name', 'card-dest-country',
     'card-aircraft-type', 'card-aircraft-frame',
-    'card-pax-max', 'card-cargo-max',
   ];
   for (const id of ids) {
     const e = el(id);
@@ -240,8 +231,6 @@ export function renderLoading(): void {
   cycleField(el('card-dest-city'), CITY_TILES,   'lg');
   cycleField(el('card-distance'),  DIST_WIDTH,   'md', false, FLIP_CHARS_NUM);
   cycleField(el('card-blocktime'), BLK_WIDTH,    'md', false, FLIP_CHARS_NUM);
-  cycleField(el('card-pax'),       PAX_WIDTH,    'lg', false, FLIP_CHARS_NUM);
-  cycleField(el('card-cargo'),     CARGO_WIDTH,  'lg', false, FLIP_CHARS_NUM);
 
   disableDispatch();
   el('status-msg').classList.add('hidden');
@@ -256,7 +245,7 @@ function stdLocalHM(stdMs: number): { h: string; m: string } {
 }
 
 export function renderFlight(flight: GeneratedFlight): void {
-  const { route, plan, payload } = flight;
+  const { route, plan } = flight;
 
   const distStr = plan.distance_nm.toLocaleString('en-US');
   const blkStr  = fmtBlk(plan.block_time_min);
@@ -264,7 +253,7 @@ export function renderFlight(flight: GeneratedFlight): void {
 
   // Field resolution order (f(n) = n * FIELD_MS):
   // 0: fltnum, 1: std, 2: airline, 3: dep-icao + dep-city, 4: dest-icao + dest-city,
-  // 5: distance + blocktime, 6: pax, 7: cargo
+  // 5: distance + blocktime
   // (aircraft text is revealed immediately via revealText, not staggered)
 
   const f = (n: number) => n * FIELD_MS;
@@ -290,13 +279,7 @@ export function renderFlight(flight: GeneratedFlight): void {
   revealText(el('card-aircraft-type'),  route.aircraft.type_name);
   revealText(el('card-aircraft-frame'), route.aircraft.airframe_name);
 
-  resolveField(el('card-pax'), numFinalChars(String(payload.pax ?? ''), PAX_WIDTH), f(6));
-  revealText(el('card-pax-max'), payload.pax !== null ? `/ ${route.aircraft.max_pax} MAX` : '');
-
-  resolveField(el('card-cargo'), numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(7));
-  revealText(el('card-cargo-max'), `/ ${route.aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);
-
-  scheduleDispatchEnable(flight.simbriefUrl, f(7) + (CARGO_WIDTH - 1) * TILE_MS + 50);
+  scheduleDispatchEnable(flight.simbriefUrl, f(5) + (BLK_WIDTH - 1) * TILE_MS + 50);
   el('status-msg').classList.add('hidden');
 }
 
@@ -376,7 +359,6 @@ export function reRenderDeparture(
 
 export function reRenderAircraft(
   aircraft: Aircraft,
-  payload: Payload,
   blockTimeMin: number,
   simbriefUrl: string,
 ): void {
@@ -385,13 +367,7 @@ export function reRenderAircraft(
   const f = (n: number) => n * FIELD_MS;
   revealText(el('card-aircraft-type'),  aircraft.type_name);
   revealText(el('card-aircraft-frame'), aircraft.airframe_name);
-  revealText(el('card-pax-max'),   payload.pax !== null ? `/ ${aircraft.max_pax} MAX` : '');
-  revealText(el('card-cargo-max'), `/ ${aircraft.max_cargo_kg.toLocaleString('en-US')} KG MAX`);
-  cycleField(el('card-pax'),       PAX_WIDTH,   'lg', false, FLIP_CHARS_NUM);
-  cycleField(el('card-cargo'),     CARGO_WIDTH, 'lg', false, FLIP_CHARS_NUM);
-  cycleField(el('card-blocktime'), BLK_WIDTH,   'md', false, FLIP_CHARS_NUM);
-  resolveField(el('card-pax'),       numFinalChars(String(payload.pax ?? ''), PAX_WIDTH),               f(0));
-  resolveField(el('card-cargo'),     numFinalChars(payload.cargo_kg.toLocaleString('en-US'), CARGO_WIDTH), f(1));
-  resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),                   f(1));
-  scheduleDispatchEnable(simbriefUrl, f(1) + (CARGO_WIDTH - 1) * TILE_MS + 50);
+  cycleField(el('card-blocktime'), BLK_WIDTH, 'md', false, FLIP_CHARS_NUM);
+  resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH), f(0));
+  scheduleDispatchEnable(simbriefUrl, f(0) + (BLK_WIDTH - 1) * TILE_MS + 50);
 }

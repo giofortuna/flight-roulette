@@ -61,15 +61,6 @@
         </summary>
         <div class="advanced-content">
           <div class="setting-row">
-            <span class="setting-label">Payload</span>
-            <div class="seg">
-              <input type="radio" name="payload" id="pay-random" value="random" checked>
-              <label for="pay-random">Random</label>
-              <input type="radio" name="payload" id="pay-simbrief" value="simbrief">
-              <label for="pay-simbrief">SimBrief</label>
-            </div>
-          </div>
-          <div class="setting-row">
             <span class="setting-label">Airports</span>
             <div class="seg">
               <input type="radio" name="airports" id="apt-commercial" value="scheduled" checked>
@@ -205,7 +196,7 @@
           </div>
         </div>
 
-        <!-- Stats: aircraft / pax / cargo -->
+        <!-- Stats: aircraft -->
         <div class="card-stats">
           <div class="stat-cell">
             <div class="label-row">
@@ -214,19 +205,6 @@
             </div>
             <div class="aircraft-type" id="card-aircraft-type"></div>
             <div class="stat-sub" id="card-aircraft-frame"></div>
-          </div>
-          <div class="stat-cell" id="cell-pax">
-            <div class="flap-label">Passengers</div>
-            <div class="flap-row" id="card-pax"></div>
-            <div class="stat-sub" id="card-pax-max"></div>
-          </div>
-          <div class="stat-cell">
-            <div class="flap-label">Cargo</div>
-            <div class="r-metric">
-              <div class="flap-row" id="card-cargo"></div>
-              <span class="metric-unit">KG</span>
-            </div>
-            <div class="stat-sub" id="card-cargo-max"></div>
           </div>
         </div>
 
@@ -280,7 +258,7 @@
         <li>An aircraft is selected, filtered by your chosen simulator and flight type</li>
         <li>A departure airport is chosen at random — restricted to airports with active commercial service by default, or the full ICAO database when set to All</li>
         <li>A destination is picked within aircraft range and minimum runway requirements</li>
-        <li>Under Options: payload (passengers + cargo) can be randomly generated and passed to SimBrief, and the airport pool can be switched between Commercial and All</li>
+        <li>Under Options: the airport pool can be switched between Commercial and All</li>
       </ul>
     </div>
 
