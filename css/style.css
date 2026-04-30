@@ -494,10 +494,10 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   animation: float 3s ease-in-out infinite;
 }
 
-/* ── Stats strip (aircraft / pax / cargo) ── */
+/* ── Stats strip (aircraft) ── */
 .card-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr;
 }
 
 .stat-cell {
