@@ -38,11 +38,11 @@ let generating = false;
 let currentFlight: GeneratedFlight | null = null;
 
 function showRerollButtons(): void {
-  document.querySelectorAll('.btn-reroll').forEach(b => b.classList.remove('hidden'));
+  document.querySelectorAll('.btn-reroll').forEach(b => b.classList.add('visible'));
 }
 
 function hideRerollButtons(): void {
-  document.querySelectorAll('.btn-reroll').forEach(b => b.classList.add('hidden'));
+  document.querySelectorAll('.btn-reroll').forEach(b => b.classList.remove('visible'));
 }
 
 async function generate(): Promise<void> {
@@ -278,3 +278,22 @@ if (localStorage.getItem('disp-options-open') === '1') optionsPanelEl.open = tru
 optionsPanelEl.addEventListener('toggle', () =>
   localStorage.setItem('disp-options-open', optionsPanelEl.open ? '1' : '0')
 );
+
+// ── Electron window auto-fit ──────────────────────────────────────────────────
+
+declare global { interface Window { electronAPI?: { resizeToHeight(h: number): void } } }
+
+if (window.electronAPI) {
+  document.body.classList.add('electron');
+
+  const mainShell = document.querySelector<HTMLElement>('#view-main .app-shell')!;
+  let resizeTimer: ReturnType<typeof setTimeout> | undefined;
+  const sendHeight = () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (viewMain.classList.contains('hidden')) return;
+      window.electronAPI!.resizeToHeight(mainShell.offsetHeight);
+    }, 80);
+  };
+  new ResizeObserver(sendHeight).observe(mainShell);
+}

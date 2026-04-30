@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, shell, protocol, net } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, protocol, net } = require('electron');
 const path = require('path');
 
 // Must be called before app is ready
@@ -8,21 +8,45 @@ protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true, supportFetchAPI: true } },
 ]);
 
+const CONTENT_WIDTH = 900;
+
 function createWindow() {
   const win = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: CONTENT_WIDTH,
+    height: 600,
     minWidth: 640,
     minHeight: 480,
     title: 'Flight Roulette',
+    show: false,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      preload: path.join(__dirname, 'preload.cjs'),
     },
   });
 
   win.loadURL('app://localhost/index.html');
   win.setMenuBarVisibility(false);
+
+  win.webContents.once('did-finish-load', () => {
+    win.webContents.executeJavaScript(
+      'document.querySelector("#view-main .app-shell").offsetHeight'
+    ).then((contentH) => {
+      const [outerW, outerH] = win.getSize();
+      const [innerW, innerH] = win.getContentSize();
+      const chromeH = outerH - innerH;
+      const chromeW = outerW - innerW;
+      win.setSize(CONTENT_WIDTH + chromeW, Math.max(480, contentH) + chromeH);
+      win.show();
+    });
+  });
+
+  ipcMain.on('resize-to-height', (_, contentH) => {
+    const [outerW, outerH] = win.getSize();
+    const [, innerH] = win.getContentSize();
+    const chromeH = outerH - innerH;
+    win.setSize(outerW, Math.max(480, contentH) + chromeH);
+  });
 
   // Open all target="_blank" links in the system browser
   win.webContents.setWindowOpenHandler(({ url }) => {

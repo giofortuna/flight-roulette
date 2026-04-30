@@ -17,6 +17,7 @@
     "productName": "Flight Roulette",
     "files": [
       "electron/main.cjs",
+      "electron/preload.cjs",
       "index.html",
       "css/**",
       "dist/**",
