@@ -70,7 +70,7 @@ function makeAircraft(overrides: Partial<Aircraft> = {}): Aircraft {
     flight_type: 'passenger', simulator: ['msfs2020', 'msfs2024'],
     range_nm: 3000, min_runway_m: 2000,
     cruise_kts: 450, category: 'narrowbody',
-    max_pax: 162, max_cargo_kg: 20000, simbrief_type: 'B738', simbrief_airframe_id: '',
+    simbrief_type: 'B738', simbrief_airframe_id: '',
     ...overrides,
   };
 }

@@ -11,8 +11,6 @@ export interface Aircraft {
   min_runway_m: number;
   cruise_kts: number;
   category: 'narrowbody' | 'widebody' | 'regional' | 'turboprop';
-  max_pax: number;
-  max_cargo_kg: number;
   simbrief_type: string;
   simbrief_airframe_id: string;
 }
@@ -38,8 +36,6 @@ export function validate(data: unknown): Aircraft[] {
      || !Number.isFinite(item.min_runway_m)   || item.min_runway_m < 0
      || !Number.isFinite(item.cruise_kts)     || item.cruise_kts <= 0
      || !(item.category in VALID_CATEGORIES)
-     || !Number.isFinite(item.max_pax)        || item.max_pax < 0 || item.max_pax > 999
-     || !Number.isFinite(item.max_cargo_kg)   || item.max_cargo_kg < 0 || item.max_cargo_kg > 999_999
      || typeof item.simbrief_type !== 'string'
      || typeof item.simbrief_airframe_id !== 'string')
       throw new Error(`aircraft.json: invalid entry "${item.icao_type}"`);
