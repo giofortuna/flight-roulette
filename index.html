@@ -4,9 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Flight Roulette — Random Flight Generator</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -54,7 +52,7 @@
 
       <div class="divider"></div>
 
-      <details class="advanced-section">
+      <details class="advanced-section" open>
         <summary class="advanced-toggle">
           <span class="advanced-label">Options</span>
           <span class="advanced-arrow">▸</span>
@@ -143,7 +141,7 @@
           <div class="card-header-row2">
             <div class="label-row">
               <div class="flap-label">Airline</div>
-              <button class="btn-reroll hidden" id="btn-reroll-airline" title="Re-roll airline">↺</button>
+              <button class="btn-reroll" id="btn-reroll-airline" title="Re-roll airline">↺</button>
             </div>
             <div class="flap-row" id="card-airline"></div>
           </div>
@@ -155,7 +153,7 @@
             <div class="apt">
               <div class="label-row">
                 <div class="flap-label">From</div>
-                <button class="btn-reroll hidden" id="btn-reroll-dep" title="Re-roll departure">↺</button>
+                <button class="btn-reroll" id="btn-reroll-dep" title="Re-roll departure">↺</button>
               </div>
               <div class="flap-row" id="card-dep-icao"></div>
               <div class="flap-row" id="card-dep-city"></div>
@@ -185,7 +183,7 @@
 
             <div class="apt right">
               <div class="label-row label-row-right">
-                <button class="btn-reroll hidden" id="btn-reroll-dest" title="Re-roll destination">↺</button>
+                <button class="btn-reroll" id="btn-reroll-dest" title="Re-roll destination">↺</button>
                 <div class="flap-label">To</div>
               </div>
               <div class="flap-row" id="card-dest-icao"></div>
@@ -201,7 +199,7 @@
           <div class="stat-cell">
             <div class="label-row">
               <div class="flap-label">Aircraft</div>
-              <button class="btn-reroll hidden" id="btn-reroll-aircraft" title="Re-roll aircraft">↺</button>
+              <button class="btn-reroll" id="btn-reroll-aircraft" title="Re-roll aircraft">↺</button>
             </div>
             <div class="aircraft-type" id="card-aircraft-type"></div>
             <div class="stat-sub" id="card-aircraft-frame"></div>

@@ -59,6 +59,16 @@ body::after {
 /* ── Views ── */
 .view { min-height: 100vh; }
 
+body.electron #view-about {
+  min-height: unset;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+body.electron .app-shell {
+  padding-bottom: 32px;
+}
+
 /* ════════════════════════════════════════
    SHARED LAYOUT
 ════════════════════════════════════════ */
@@ -502,6 +512,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .stat-cell {
   padding: 13px 18px;
+  min-height: 100px;
 }
 
 .aircraft-type {
@@ -769,6 +780,13 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   line-height: 1;
   transition: color 0.12s;
   font-family: 'Share Tech Mono', monospace;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.btn-reroll.visible {
+  visibility: visible;
+  pointer-events: auto;
 }
 
 .btn-reroll:hover {
