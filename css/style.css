@@ -781,10 +781,12 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   transition: color 0.12s;
   font-family: 'Share Tech Mono', monospace;
   visibility: hidden;
+  pointer-events: none;
 }
 
 .btn-reroll.visible {
   visibility: visible;
+  pointer-events: auto;
 }
 
 .btn-reroll:hover {

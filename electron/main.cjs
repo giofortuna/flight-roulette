@@ -33,7 +33,7 @@ function createWindow() {
       'document.querySelector("#view-main .app-shell").offsetHeight'
     ).then((contentH) => {
       const [outerW, outerH] = win.getSize();
-      const [innerW, innerH] = win.getContentSize();
+      const [, innerH] = win.getContentSize();
       const chromeH = outerH - innerH;
       const chromeW = outerW - innerW;
       win.setSize(CONTENT_WIDTH + chromeW, Math.max(480, contentH) + chromeH);
