@@ -73,6 +73,10 @@ The airline database (`data/airlines.json`) is committed. To rebuild it from sou
 1. Download `airlines.dat` from [OpenFlights](https://openflights.org/data.html) and place it in `data/raw/` (git-ignored)
 2. Run `node scripts/build-airline-data.js`
 
+## Known issues
+
+- **Closed airports in Scheduled mode** — the *Scheduled* filter relies on OurAirports data, which may lag behind real-world closures. Some airports marked as having scheduled service have since closed and will be missing from SimBrief's airport database. If SimBrief can't find a generated airport, try re-rolling the departure or destination.
+
 ## Data sources
 
 - **Airport data** — [OurAirports](https://ourairports.com) (public domain)
