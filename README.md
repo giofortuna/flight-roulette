@@ -1,6 +1,6 @@
 # Flight Roulette — Random Flight Generator
 
-A random flight assignment tool for flight simulator pilots. Pick your simulator, press Generate, and get a realistic route dispatched directly to SimBrief.
+A random flight assignment tool for flight simulator pilots. Pick your simulator, press Generate, and get a route dispatched directly to SimBrief.
 
 **[Live app](https://giofortuna.github.io/flight-roulette/)** · [Releases](https://github.com/giofortuna/flight-roulette/releases) · [SimBrief](https://www.simbrief.com) · [OurAirports](https://ourairports.com)
 
