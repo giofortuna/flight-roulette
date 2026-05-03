@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DISPATCH — Design Mocks</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --amber: #FFB000;
+    --amber-dim: #7A5400;
+    --amber-glow: rgba(255, 176, 0, 0.15);
+    --amber-bright: #FFD060;
+    --bg: #080604;
+    --bg2: #0F0C06;
+    --bg3: #161008;
+    --border: #2A1C00;
+    --border-active: #3A2800;
+    --text-dim: #5A4010;
+    --green: #39FF14;
+    --red: #FF3B3B;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--amber);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    cursor: crosshair;
+  }
+
+  /* CRT scanlines */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+    pointer-events: none;
+    z-index: 9000;
+  }
+
+  /* Vignette */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.7) 100%);
+    pointer-events: none;
+    z-index: 8999;
+  }
+
+  /* ── Mock switcher (meta UI) ── */
+  .mock-nav {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+    z-index: 9999;
+    background: rgba(8,6,4,0.95);
+    border: 1px solid var(--border-active);
+    padding: 6px;
+  }
+
+  .mock-nav button {
+    background: transparent;
+    border: none;
+    color: var(--amber-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .mock-nav button.active {
+    background: var(--amber);
+    color: var(--bg);
+  }
+
+  .mock-nav button:hover:not(.active) {
+    color: var(--amber);
+  }
+
+  /* ── Pages ── */
+  .page { display: none; min-height: 100vh; }
+  .page.active { display: block; }
+
+  /* ════════════════════════════════════════
+     SHARED LAYOUT
+  ════════════════════════════════════════ */
+  .app-shell {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 20px 100px;
+  }
+
+  /* ── App header ── */
+  .app-header {
+    padding: 20px 0 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+  }
+
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: 0.15em;
+    text-shadow: 0 0 20px rgba(255,176,0,0.35);
+    animation: flicker 9s infinite;
+  }
+
+  .logo-sub {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .nav-link {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--amber-dim);
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.15s;
+    background: none;
+    border: none;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .nav-link:hover,
+  .nav-link.active-nav {
+    color: var(--amber);
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 6px var(--green);
+    animation: blink 2s step-end infinite;
+    flex-shrink: 0;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ════════════════════════════════════════
+     SETTINGS PANEL
+  ════════════════════════════════════════ */
+  .settings-panel {
+    background: var(--bg2);
+    border: 1px solid var(--border-active);
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .setting-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--amber-dim);
+    text-transform: uppercase;
+    flex-shrink: 0;
+    width: 90px;
+  }
+
+  /* Segmented toggle */
+  .seg {
+    display: flex;
+    border: 1px solid var(--amber-dim);
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .seg input[type="radio"] { display: none; }
+
+  .seg label {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber-dim);
+    cursor: pointer;
+    transition: all 0.12s;
+    border-right: 1px solid var(--amber-dim);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .seg label:last-of-type { border-right: none; }
+
+  .seg input[type="radio"]:checked + label {
+    background: var(--amber);
+    color: var(--bg);
+    font-weight: 700;
+  }
+
+  .seg label:hover {
+    color: var(--amber);
+    background: var(--amber-glow);
+  }
+
+  .seg input[type="radio"]:checked + label:hover {
+    color: var(--bg);
+    background: var(--amber);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2px 0;
+  }
+
+  /* Generate button */
+  .btn-generate {
+    background: var(--amber);
+    color: var(--bg);
+    border: none;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    padding: 14px;
+    width: 100%;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 0 24px rgba(255,176,0,0.2);
+    transition: all 0.12s;
+  }
+
+  .btn-generate:hover {
+    background: var(--amber-bright);
+    box-shadow: 0 0 36px rgba(255,176,0,0.4);
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    border: 1px dashed var(--border-active);
+    padding: 60px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .empty-icon {
+    font-size: 40px;
+    opacity: 0.2;
+    animation: float 4s ease-in-out infinite;
+  }
+
+  .empty-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--amber-dim);
+    text-transform: uppercase;
+  }
+
+  .empty-sub {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    line-height: 1.7;
+    max-width: 280px;
+  }
+
+  /* ════════════════════════════════════════
+     FLIGHT CARD
+  ════════════════════════════════════════ */
+  .flight-card {
+    background: var(--bg2);
+    border: 1px solid var(--border-active);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .flight-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--amber) 40%, var(--amber) 60%, transparent);
+    opacity: 0.45;
+  }
+
+  /* Card header */
+  .card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .card-airline {
+    font-size: 11px;
+    color: var(--amber-dim);
+    letter-spacing: 0.15em;
+  }
+
+  .card-fltnum {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: var(--amber);
+  }
+
+  .sim-badge {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--amber-dim);
+    border: 1px solid var(--border-active);
+    padding: 5px 10px;
+    text-transform: uppercase;
+  }
+
+  /* Route */
+  .card-route {
+    padding: 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .apt {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .apt-icao {
+    font-family: 'Orbitron', monospace;
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    text-shadow: 0 0 20px rgba(255,176,0,0.25);
+  }
+
+  .apt-name {
+    font-size: 11px;
+    color: var(--amber-dim);
+    margin-top: 5px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .apt-city {
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-top: 2px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .apt.right { text-align: right; }
+
+  .route-mid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    flex-shrink: 0;
+    padding: 0 6px;
+  }
+
+  .route-stat {
+    font-size: 10px;
+    color: var(--amber-dim);
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+
+  .route-arrow {
+    display: flex;
+    align-items: center;
+    width: 56px;
+  }
+
+  .r-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border-active);
+  }
+
+  .r-plane {
+    font-size: 15px;
+    color: var(--amber);
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* Details grid */
+  .card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-cell {
+    padding: 15px 20px;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .grid-cell:nth-child(2n) { border-right: none; }
+  .grid-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .grid-cell.full {
+    grid-column: span 2;
+    border-right: none;
+  }
+
+  .cell-label {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .cell-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 22px;
+    color: var(--amber);
+    line-height: 1;
+  }
+
+  .cell-sub {
+    font-size: 10px;
+    color: var(--amber-dim);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  .cell-value-sm {
+    font-family: 'Space Mono', monospace;
+    font-size: 16px;
+    color: var(--amber);
+    line-height: 1.3;
+  }
+
+  /* Card footer */
+  .card-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--border);
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .footer-note {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .footer-note-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+
+  .footer-note-val {
+    font-size: 11px;
+    color: var(--amber-dim);
+  }
+
+  .btn-dispatch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--amber);
+    color: var(--bg);
+    border: none;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    padding: 12px 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px rgba(255,176,0,0.2);
+    transition: all 0.12s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .btn-dispatch:hover {
+    background: var(--amber-bright);
+    box-shadow: 0 0 32px rgba(255,176,0,0.4);
+    transform: translateY(-1px);
+  }
+
+  /* Regenerate link */
+  .regen-row {
+    margin-top: 14px;
+    text-align: center;
+  }
+
+  .btn-regen {
+    background: none;
+    border: none;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: color 0.15s;
+  }
+
+  .btn-regen:hover { color: var(--amber-dim); }
+
+  /* ════════════════════════════════════════
+     ABOUT PAGE
+  ════════════════════════════════════════ */
+  .about-hero {
+    padding: 32px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+
+  .about-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    line-height: 1.1;
+    text-shadow: 0 0 30px rgba(255,176,0,0.3);
+    margin-bottom: 10px;
+  }
+
+  .about-tagline {
+    font-size: 12px;
+    color: var(--amber-dim);
+    letter-spacing: 0.15em;
+    line-height: 1.6;
+  }
+
+  .about-block {
+    margin-bottom: 28px;
+  }
+
+  .about-block-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--amber-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .about-text {
+    font-size: 12px;
+    color: var(--amber-dim);
+    line-height: 1.85;
+    letter-spacing: 0.04em;
+  }
+
+  .about-text p + p { margin-top: 10px; }
+
+  /* Feature list */
+  .feature-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .feature-list li {
+    display: flex;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--amber-dim);
+    line-height: 1.5;
+    letter-spacing: 0.04em;
+  }
+
+  .feature-list li::before {
+    content: '→';
+    color: var(--amber);
+    flex-shrink: 0;
+  }
+
+  /* Aircraft table */
+  .aircraft-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .aircraft-table th {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    text-align: left;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
+
+  .aircraft-table td {
+    font-size: 11px;
+    color: var(--amber-dim);
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.05em;
+    vertical-align: top;
+  }
+
+  .aircraft-table td:first-child {
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    color: var(--amber);
+    letter-spacing: 0.1em;
+  }
+
+  .aircraft-table tr:last-child td { border-bottom: none; }
+
+  .badge-soon {
+    font-size: 8px;
+    letter-spacing: 0.15em;
+    padding: 2px 6px;
+    border: 1px solid var(--border-active);
+    color: var(--text-dim);
+    text-transform: uppercase;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+
+  /* Sim table */
+  .sim-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .sim-table tr {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sim-table tr:last-child { border-bottom: none; }
+
+  .sim-table td {
+    padding: 10px 12px;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  .sim-table td:first-child {
+    color: var(--amber);
+    width: 50%;
+  }
+
+  .sim-table td:last-child {
+    color: var(--text-dim);
+    text-align: right;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+
+  .tag-live {
+    color: var(--green);
+    letter-spacing: 0.15em;
+    font-size: 10px;
+  }
+
+  .tag-soon { color: var(--text-dim); }
+
+  /* Links */
+  .about-links {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+  }
+
+  .about-link {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--amber-dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border-active);
+    padding-bottom: 2px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .about-link:hover {
+    color: var(--amber);
+    border-color: var(--amber-dim);
+  }
+
+  /* ── Animations ── */
+  @keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.7; }
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     PAGE 1 — MAIN / EMPTY STATE
+══════════════════════════════════════════ -->
+<div class="page active" id="page-empty">
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <div class="logo">DISPATCH</div>
+        <div class="logo-sub">Random Flight Generator</div>
+      </div>
+      <div class="header-right">
+        <button class="nav-link" onclick="showPage('page-about')">About</button>
+        <div class="status-dot"></div>
+      </div>
+    </header>
+
+    <div class="section-label">Settings</div>
+    <div class="settings-panel">
+      <div class="setting-row">
+        <span class="setting-label">Flight Type</span>
+        <div class="seg">
+          <input type="radio" name="ft1" id="ft1_pax" checked>
+          <label for="ft1_pax">Passenger</label>
+          <input type="radio" name="ft1" id="ft1_cargo">
+          <label for="ft1_cargo">Cargo</label>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Simulator</span>
+        <div class="seg">
+          <input type="radio" name="sim1" id="sim1_2020" checked>
+          <label for="sim1_2020">MSFS 2020</label>
+          <input type="radio" name="sim1" id="sim1_2024">
+          <label for="sim1_2024">MSFS 2024</label>
+          <input type="radio" name="sim1" id="sim1_xp">
+          <label for="sim1_xp">X-Plane 12</label>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="setting-row">
+        <span class="setting-label">Payload</span>
+        <div class="seg">
+          <input type="radio" name="pay1" id="pay1_rand" checked>
+          <label for="pay1_rand">Random</label>
+          <input type="radio" name="pay1" id="pay1_sb">
+          <label for="pay1_sb">SimBrief</label>
+        </div>
+      </div>
+      <button class="btn-generate">▶ Generate Flight</button>
+    </div>
+
+    <div class="empty-state">
+      <div class="empty-icon">✈</div>
+      <div class="empty-title">Awaiting Dispatch</div>
+      <div class="empty-sub">Configure your settings above and press Generate to receive your flight assignment.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 2 — MAIN / FLIGHT CARD
+══════════════════════════════════════════ -->
+<div class="page" id="page-card">
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <div class="logo">DISPATCH</div>
+        <div class="logo-sub">Random Flight Generator</div>
+      </div>
+      <div class="header-right">
+        <button class="nav-link" onclick="showPage('page-about')">About</button>
+        <div class="status-dot"></div>
+      </div>
+    </header>
+
+    <div class="section-label">Settings</div>
+    <div class="settings-panel">
+      <div class="setting-row">
+        <span class="setting-label">Flight Type</span>
+        <div class="seg">
+          <input type="radio" name="ft2" id="ft2_pax" checked>
+          <label for="ft2_pax">Passenger</label>
+          <input type="radio" name="ft2" id="ft2_cargo">
+          <label for="ft2_cargo">Cargo</label>
+        </div>
+      </div>
+      <div class="setting-row">
+        <span class="setting-label">Simulator</span>
+        <div class="seg">
+          <input type="radio" name="sim2" id="sim2_2020" checked>
+          <label for="sim2_2020">MSFS 2020</label>
+          <input type="radio" name="sim2" id="sim2_2024">
+          <label for="sim2_2024">MSFS 2024</label>
+          <input type="radio" name="sim2" id="sim2_xp">
+          <label for="sim2_xp">X-Plane 12</label>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="setting-row">
+        <span class="setting-label">Payload</span>
+        <div class="seg">
+          <input type="radio" name="pay2" id="pay2_rand" checked>
+          <label for="pay2_rand">Random</label>
+          <input type="radio" name="pay2" id="pay2_sb">
+          <label for="pay2_sb">SimBrief</label>
+        </div>
+      </div>
+      <button class="btn-generate">▶ Regenerate</button>
+    </div>
+
+    <div class="section-label">Generated Flight</div>
+    <div class="flight-card">
+
+      <div class="card-header">
+        <div class="card-header-left">
+          <div class="card-airline">British Airways</div>
+          <div class="card-fltnum">BAW442</div>
+        </div>
+        <div class="sim-badge">MSFS 2020</div>
+      </div>
+
+      <div class="card-route">
+        <div class="apt">
+          <div class="apt-icao">EGLL</div>
+          <div class="apt-name">Heathrow Airport</div>
+          <div class="apt-city">London, United Kingdom</div>
+        </div>
+        <div class="route-mid">
+          <div class="route-stat">3,411 nm</div>
+          <div class="route-arrow">
+            <div class="r-line"></div>
+            <div class="r-plane">✈</div>
+            <div class="r-line"></div>
+          </div>
+          <div class="route-stat">07+32 BLK</div>
+        </div>
+        <div class="apt right">
+          <div class="apt-icao">OMDB</div>
+          <div class="apt-name">Dubai International</div>
+          <div class="apt-city">Dubai, UAE</div>
+        </div>
+      </div>
+
+      <div class="card-grid">
+        <div class="grid-cell full" style="border-bottom: 1px solid var(--border);">
+          <div class="cell-label">Aircraft</div>
+          <div class="cell-value-sm">Boeing 737-800</div>
+          <div class="cell-sub">PMDG 737-800</div>
+        </div>
+        <div class="grid-cell">
+          <div class="cell-label">Passengers</div>
+          <div class="cell-value">138</div>
+          <div class="cell-sub">/ 162 max</div>
+        </div>
+        <div class="grid-cell">
+          <div class="cell-label">Cargo</div>
+          <div class="cell-value">4,280<span style="font-size:13px;color:var(--amber-dim)"> kg</span></div>
+          <div class="cell-sub">/ 9,000 kg max</div>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <div class="footer-note">
+          <div class="footer-note-label">Fuel</div>
+          <div class="footer-note-val">Calculated by SimBrief</div>
+        </div>
+        <button class="btn-dispatch">
+          Dispatch to SimBrief →
+        </button>
+      </div>
+    </div>
+
+    <div class="regen-row">
+      <button class="btn-regen">↺ Generate another flight</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE 3 — ABOUT
+══════════════════════════════════════════ -->
+<div class="page" id="page-about">
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <div class="logo">DISPATCH</div>
+        <div class="logo-sub">Random Flight Generator</div>
+      </div>
+      <div class="header-right">
+        <button class="nav-link active-nav">About</button>
+        <div class="status-dot"></div>
+      </div>
+    </header>
+
+    <div class="about-hero">
+      <div class="about-title">Random.<br>Realistic.<br>Ready to fly.</div>
+      <div class="about-tagline" style="margin-top:14px">A dispatch tool for flight simulator pilots who want<br>to go somewhere new, every time.</div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">What is Dispatch?</div>
+      <div class="about-text">
+        <p>Dispatch generates random, realistic flight assignments for flight simulator pilots. Pick your simulator and preferences, and the app selects an aircraft, airline, departure airport, and destination — constrained by real-world performance data.</p>
+        <p>Every generated flight is sent directly to SimBrief for a full operational flight plan, complete with routing, weather, and fuel calculations.</p>
+      </div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">How it works</div>
+      <ul class="feature-list">
+        <li>An airline is picked randomly from a database of ~400 worldwide operators</li>
+        <li>An aircraft is selected, filtered by your chosen simulator and flight type</li>
+        <li>A departure airport is chosen from the full ICAO database</li>
+        <li>A destination is picked based on aircraft range and minimum runway requirements</li>
+        <li>Optional: payload (passengers + cargo) is randomly generated and passed to SimBrief</li>
+      </ul>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Supported Aircraft (v1)</div>
+      <table class="aircraft-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Airframe</th>
+            <th>Simulators</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>B738</td>
+            <td>PMDG 737-800</td>
+            <td>MSFS 2020 / 2024</td>
+          </tr>
+          <tr>
+            <td>A320</td>
+            <td>Fenix A320 Sharklet CFM</td>
+            <td>MSFS 2020 / 2024</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Supported Simulators</div>
+      <table class="sim-table">
+        <tr>
+          <td>MSFS 2020</td>
+          <td><span class="tag-live">● LIVE</span></td>
+        </tr>
+        <tr>
+          <td>MSFS 2024</td>
+          <td><span class="tag-live">● LIVE</span></td>
+        </tr>
+        <tr>
+          <td>X-Plane 12</td>
+          <td><span class="tag-soon">COMING SOON</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Links</div>
+      <div class="about-links">
+        <a class="about-link">FlightSim.to</a>
+        <a class="about-link">GitHub</a>
+        <a class="about-link">SimBrief</a>
+        <a class="about-link">OurAirports</a>
+      </div>
+    </div>
+
+    <div class="about-block">
+      <div class="about-block-title">Version</div>
+      <div class="about-text">v1.0.0 — Initial release<br><span style="color:var(--text-dim)">Airport data: OurAirports · Airline data: OurAirports · Flight planning: SimBrief</span></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Mock nav ── -->
+<nav class="mock-nav">
+  <button class="active" onclick="showPage('page-empty')">① Empty State</button>
+  <button onclick="showPage('page-card')">② Flight Card</button>
+  <button onclick="showPage('page-about')">③ About</button>
+</nav>
+
+<script>
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.mock-nav button').forEach((b, i) => {
+      b.classList.toggle('active', ['page-empty','page-card','page-about'][i] === id);
+    });
+    window.scrollTo(0, 0);
+  }
+</script>
+</body>
+</html>
