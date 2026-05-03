@@ -23,7 +23,7 @@ jobs:
         run: npm ci
 
       - name: Build and package
-        run: npm run electron:build
+        run: npm run build && npx electron-builder --publish never
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
@@ -45,7 +45,7 @@ jobs:
         run: npm ci
 
       - name: Build and package
-        run: npm run electron:build
+        run: npm run build && npx electron-builder --publish never
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
