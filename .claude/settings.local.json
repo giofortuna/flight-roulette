@@ -4,11 +4,10 @@
       "Bash(gh issue *)",
       "Bash(git checkout *)",
       "Bash(git pull *)",
-      "Bash(start splitflap-demo.html)",
-      "Bash(gh pr create --title 'feat\\(ui\\): split-flap flight card design' --body ' *)",
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(git push *)"
+      "Bash(git push *)",
+      "Bash(git commit *)"
     ]
   }
 }
