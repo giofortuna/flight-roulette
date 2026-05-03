@@ -29,12 +29,8 @@
     },
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
         { "target": "portable", "arch": ["x64"] }
       ]
-    },
-    "mac": {
-      "target": { "target": "dmg", "arch": ["x64", "arm64"] }
     }
   },
   "devDependencies": {
