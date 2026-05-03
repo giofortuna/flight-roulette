@@ -3,6 +3,8 @@
   "type": "module",
   "version": "1.0.0",
   "description": "Random flight generator for flight simulator pilots",
+  "license": "MIT",
+  "author": "Gio Fortuna",
   "main": "electron/main.cjs",
   "scripts": {
     "build": "tsc",
