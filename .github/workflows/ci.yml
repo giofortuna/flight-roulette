@@ -36,7 +36,7 @@ jobs:
 
   deploy:
     needs: ci
-    if: false # repo is private; re-enable (github.event_name == 'push') when public
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -58,6 +58,7 @@ jobs:
           mkdir -p _site
           cp index.html _site/
           cp -r css _site/
+          cp -r fonts _site/
           cp -r dist _site/
           if [ -d data ]; then cp -r data _site/; fi
 
