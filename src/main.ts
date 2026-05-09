@@ -194,7 +194,7 @@ async function handleRerollAircraft(): Promise<void> {
     const allAircraftList = await loadAircraft();
     const maxRange = RANGE_UTILISATION * RANGE_RELAXATION;
     const pool = allAircraftList.filter(a =>
-      (settings.flightTypes as string[]).includes(a.flight_type) &&
+      (route.airline.type === 'both' || a.flight_type === route.airline.type) &&
       a.simulator.includes(settings.simulator) &&
       a.icao_type !== route.aircraft.icao_type &&
       distanceNm <= a.range_nm * maxRange &&
