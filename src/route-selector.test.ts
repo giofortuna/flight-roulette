@@ -175,6 +175,14 @@ test('pickRoute — throws NoRouteError when flightTypes does not match any airc
   );
 });
 
+test('pickRoute — throws NoRouteError when no airlines match flightTypes', () => {
+  const cargoInput: SelectionInput = { flightTypes: ['cargo'], simulator: 'msfs2020', scheduledOnly: true };
+  assert.throws(
+    () => pickRoute(cargoInput, [makeAircraft({ flight_type: 'cargo' })], [makeAirline({ type: 'passenger' })], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
 test('pickRoute — airline type matches aircraft type when both flight types selected', () => {
   const bothInput: SelectionInput = { flightTypes: ['passenger', 'cargo'], simulator: 'msfs2020', scheduledOnly: true };
   // One passenger aircraft + one cargo aircraft; one passenger airline + one cargo airline
