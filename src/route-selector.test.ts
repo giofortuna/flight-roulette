@@ -175,6 +175,21 @@ test('pickRoute — throws NoRouteError when flightTypes does not match any airc
   );
 });
 
+test('pickRoute — airline type matches aircraft type when both flight types selected', () => {
+  const bothInput: SelectionInput = { flightTypes: ['passenger', 'cargo'], simulator: 'msfs2020', scheduledOnly: true };
+  // One passenger aircraft + one cargo aircraft; one passenger airline + one cargo airline
+  const passengerAircraft = makeAircraft({ flight_type: 'passenger' });
+  const cargoAircraft     = makeAircraft({ flight_type: 'cargo', icao_type: 'B77F' });
+  const passengerAirline  = makeAirline({ icao: 'BAW', type: 'passenger' });
+  const cargoAirline      = makeAirline({ icao: 'FDX', type: 'cargo' });
+  // Run many times to confirm airline always matches aircraft
+  for (let i = 0; i < 50; i++) {
+    const route = pickRoute(bothInput, [passengerAircraft, cargoAircraft], [passengerAirline, cargoAirline], [NEAR_A, NEAR_B]);
+    assert.equal(route.airline.type, route.aircraft.flight_type,
+      `airline type ${route.airline.type} should match aircraft flight_type ${route.aircraft.flight_type}`);
+  }
+});
+
 test('pickRoute — scheduledOnly: true throws NoRouteError when all airports are unscheduled', () => {
   const unscheduledA = makeAirport('XNSA', 0, 0, { scheduled: false });
   const unscheduledB = makeAirport('XNSB', 0, 1.5, { scheduled: false });

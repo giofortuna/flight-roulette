@@ -149,10 +149,14 @@ export function pickRoute(
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledAircraft[i], shuffledAircraft[j]] = [shuffledAircraft[j], shuffledAircraft[i]];
   }
-  // Airline selection is independent of route feasibility — pick once
-  const pickedAirline = pickRandom(airlines as [Airline, ...Airline[]]);
 
   for (const pickedAircraft of shuffledAircraft) {
+    // Airline must match the picked aircraft's flight type
+    const airlinePool = airlines.filter(a =>
+      a.type === pickedAircraft.flight_type || a.type === 'both'
+    );
+    if (airlinePool.length === 0) continue;
+
     const eligibleDep  = filterByRunway(depPool,  pickedAircraft.min_runway_m);
     const eligibleDest = filterByRunway(destPool, pickedAircraft.min_runway_m);
     if (eligibleDep.length < 1 || eligibleDest.length < 2) continue;
@@ -187,6 +191,7 @@ export function pickRoute(
         type Candidate = (typeof candidates)[number];
         const { airport: destination, distNm } = pickRandom(candidates as [Candidate, ...Candidate[]]);
         const distanceNm = Math.round(distNm);
+        const pickedAirline = pickRandom(airlinePool as [Airline, ...Airline[]]);
 
         return { airline: pickedAirline, aircraft: pickedAircraft, departure, destination, distanceNm };
       }

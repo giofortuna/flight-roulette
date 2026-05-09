@@ -120,7 +120,7 @@ async function handleRerollAirline(): Promise<void> {
     const settings = getSettings();
     const { route, plan } = currentFlight;
     const allAirlines = await loadAirlines();
-    const pool = allAirlines.filter(a => settings.flightTypes.some(ft => a.type === ft) || a.type === 'both');
+    const pool = allAirlines.filter(a => a.type === route.aircraft.flight_type || a.type === 'both');
     const candidates = pool.filter(a => a.icao !== route.airline.icao);
     const src = (candidates.length > 0 ? candidates : pool) as [Airline, ...Airline[]];
     const newAirline = pickRandom(src);
