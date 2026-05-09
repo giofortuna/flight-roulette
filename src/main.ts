@@ -17,7 +17,7 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
 
 const RANGE_CONFIGS = {
   time: { min: 0, max: 16,   step: 0.5, unit: 'h'  },
-  dist: { min: 0, max: 9000, step: 100, unit: 'nm' },
+  dist: { min: 0, max: 9900, step: 100, unit: 'nm' },
 } as const;
 
 function getFilterMode(): 'time' | 'dist' {
