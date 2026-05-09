@@ -377,16 +377,16 @@
     "simbrief_airframe_id": ""
   },
   {
-    "icao_type": "B74F",
-    "type_name": "Boeing 747-400F",
-    "airframe_name": "PMDG",
+    "icao_type": "B48F",
+    "type_name": "Boeing 747-800F",
+    "airframe_name": "Working Title",
     "flight_type": "cargo",
-    "simulator": ["msfs2020", "msfs2024"],
-    "range_nm": 4450,
-    "min_runway_m": 2743,
-    "cruise_kts": 487,
+    "simulator": ["msfs2024"],
+    "range_nm": 4300,
+    "min_runway_m": 2134,
+    "cruise_kts": 481,
     "category": "widebody",
-    "simbrief_type": "B74F",
+    "simbrief_type": "B48F",
     "simbrief_airframe_id": ""
   },
   {
@@ -408,7 +408,7 @@
     "airframe_name": "iniBuilds",
     "flight_type": "cargo",
     "simulator": ["msfs2020", "msfs2024"],
-    "range_nm": 4050,
+    "range_nm": 4800,
     "min_runway_m": 2134,
     "cruise_kts": 447,
     "category": "widebody",
