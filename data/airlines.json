@@ -10693,7 +10693,7 @@
     "country": "Bahamas",
     "region": "caribbean",
     "hub": [],
-    "type": "cargo",
+    "type": "passenger",
     "simbrief_id": "SOA",
     "fleet": []
   },

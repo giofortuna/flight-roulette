@@ -378,7 +378,7 @@
   },
   {
     "icao_type": "B48F",
-    "type_name": "Boeing 747-800F",
+    "type_name": "Boeing 747-8F",
     "airframe_name": "Working Title",
     "flight_type": "cargo",
     "simulator": ["msfs2024"],
