@@ -300,6 +300,23 @@ const savedRegion = localStorage.getItem('disp-filter-region');
 if (savedRegion) filterRegionEl.value = savedRegion;
 filterRegionEl.addEventListener('change', () => localStorage.setItem('disp-filter-region', filterRegionEl.value));
 
+// ── Flight type + simulator + airports — persist ─────────────────────────────
+
+function persistRadioGroup(name: string, key: string): void {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+    radio.addEventListener('change', () => localStorage.setItem(key, (radio as HTMLInputElement).value));
+  });
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    const el = document.querySelector(`input[name="${name}"][value="${saved}"]`) as HTMLInputElement | null;
+    if (el) el.checked = true;
+  }
+}
+
+persistRadioGroup('flight-type', 'disp-flight-type');
+persistRadioGroup('simulator',   'disp-simulator');
+persistRadioGroup('airports',    'disp-airports');
+
 // ── Departure time — period row toggle + persist ───────────────────────────────
 
 const stdPeriodRow = document.getElementById('std-period-row')!;
