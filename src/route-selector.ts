@@ -131,7 +131,7 @@ export function pickRoute(
     input.flightTypes.some(ft => a.type === ft) || a.type === 'both'
   );
   const aircraft = allAircraft.filter(a =>
-    (input.flightTypes as string[]).includes(a.flight_type) && a.simulator.includes(input.simulator)
+    input.flightTypes.includes(a.flight_type) && a.simulator.includes(input.simulator)
   );
 
   if (aircraft.length === 0)

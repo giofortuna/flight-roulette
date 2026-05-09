@@ -373,3 +373,11 @@ test('buildRerollAircraftPool — excludes aircraft whose min runway exceeds dep
   assert.equal(pool[0].icao_type, 'SML1');
 });
 
+test('buildRerollAircraftPool — excludes aircraft not available for the selected simulator', () => {
+  const msfs2024Only = makeAircraft({ icao_type: '2024', simulator: ['msfs2024'] });
+  const bothSims     = makeAircraft({ icao_type: 'BOTH', simulator: ['msfs2020', 'msfs2024'] });
+  const pool = buildRerollAircraftPool([msfs2024Only, bothSims], ['passenger'], 'passenger', 'msfs2020', 'OTHER', 100, 3000, 3000);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].icao_type, 'BOTH');
+});
+
