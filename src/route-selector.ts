@@ -1,4 +1,4 @@
-import type { FlightType, Simulator, AirportRegion } from './types.js';
+import type { FlightType, Simulator, AirportRegion, AirlineType } from './types.js';
 import { loadAircraft } from './aircraft-db.js';
 import type { Aircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
@@ -9,7 +9,7 @@ import type { Airport } from './airport-db.js';
 export type { Aircraft, Airline, Airport };
 
 export interface SelectionInput {
-  flightType: FlightType;
+  flightTypes: FlightType[];
   simulator: Simulator;
   scheduledOnly: boolean;
   minBlockH?: number;
@@ -128,16 +128,16 @@ export function pickRoute(
   departureScopeAirports?: Airport[],
 ): SelectedRoute {
   const airlines = allAirlines.filter(a =>
-    a.type === input.flightType || a.type === 'both'
+    input.flightTypes.some(ft => a.type === ft) || a.type === 'both'
   );
   const aircraft = allAircraft.filter(a =>
-    a.flight_type === input.flightType && a.simulator.includes(input.simulator)
+    input.flightTypes.includes(a.flight_type) && a.simulator.includes(input.simulator)
   );
 
   if (aircraft.length === 0)
-    throw new NoRouteError(`no aircraft available for ${input.flightType} / ${input.simulator}`);
+    throw new NoRouteError(`no aircraft available for [${input.flightTypes.join(', ')}] / ${input.simulator}`);
   if (airlines.length === 0)
-    throw new NoRouteError(`no airlines available for flight type ${input.flightType}`);
+    throw new NoRouteError(`no airlines available for flight types [${input.flightTypes.join(', ')}]`);
 
   const schedFilter = (a: Airport) => !input.scheduledOnly || a.scheduled !== false;
   const destPool = allAirports.filter(schedFilter);
@@ -149,10 +149,14 @@ export function pickRoute(
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledAircraft[i], shuffledAircraft[j]] = [shuffledAircraft[j], shuffledAircraft[i]];
   }
-  // Airline selection is independent of route feasibility — pick once
-  const pickedAirline = pickRandom(airlines as [Airline, ...Airline[]]);
 
   for (const pickedAircraft of shuffledAircraft) {
+    // Airline must match the picked aircraft's flight type
+    const airlinePool = airlines.filter(a =>
+      a.type === pickedAircraft.flight_type || a.type === 'both'
+    );
+    if (airlinePool.length === 0) continue;
+
     const eligibleDep  = filterByRunway(depPool,  pickedAircraft.min_runway_m);
     const eligibleDest = filterByRunway(destPool, pickedAircraft.min_runway_m);
     if (eligibleDep.length < 1 || eligibleDest.length < 2) continue;
@@ -187,6 +191,7 @@ export function pickRoute(
         type Candidate = (typeof candidates)[number];
         const { airport: destination, distNm } = pickRandom(candidates as [Candidate, ...Candidate[]]);
         const distanceNm = Math.round(distNm);
+        const pickedAirline = pickRandom(airlinePool as [Airline, ...Airline[]]);
 
         return { airline: pickedAirline, aircraft: pickedAircraft, departure, destination, distanceNm };
       }
@@ -194,6 +199,28 @@ export function pickRoute(
   }
 
   throw new NoRouteError('exhausted all attempts — no valid departure/destination pair found');
+}
+
+export function buildRerollAircraftPool(
+  allAircraft: Aircraft[],
+  flightTypes: FlightType[],
+  airlineType: AirlineType,
+  simulator: Simulator,
+  currentIcaoType: string,
+  distanceNm: number,
+  departureMaxRunwayM: number,
+  destinationMaxRunwayM: number,
+): Aircraft[] {
+  const maxRange = RANGE_UTILISATION * RANGE_RELAXATION;
+  return allAircraft.filter(a =>
+    flightTypes.includes(a.flight_type) &&
+    (airlineType === 'both' || a.flight_type === airlineType) &&
+    a.simulator.includes(simulator) &&
+    a.icao_type !== currentIcaoType &&
+    distanceNm <= a.range_nm * maxRange &&
+    departureMaxRunwayM     >= a.min_runway_m &&
+    destinationMaxRunwayM   >= a.min_runway_m
+  );
 }
 
 export async function selectRoute(input: SelectionInput): Promise<SelectedRoute> {
