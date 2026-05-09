@@ -80,12 +80,18 @@
             </select>
           </div>
           <div class="setting-row">
-            <span class="setting-label">Block Time</span>
+            <span class="setting-label">Range</span>
             <div class="filter-controls">
+              <div class="seg filter-mode-seg">
+                <input type="radio" name="filter-mode" id="fmode-time" value="time" checked>
+                <label for="fmode-time">Time</label>
+                <input type="radio" name="filter-mode" id="fmode-dist" value="dist">
+                <label for="fmode-dist">Dist</label>
+              </div>
               <input type="number" id="filter-min" class="filter-input" placeholder="Min h" min="0" step="0.5">
               <span class="filter-sep">–</span>
               <input type="number" id="filter-max" class="filter-input" placeholder="Max h" min="0" step="0.5">
-              <span class="filter-unit-label">hours</span>
+              <span class="filter-unit-label" id="filter-unit-label">h</span>
             </div>
           </div>
           <div class="setting-row">

@@ -15,23 +15,35 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
+function getFilterMode(): 'time' | 'dist' {
+  return (document.querySelector('input[name="filter-mode"]:checked') as HTMLInputElement).value as 'time' | 'dist';
+}
+
+function getSettings(): { flightType: FlightType; simulator: Simulator; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; minDistNm?: number; maxDistNm?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
   const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
-  const scheduledOnly    = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
+  const scheduledOnly = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
+  const filterMode = getFilterMode();
   const minRaw = (document.getElementById('filter-min') as HTMLInputElement).value;
   const maxRaw = (document.getElementById('filter-max') as HTMLInputElement).value;
   const minParsed = Number(minRaw);
   const maxParsed = Number(maxRaw);
-  const minBlockH = minRaw && minParsed >= 0 ? minParsed : undefined;
-  const maxBlockH = maxRaw && maxParsed >= 0 ? maxParsed : undefined;
+  let minBlockH: number | undefined, maxBlockH: number | undefined;
+  let minDistNm: number | undefined, maxDistNm: number | undefined;
+  if (filterMode === 'time') {
+    minBlockH = minRaw && minParsed >= 0 ? minParsed : undefined;
+    maxBlockH = maxRaw && maxParsed >= 0 ? maxParsed : undefined;
+  } else {
+    minDistNm = minRaw && minParsed >= 0 ? Math.round(minParsed) : undefined;
+    maxDistNm = maxRaw && maxParsed >= 0 ? Math.round(maxParsed) : undefined;
+  }
   const regionRaw = (document.getElementById('filter-region') as HTMLSelectElement).value;
   const departureRegion = regionRaw ? (regionRaw as AirportRegion) : undefined;
   const stdMode = (document.querySelector('input[name="std-mode"]:checked') as HTMLInputElement).value as DepartureTimeMode;
   const stdPeriod = stdMode === 'period'
     ? (document.querySelector('input[name="std-period"]:checked') as HTMLInputElement).value as DeparturePeriod
     : undefined;
-  return { flightType, simulator, scheduledOnly, minBlockH, maxBlockH, departureRegion, stdMode, stdPeriod };
+  return { flightType, simulator, scheduledOnly, minBlockH, maxBlockH, minDistNm, maxDistNm, departureRegion, stdMode, stdPeriod };
 }
 
 let generating = false;
@@ -68,7 +80,7 @@ async function generate(): Promise<void> {
     renderLoading();
 
     try {
-      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, departureRegion: settings.departureRegion });
+      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion });
       const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
       const simbriefUrl = buildSimbriefUrl(route, plan);
       const flight = { route, plan, simbriefUrl };
@@ -81,6 +93,8 @@ async function generate(): Promise<void> {
         const hints: string[] = [];
         if (settings.minBlockH !== undefined || settings.maxBlockH !== undefined)
           hints.push('widening the block time filter');
+        if (settings.minDistNm !== undefined || settings.maxDistNm !== undefined)
+          hints.push('widening the distance filter');
         if (settings.scheduledOnly)
           hints.push('switching Airports to All');
         if (settings.departureRegion !== undefined)
@@ -128,7 +142,7 @@ async function handleRerollDestination(): Promise<void> {
     const { route, plan } = currentFlight;
     const allAirports = await loadAll();
     const destPool = allAirports.filter(a => !settings.scheduledOnly || a.scheduled !== false);
-    const result = findDestinationFor(route.departure, route.aircraft, destPool, settings.minBlockH, settings.maxBlockH);
+    const result = findDestinationFor(route.departure, route.aircraft, destPool, settings.minBlockH, settings.maxBlockH, settings.minDistNm, settings.maxDistNm);
     if (!result) return;
     const { destination, distanceNm } = result;
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
@@ -154,7 +168,7 @@ async function handleRerollDeparture(): Promise<void> {
     ]);
     const schedFilter = (a: { scheduled?: boolean }) => !settings.scheduledOnly || a.scheduled !== false;
     const depPool = (depAirports ?? allAirports).filter(schedFilter);
-    const result = findDepartureForDest(route.destination, route.aircraft, depPool, settings.minBlockH, settings.maxBlockH);
+    const result = findDepartureForDest(route.destination, route.aircraft, depPool, settings.minBlockH, settings.maxBlockH, settings.minDistNm, settings.maxDistNm);
     if (!result) return;
     const { departure, distanceNm } = result;
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
@@ -221,18 +235,44 @@ document.getElementById('nav-back')!.addEventListener('click', () => {
   viewMain.classList.remove('hidden');
 });
 
-// ── Block time filter — restore and persist ───────────────────────────────────
+// ── Range filter — mode toggle + persist ─────────────────────────────────────
 
-const filterMinEl = document.getElementById('filter-min') as HTMLInputElement;
-const filterMaxEl = document.getElementById('filter-max') as HTMLInputElement;
+const filterMinEl   = document.getElementById('filter-min') as HTMLInputElement;
+const filterMaxEl   = document.getElementById('filter-max') as HTMLInputElement;
+const filterUnitEl  = document.getElementById('filter-unit-label') as HTMLElement;
 
-const savedMin = localStorage.getItem('disp-filter-min');
-const savedMax = localStorage.getItem('disp-filter-max');
-if (savedMin) filterMinEl.value = savedMin;
-if (savedMax) filterMaxEl.value = savedMax;
+function applyFilterMode(mode: 'time' | 'dist'): void {
+  const isTime = mode === 'time';
+  filterMinEl.placeholder = isTime ? 'Min h'  : 'Min nm';
+  filterMaxEl.placeholder = isTime ? 'Max h'  : 'Max nm';
+  filterMinEl.step        = isTime ? '0.5'    : '50';
+  filterMaxEl.step        = isTime ? '0.5'    : '50';
+  filterUnitEl.textContent = isTime ? 'h' : 'nm';
+  filterMinEl.value = localStorage.getItem(isTime ? 'disp-filter-min'      : 'disp-filter-dist-min') ?? '';
+  filterMaxEl.value = localStorage.getItem(isTime ? 'disp-filter-max'      : 'disp-filter-dist-max') ?? '';
+}
 
-filterMinEl.addEventListener('input', () => localStorage.setItem('disp-filter-min', filterMinEl.value));
-filterMaxEl.addEventListener('input', () => localStorage.setItem('disp-filter-max', filterMaxEl.value));
+filterMinEl.addEventListener('input', () => {
+  localStorage.setItem(getFilterMode() === 'time' ? 'disp-filter-min' : 'disp-filter-dist-min', filterMinEl.value);
+});
+filterMaxEl.addEventListener('input', () => {
+  localStorage.setItem(getFilterMode() === 'time' ? 'disp-filter-max' : 'disp-filter-dist-max', filterMaxEl.value);
+});
+
+document.querySelectorAll('input[name="filter-mode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    const mode = (radio as HTMLInputElement).value as 'time' | 'dist';
+    localStorage.setItem('disp-filter-mode', mode);
+    applyFilterMode(mode);
+  });
+});
+
+const savedFilterMode = (localStorage.getItem('disp-filter-mode') ?? 'time') as 'time' | 'dist';
+if (savedFilterMode === 'dist') {
+  const el = document.getElementById('fmode-dist') as HTMLInputElement | null;
+  if (el) el.checked = true;
+}
+applyFilterMode(savedFilterMode);
 
 const filterRegionEl = document.getElementById('filter-region') as HTMLSelectElement;
 const savedRegion = localStorage.getItem('disp-filter-region');

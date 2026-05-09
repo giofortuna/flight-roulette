@@ -213,6 +213,30 @@ test('pickRoute — route within block time window is found', () => {
   assert.ok(route.distanceNm > 0);
 });
 
+// ── distance filter ───────────────────────────────────────────────────────────
+
+test('pickRoute — minDistNm excludes routes shorter than minimum', () => {
+  // NEAR_A and NEAR_B are ~90nm apart; minDistNm=500 eliminates them
+  assert.throws(
+    () => pickRoute({ ...INPUT, minDistNm: 500 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
+test('pickRoute — maxDistNm excludes routes longer than maximum', () => {
+  // ~90nm; maxDistNm=10 eliminates them
+  assert.throws(
+    () => pickRoute({ ...INPUT, maxDistNm: 10 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
+test('pickRoute — route within distance window is found', () => {
+  // ~90nm — within [50, 500]
+  const route = pickRoute({ ...INPUT, minDistNm: 50, maxDistNm: 500 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]);
+  assert.ok(route.distanceNm >= 50 && route.distanceNm <= 500);
+});
+
 // ── departure region filter ───────────────────────────────────────────────────
 
 test('pickRoute — departure scoped to provided pool', () => {
