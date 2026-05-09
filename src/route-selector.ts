@@ -9,7 +9,7 @@ import type { Airport } from './airport-db.js';
 export type { Aircraft, Airline, Airport };
 
 export interface SelectionInput {
-  flightType: FlightType;
+  flightTypes: FlightType[];
   simulator: Simulator;
   scheduledOnly: boolean;
   minBlockH?: number;
@@ -128,16 +128,16 @@ export function pickRoute(
   departureScopeAirports?: Airport[],
 ): SelectedRoute {
   const airlines = allAirlines.filter(a =>
-    a.type === input.flightType || a.type === 'both'
+    input.flightTypes.some(ft => a.type === ft) || a.type === 'both'
   );
   const aircraft = allAircraft.filter(a =>
-    a.flight_type === input.flightType && a.simulator.includes(input.simulator)
+    (input.flightTypes as string[]).includes(a.flight_type) && a.simulator.includes(input.simulator)
   );
 
   if (aircraft.length === 0)
-    throw new NoRouteError(`no aircraft available for ${input.flightType} / ${input.simulator}`);
+    throw new NoRouteError(`no aircraft available for [${input.flightTypes.join(', ')}] / ${input.simulator}`);
   if (airlines.length === 0)
-    throw new NoRouteError(`no airlines available for flight type ${input.flightType}`);
+    throw new NoRouteError(`no airlines available for flight types [${input.flightTypes.join(', ')}]`);
 
   const schedFilter = (a: Airport) => !input.scheduledOnly || a.scheduled !== false;
   const destPool = allAirports.filter(schedFilter);

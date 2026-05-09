@@ -220,6 +220,10 @@ body.electron .app-shell {
   background: var(--amber-bright);
 }
 
+.seg-multi input[type="checkbox"] { display: none; }
+.seg-multi input[type="checkbox"]:checked + label { background: var(--amber); color: #080604; }
+.seg-multi input[type="checkbox"]:checked + label:hover { color: #080604; background: var(--amber-bright); }
+
 .divider {
   height: 1px;
   background: var(--flap-divider);

@@ -27,8 +27,9 @@ function getFilterMode(): 'time' | 'dist' {
   return (document.querySelector('input[name="filter-mode"]:checked') as HTMLInputElement).value as 'time' | 'dist';
 }
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; minDistNm?: number; maxDistNm?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
-  const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
+function getSettings(): { flightTypes: FlightType[]; simulator: Simulator; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; minDistNm?: number; maxDistNm?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
+  const checked = Array.from(document.querySelectorAll('input[name="flight-type"]:checked')) as HTMLInputElement[];
+  const flightTypes: FlightType[] = checked.length > 0 ? checked.map(el => el.value as FlightType) : ['passenger'];
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
   const scheduledOnly = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
   const filterMode = getFilterMode();
@@ -50,7 +51,7 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; schedule
   const stdPeriod = stdMode === 'period'
     ? (document.querySelector('input[name="std-period"]:checked') as HTMLInputElement).value as DeparturePeriod
     : undefined;
-  return { flightType, simulator, scheduledOnly, minBlockH, maxBlockH, minDistNm, maxDistNm, departureRegion, stdMode, stdPeriod };
+  return { flightTypes, simulator, scheduledOnly, minBlockH, maxBlockH, minDistNm, maxDistNm, departureRegion, stdMode, stdPeriod };
 }
 
 let generating = false;
@@ -80,7 +81,7 @@ async function generate(): Promise<void> {
     renderLoading();
 
     try {
-      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion });
+      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion });
       const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
       const simbriefUrl = buildSimbriefUrl(route, plan);
       const flight = { route, plan, simbriefUrl };
@@ -119,7 +120,7 @@ async function handleRerollAirline(): Promise<void> {
     const settings = getSettings();
     const { route, plan } = currentFlight;
     const allAirlines = await loadAirlines();
-    const pool = allAirlines.filter(a => a.type === settings.flightType || a.type === 'both');
+    const pool = allAirlines.filter(a => settings.flightTypes.some(ft => a.type === ft) || a.type === 'both');
     const candidates = pool.filter(a => a.icao !== route.airline.icao);
     const src = (candidates.length > 0 ? candidates : pool) as [Airline, ...Airline[]];
     const newAirline = pickRandom(src);
@@ -193,7 +194,7 @@ async function handleRerollAircraft(): Promise<void> {
     const allAircraftList = await loadAircraft();
     const maxRange = RANGE_UTILISATION * RANGE_RELAXATION;
     const pool = allAircraftList.filter(a =>
-      a.flight_type === settings.flightType &&
+      (settings.flightTypes as string[]).includes(a.flight_type) &&
       a.simulator.includes(settings.simulator) &&
       a.icao_type !== route.aircraft.icao_type &&
       distanceNm <= a.range_nm * maxRange &&
@@ -313,7 +314,25 @@ function persistRadioGroup(name: string, key: string): void {
   }
 }
 
-persistRadioGroup('flight-type', 'disp-flight-type');
+// Flight type checkboxes — persist individually, guard against deselecting both
+const ftPassengerEl = document.getElementById('ft-passenger') as HTMLInputElement;
+const ftCargoEl     = document.getElementById('ft-cargo')     as HTMLInputElement;
+
+ftPassengerEl.addEventListener('change', () => {
+  if (!ftPassengerEl.checked && !ftCargoEl.checked) ftPassengerEl.checked = true;
+  localStorage.setItem('disp-ft-passenger', ftPassengerEl.checked ? '1' : '0');
+});
+ftCargoEl.addEventListener('change', () => {
+  if (!ftCargoEl.checked && !ftPassengerEl.checked) ftCargoEl.checked = true;
+  localStorage.setItem('disp-ft-cargo', ftCargoEl.checked ? '1' : '0');
+});
+
+const savedFtPassenger = localStorage.getItem('disp-ft-passenger');
+const savedFtCargo     = localStorage.getItem('disp-ft-cargo');
+if (savedFtPassenger !== null) ftPassengerEl.checked = savedFtPassenger === '1';
+if (savedFtCargo     !== null) ftCargoEl.checked     = savedFtCargo     === '1';
+if (!ftPassengerEl.checked && !ftCargoEl.checked) ftPassengerEl.checked = true;
+
 persistRadioGroup('simulator',   'disp-simulator');
 persistRadioGroup('airports',    'disp-airports');
 

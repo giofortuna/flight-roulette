@@ -88,7 +88,7 @@ function makeAirport(icao: string, lat: number, lon: number, overrides: Partial<
   return { icao, name: `Airport ${icao}`, city: 'City', country: 'XX', lat, lon, max_runway_m: 3000, scheduled: true, ...overrides };
 }
 
-const INPUT: SelectionInput = { flightType: 'passenger', simulator: 'msfs2020', scheduledOnly: true };
+const INPUT: SelectionInput = { flightTypes: ['passenger'], simulator: 'msfs2020', scheduledOnly: true };
 
 // Two airports ~90nm apart at the equator (within any reasonable aircraft range)
 const NEAR_A = makeAirport('XAAA', 0, 0);
@@ -155,9 +155,24 @@ test('pickRoute — airline with type "both" matches passenger input', () => {
 });
 
 test('pickRoute — airline with type "both" matches cargo input', () => {
-  const cargoInput: SelectionInput = { flightType: 'cargo', simulator: 'msfs2020', scheduledOnly: true };
+  const cargoInput: SelectionInput = { flightTypes: ['cargo'], simulator: 'msfs2020', scheduledOnly: true };
   const route = pickRoute(cargoInput, [makeAircraft({ flight_type: 'cargo' })], [makeAirline({ type: 'both' })], [NEAR_A, NEAR_B]);
   assert.equal(route.airline.type, 'both');
+});
+
+test('pickRoute — flightTypes with both passenger and cargo picks from combined aircraft pool', () => {
+  const bothInput: SelectionInput = { flightTypes: ['passenger', 'cargo'], simulator: 'msfs2020', scheduledOnly: true };
+  // Only a cargo aircraft available — should still find a route
+  const route = pickRoute(bothInput, [makeAircraft({ flight_type: 'cargo' })], [makeAirline({ type: 'cargo' })], [NEAR_A, NEAR_B]);
+  assert.equal(route.aircraft.flight_type, 'cargo');
+});
+
+test('pickRoute — throws NoRouteError when flightTypes does not match any aircraft', () => {
+  const cargoInput: SelectionInput = { flightTypes: ['cargo'], simulator: 'msfs2020', scheduledOnly: true };
+  assert.throws(
+    () => pickRoute(cargoInput, [makeAircraft({ flight_type: 'passenger' })], [makeAirline()], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
 });
 
 test('pickRoute — scheduledOnly: true throws NoRouteError when all airports are unscheduled', () => {
