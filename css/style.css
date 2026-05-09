@@ -270,10 +270,6 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 }
 
 /* Range filter */
-.filter-mode-seg {
-  flex: 0 0 auto;
-}
-
 .filter-controls {
   display: flex;
   align-items: center;

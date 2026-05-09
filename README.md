@@ -19,7 +19,7 @@ Once a flight is generated, each element can be individually re-rolled without r
 ## Options
 
 - **Airports** — *Scheduled* (default) restricts to airports with active scheduled airline service; *All* opens the full ICAO database including military and GA fields
-- **Block time** — filter routes by minimum and/or maximum flight duration in hours
+- **Range** — filter routes by flight duration (hours) or great-circle distance (nautical miles); toggle between the two modes
 - **Departure region** — restrict departure airports to a specific world region
 - **Departure time** — *Now +45 min* (default) sets STD to 45 minutes from the current time; *Time period* lets you pick morning / afternoon / evening / night
 
