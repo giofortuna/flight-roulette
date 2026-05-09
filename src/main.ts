@@ -20,6 +20,9 @@ const RANGE_CONFIGS = {
   dist: { min: 0, max: 9900, step: 100, unit: 'nm' },
 } as const;
 
+const filterMinEl = document.getElementById('filter-min') as HTMLInputElement;
+const filterMaxEl = document.getElementById('filter-max') as HTMLInputElement;
+
 function getFilterMode(): 'time' | 'dist' {
   return (document.querySelector('input[name="filter-mode"]:checked') as HTMLInputElement).value as 'time' | 'dist';
 }
@@ -30,8 +33,8 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; schedule
   const scheduledOnly = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
   const filterMode = getFilterMode();
   const cfg = RANGE_CONFIGS[filterMode];
-  const minParsed = parseFloat((document.getElementById('filter-min') as HTMLInputElement).value);
-  const maxParsed = parseFloat((document.getElementById('filter-max') as HTMLInputElement).value);
+  const minParsed = parseFloat(filterMinEl.value);
+  const maxParsed = parseFloat(filterMaxEl.value);
   let minBlockH: number | undefined, maxBlockH: number | undefined;
   let minDistNm: number | undefined, maxDistNm: number | undefined;
   if (filterMode === 'time') {
@@ -241,8 +244,6 @@ document.getElementById('nav-back')!.addEventListener('click', () => {
 
 // ── Range filter — dual slider ────────────────────────────────────────────────
 
-const filterMinEl   = document.getElementById('filter-min')      as HTMLInputElement;
-const filterMaxEl   = document.getElementById('filter-max')      as HTMLInputElement;
 const dualFillEl    = document.getElementById('dual-range-fill') as HTMLElement;
 const rangeValMinEl = document.getElementById('range-val-min')   as HTMLElement;
 const rangeValMaxEl = document.getElementById('range-val-max')   as HTMLElement;
