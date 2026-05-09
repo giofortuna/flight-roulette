@@ -375,5 +375,44 @@
     "category": "widebody",
     "simbrief_type": "B78X",
     "simbrief_airframe_id": ""
+  },
+  {
+    "icao_type": "B748",
+    "type_name": "Boeing 747-8F",
+    "airframe_name": "Working Title",
+    "flight_type": "cargo",
+    "simulator": ["msfs2024"],
+    "range_nm": 4300,
+    "min_runway_m": 2134,
+    "cruise_kts": 481,
+    "category": "widebody",
+    "simbrief_type": "B48F",
+    "simbrief_airframe_id": ""
+  },
+  {
+    "icao_type": "B77F",
+    "type_name": "Boeing 777F",
+    "airframe_name": "PMDG",
+    "flight_type": "cargo",
+    "simulator": ["msfs2020", "msfs2024"],
+    "range_nm": 4900,
+    "min_runway_m": 2134,
+    "cruise_kts": 481,
+    "category": "widebody",
+    "simbrief_type": "B77F",
+    "simbrief_airframe_id": ""
+  },
+  {
+    "icao_type": "A30F",
+    "type_name": "Airbus A300F4-600R",
+    "airframe_name": "iniBuilds",
+    "flight_type": "cargo",
+    "simulator": ["msfs2020", "msfs2024"],
+    "range_nm": 4800,
+    "min_runway_m": 2134,
+    "cruise_kts": 447,
+    "category": "widebody",
+    "simbrief_type": "A30F",
+    "simbrief_airframe_id": ""
   }
 ]

@@ -36,11 +36,11 @@ Once a flight is generated, each element can be individually re-rolled without r
 | Type | Status |
 |---|---|
 | Passenger | Live |
-| Cargo | Coming soon |
+| Cargo | Live |
 
 ## Supported aircraft
 
-29 aircraft across turboprop, narrowbody, and widebody categories from add-on publishers including PMDG, Fenix, FlyByWire, iniBuilds, Headwind, and others. Full list: [`data/aircraft.json`](data/aircraft.json).
+32 aircraft across turboprop, narrowbody, and widebody categories from add-on publishers including PMDG, Fenix, FlyByWire, iniBuilds, Headwind, and others. Full list: [`data/aircraft.json`](data/aircraft.json).
 
 ## Desktop app
 

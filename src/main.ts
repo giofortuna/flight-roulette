@@ -76,13 +76,6 @@ async function generate(): Promise<void> {
       renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
       return;
     }
-    if (settings.flightType === 'cargo') {
-      hideRerollButtons();
-      currentFlight = null;
-      renderEmpty('Cargo flights are coming soon. Please select Passenger for now.');
-      return;
-    }
-
     hideRerollButtons();
     renderLoading();
 
@@ -306,6 +299,23 @@ const filterRegionEl = document.getElementById('filter-region') as HTMLSelectEle
 const savedRegion = localStorage.getItem('disp-filter-region');
 if (savedRegion) filterRegionEl.value = savedRegion;
 filterRegionEl.addEventListener('change', () => localStorage.setItem('disp-filter-region', filterRegionEl.value));
+
+// ── Flight type + simulator + airports — persist ─────────────────────────────
+
+function persistRadioGroup(name: string, key: string): void {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+    radio.addEventListener('change', () => localStorage.setItem(key, (radio as HTMLInputElement).value));
+  });
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    const el = document.querySelector(`input[name="${name}"][value="${saved}"]`) as HTMLInputElement | null;
+    if (el) el.checked = true;
+  }
+}
+
+persistRadioGroup('flight-type', 'disp-flight-type');
+persistRadioGroup('simulator',   'disp-simulator');
+persistRadioGroup('airports',    'disp-airports');
 
 // ── Departure time — period row toggle + persist ───────────────────────────────
 
