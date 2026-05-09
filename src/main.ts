@@ -76,13 +76,6 @@ async function generate(): Promise<void> {
       renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
       return;
     }
-    if (settings.flightType === 'cargo') {
-      hideRerollButtons();
-      currentFlight = null;
-      renderEmpty('Cargo flights are coming soon. Please select Passenger for now.');
-      return;
-    }
-
     hideRerollButtons();
     renderLoading();
 
