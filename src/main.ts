@@ -117,7 +117,6 @@ async function handleRerollAirline(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
   try {
-    const settings = getSettings();
     const { route, plan } = currentFlight;
     const allAirlines = await loadAirlines();
     const pool = allAirlines.filter(a => a.type === route.aircraft.flight_type || a.type === 'both');
@@ -194,6 +193,7 @@ async function handleRerollAircraft(): Promise<void> {
     const allAircraftList = await loadAircraft();
     const maxRange = RANGE_UTILISATION * RANGE_RELAXATION;
     const pool = allAircraftList.filter(a =>
+      settings.flightTypes.includes(a.flight_type) &&
       (route.airline.type === 'both' || a.flight_type === route.airline.type) &&
       a.simulator.includes(settings.simulator) &&
       a.icao_type !== route.aircraft.icao_type &&
