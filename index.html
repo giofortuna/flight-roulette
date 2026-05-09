@@ -90,11 +90,17 @@
           </div>
           <div class="setting-row">
             <span class="setting-label"></span>
-            <div class="filter-controls">
-              <input type="number" id="filter-min" class="filter-input" placeholder="Min h" min="0" step="0.5">
-              <span class="filter-sep">–</span>
-              <input type="number" id="filter-max" class="filter-input" placeholder="Max h" min="0" step="0.5">
-              <span class="filter-unit-label" id="filter-unit-label">h</span>
+            <div class="dual-range-wrap">
+              <div class="dual-range-slider">
+                <div class="dual-range-track"></div>
+                <div class="dual-range-fill" id="dual-range-fill"></div>
+                <input type="range" class="dual-range-input dual-range-min" id="filter-min" min="0" max="16" step="0.5" value="0">
+                <input type="range" class="dual-range-input dual-range-max" id="filter-max" min="0" max="16" step="0.5" value="16">
+              </div>
+              <div class="dual-range-values">
+                <span id="range-val-min" class="range-val-any">Any</span>
+                <span id="range-val-max" class="range-val-any">Any</span>
+              </div>
             </div>
           </div>
           <div class="setting-row">

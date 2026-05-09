@@ -15,6 +15,11 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
+const RANGE_CONFIGS = {
+  time: { min: 0, max: 16,   step: 0.5, unit: 'h'  },
+  dist: { min: 0, max: 9000, step: 100, unit: 'nm' },
+} as const;
+
 function getFilterMode(): 'time' | 'dist' {
   return (document.querySelector('input[name="filter-mode"]:checked') as HTMLInputElement).value as 'time' | 'dist';
 }
@@ -24,18 +29,17 @@ function getSettings(): { flightType: FlightType; simulator: Simulator; schedule
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
   const scheduledOnly = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
   const filterMode = getFilterMode();
-  const minRaw = (document.getElementById('filter-min') as HTMLInputElement).value;
-  const maxRaw = (document.getElementById('filter-max') as HTMLInputElement).value;
-  const minParsed = Number(minRaw);
-  const maxParsed = Number(maxRaw);
+  const cfg = RANGE_CONFIGS[filterMode];
+  const minParsed = parseFloat((document.getElementById('filter-min') as HTMLInputElement).value);
+  const maxParsed = parseFloat((document.getElementById('filter-max') as HTMLInputElement).value);
   let minBlockH: number | undefined, maxBlockH: number | undefined;
   let minDistNm: number | undefined, maxDistNm: number | undefined;
   if (filterMode === 'time') {
-    minBlockH = minRaw && minParsed >= 0 ? minParsed : undefined;
-    maxBlockH = maxRaw && maxParsed >= 0 ? maxParsed : undefined;
+    minBlockH = minParsed > cfg.min ? minParsed : undefined;
+    maxBlockH = maxParsed < cfg.max ? maxParsed : undefined;
   } else {
-    minDistNm = minRaw && minParsed >= 0 ? Math.round(minParsed) : undefined;
-    maxDistNm = maxRaw && maxParsed >= 0 ? Math.round(maxParsed) : undefined;
+    minDistNm = minParsed > cfg.min ? Math.round(minParsed) : undefined;
+    maxDistNm = maxParsed < cfg.max ? Math.round(maxParsed) : undefined;
   }
   const regionRaw = (document.getElementById('filter-region') as HTMLSelectElement).value;
   const departureRegion = regionRaw ? (regionRaw as AirportRegion) : undefined;
@@ -235,28 +239,51 @@ document.getElementById('nav-back')!.addEventListener('click', () => {
   viewMain.classList.remove('hidden');
 });
 
-// ── Range filter — mode toggle + persist ─────────────────────────────────────
+// ── Range filter — dual slider ────────────────────────────────────────────────
 
-const filterMinEl   = document.getElementById('filter-min') as HTMLInputElement;
-const filterMaxEl   = document.getElementById('filter-max') as HTMLInputElement;
-const filterUnitEl  = document.getElementById('filter-unit-label') as HTMLElement;
+const filterMinEl   = document.getElementById('filter-min')      as HTMLInputElement;
+const filterMaxEl   = document.getElementById('filter-max')      as HTMLInputElement;
+const dualFillEl    = document.getElementById('dual-range-fill') as HTMLElement;
+const rangeValMinEl = document.getElementById('range-val-min')   as HTMLElement;
+const rangeValMaxEl = document.getElementById('range-val-max')   as HTMLElement;
+
+function updateDualRange(): void {
+  const cfg = RANGE_CONFIGS[getFilterMode()];
+  const minVal = parseFloat(filterMinEl.value);
+  const maxVal = parseFloat(filterMaxEl.value);
+  const span = cfg.max - cfg.min;
+  dualFillEl.style.left  = `${(minVal - cfg.min) / span * 100}%`;
+  dualFillEl.style.width = `${(maxVal - minVal)  / span * 100}%`;
+  rangeValMinEl.textContent = minVal > cfg.min ? `${minVal}${cfg.unit}` : 'Any';
+  rangeValMaxEl.textContent = maxVal < cfg.max ? `${maxVal}${cfg.unit}` : 'Any';
+  rangeValMinEl.classList.toggle('range-val-any', minVal <= cfg.min);
+  rangeValMaxEl.classList.toggle('range-val-any', maxVal >= cfg.max);
+}
 
 function applyFilterMode(mode: 'time' | 'dist'): void {
-  const isTime = mode === 'time';
-  filterMinEl.placeholder = isTime ? 'Min h'  : 'Min nm';
-  filterMaxEl.placeholder = isTime ? 'Max h'  : 'Max nm';
-  filterMinEl.step        = isTime ? '0.5'    : '50';
-  filterMaxEl.step        = isTime ? '0.5'    : '50';
-  filterUnitEl.textContent = isTime ? 'h' : 'nm';
-  filterMinEl.value = localStorage.getItem(isTime ? 'disp-filter-min'      : 'disp-filter-dist-min') ?? '';
-  filterMaxEl.value = localStorage.getItem(isTime ? 'disp-filter-max'      : 'disp-filter-dist-max') ?? '';
+  const cfg = RANGE_CONFIGS[mode];
+  for (const el of [filterMinEl, filterMaxEl]) {
+    el.min = String(cfg.min);
+    el.max = String(cfg.max);
+    el.step = String(cfg.step);
+  }
+  filterMinEl.value = localStorage.getItem(mode === 'time' ? 'disp-filter-min'      : 'disp-filter-dist-min') ?? String(cfg.min);
+  filterMaxEl.value = localStorage.getItem(mode === 'time' ? 'disp-filter-max'      : 'disp-filter-dist-max') ?? String(cfg.max);
+  updateDualRange();
 }
 
 filterMinEl.addEventListener('input', () => {
+  if (parseFloat(filterMinEl.value) > parseFloat(filterMaxEl.value))
+    filterMinEl.value = filterMaxEl.value;
   localStorage.setItem(getFilterMode() === 'time' ? 'disp-filter-min' : 'disp-filter-dist-min', filterMinEl.value);
+  updateDualRange();
 });
+
 filterMaxEl.addEventListener('input', () => {
+  if (parseFloat(filterMaxEl.value) < parseFloat(filterMinEl.value))
+    filterMaxEl.value = filterMinEl.value;
   localStorage.setItem(getFilterMode() === 'time' ? 'disp-filter-max' : 'disp-filter-dist-max', filterMaxEl.value);
+  updateDualRange();
 });
 
 document.querySelectorAll('input[name="filter-mode"]').forEach(radio => {
