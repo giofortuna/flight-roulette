@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { haversineNm, pickRoute, NoRouteError, findDestinationFor, findDepartureForDest } from './route-selector.js';
+import { haversineNm, pickRoute, NoRouteError, findDestinationFor, findDepartureForDest, buildRerollAircraftPool } from './route-selector.js';
 import type { SelectionInput } from './route-selector.js';
 import { filterByRunway } from './airport-db.js';
 import type { Aircraft, Airline, Airport } from './route-selector.js';
@@ -185,8 +185,10 @@ test('pickRoute — airline type matches aircraft type when both flight types se
   // Run many times to confirm airline always matches aircraft
   for (let i = 0; i < 50; i++) {
     const route = pickRoute(bothInput, [passengerAircraft, cargoAircraft], [passengerAirline, cargoAirline], [NEAR_A, NEAR_B]);
-    assert.equal(route.airline.type, route.aircraft.flight_type,
-      `airline type ${route.airline.type} should match aircraft flight_type ${route.aircraft.flight_type}`);
+    assert.ok(
+      route.airline.type === 'both' || route.airline.type === route.aircraft.flight_type,
+      `airline type ${route.airline.type} should be 'both' or match aircraft flight_type ${route.aircraft.flight_type}`,
+    );
   }
 });
 
@@ -318,5 +320,56 @@ test('pickRoute — throws NoRouteError when departure scope has no runway-eligi
     () => pickRoute(INPUT, [makeAircraft({ min_runway_m: 2000 })], [makeAirline()], [NEAR_A, NEAR_B], [tinyRunway]),
     (err: unknown) => err instanceof NoRouteError,
   );
+});
+
+// ── buildRerollAircraftPool ───────────────────────────────────────────────────
+
+test('buildRerollAircraftPool — cargo-only flightTypes blocks passenger aircraft even when airline is both', () => {
+  const pax   = makeAircraft({ flight_type: 'passenger', icao_type: 'A320' });
+  const cargo = makeAircraft({ flight_type: 'cargo',     icao_type: 'B77F' });
+  const pool  = buildRerollAircraftPool([pax, cargo], ['cargo'], 'both', 'msfs2020', 'OTHER', 100, 3000, 3000);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].icao_type, 'B77F');
+});
+
+test('buildRerollAircraftPool — cargo airline blocks passenger aircraft regardless of flightTypes', () => {
+  const pax   = makeAircraft({ flight_type: 'passenger', icao_type: 'A320' });
+  const cargo = makeAircraft({ flight_type: 'cargo',     icao_type: 'B77F' });
+  const pool  = buildRerollAircraftPool([pax, cargo], ['passenger', 'cargo'], 'cargo', 'msfs2020', 'OTHER', 100, 3000, 3000);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].icao_type, 'B77F');
+});
+
+test('buildRerollAircraftPool — both airline with both flightTypes returns all type-matching aircraft', () => {
+  const pax   = makeAircraft({ flight_type: 'passenger', icao_type: 'A320' });
+  const cargo = makeAircraft({ flight_type: 'cargo',     icao_type: 'B77F' });
+  const pool  = buildRerollAircraftPool([pax, cargo], ['passenger', 'cargo'], 'both', 'msfs2020', 'OTHER', 100, 3000, 3000);
+  assert.equal(pool.length, 2);
+});
+
+test('buildRerollAircraftPool — excludes current aircraft by icao_type', () => {
+  const a1 = makeAircraft({ icao_type: 'A320' });
+  const a2 = makeAircraft({ icao_type: 'B738' });
+  const pool = buildRerollAircraftPool([a1, a2], ['passenger'], 'passenger', 'msfs2020', 'A320', 100, 3000, 3000);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].icao_type, 'B738');
+});
+
+test('buildRerollAircraftPool — excludes aircraft whose range cannot cover the distance', () => {
+  // range_nm 500 * 0.80 * 1.2 = 480nm; distance 500nm → excluded
+  const shortRange = makeAircraft({ icao_type: 'SH01', range_nm: 500 });
+  const longRange  = makeAircraft({ icao_type: 'LG01', range_nm: 5000 });
+  const pool = buildRerollAircraftPool([shortRange, longRange], ['passenger'], 'passenger', 'msfs2020', 'OTHER', 500, 3000, 3000);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].icao_type, 'LG01');
+});
+
+test('buildRerollAircraftPool — excludes aircraft whose min runway exceeds departure or destination', () => {
+  const needs3500 = makeAircraft({ icao_type: 'BIG1', min_runway_m: 3500 });
+  const needs2000 = makeAircraft({ icao_type: 'SML1', min_runway_m: 2000 });
+  // departure max_runway_m = 3000, destination max_runway_m = 3000
+  const pool = buildRerollAircraftPool([needs3500, needs2000], ['passenger'], 'passenger', 'msfs2020', 'OTHER', 100, 3000, 3000);
+  assert.equal(pool.length, 1);
+  assert.equal(pool[0].icao_type, 'SML1');
 });
 

@@ -4,7 +4,7 @@ import type { Aircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
 import type { Airline } from './airline-db.js';
 import { loadAll, loadRegion } from './airport-db.js';
-import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, RANGE_UTILISATION, RANGE_RELAXATION } from './route-selector.js';
+import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, buildRerollAircraftPool } from './route-selector.js';
 import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
@@ -191,15 +191,15 @@ async function handleRerollAircraft(): Promise<void> {
     const { route, plan } = currentFlight;
     const { distanceNm } = route;
     const allAircraftList = await loadAircraft();
-    const maxRange = RANGE_UTILISATION * RANGE_RELAXATION;
-    const pool = allAircraftList.filter(a =>
-      settings.flightTypes.includes(a.flight_type) &&
-      (route.airline.type === 'both' || a.flight_type === route.airline.type) &&
-      a.simulator.includes(settings.simulator) &&
-      a.icao_type !== route.aircraft.icao_type &&
-      distanceNm <= a.range_nm * maxRange &&
-      route.departure.max_runway_m   >= a.min_runway_m &&
-      route.destination.max_runway_m >= a.min_runway_m
+    const pool = buildRerollAircraftPool(
+      allAircraftList,
+      settings.flightTypes,
+      route.airline.type,
+      settings.simulator,
+      route.aircraft.icao_type,
+      distanceNm,
+      route.departure.max_runway_m,
+      route.destination.max_runway_m,
     );
     if (pool.length === 0) return;
     const newAircraft  = pickRandom(pool as [Aircraft, ...Aircraft[]]);
