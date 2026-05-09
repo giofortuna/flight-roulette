@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { haversineNm, pickRoute, NoRouteError } from './route-selector.js';
+import { haversineNm, pickRoute, NoRouteError, findDestinationFor, findDepartureForDest } from './route-selector.js';
 import type { SelectionInput } from './route-selector.js';
 import { filterByRunway } from './airport-db.js';
 import type { Aircraft, Airline, Airport } from './route-selector.js';
@@ -211,6 +211,66 @@ test('pickRoute — route within block time window is found', () => {
   // ~90nm at 450kts ≈ 0.7h — within [0.5, 2]
   const route = pickRoute({ ...INPUT, minBlockH: 0.5, maxBlockH: 2 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]);
   assert.ok(route.distanceNm > 0);
+});
+
+// ── distance filter ───────────────────────────────────────────────────────────
+
+test('pickRoute — minDistNm excludes routes shorter than minimum', () => {
+  // NEAR_A and NEAR_B are ~90nm apart; minDistNm=500 eliminates them
+  assert.throws(
+    () => pickRoute({ ...INPUT, minDistNm: 500 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
+test('pickRoute — maxDistNm excludes routes longer than maximum', () => {
+  // ~90nm; maxDistNm=10 eliminates them
+  assert.throws(
+    () => pickRoute({ ...INPUT, maxDistNm: 10 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]),
+    (err: unknown) => err instanceof NoRouteError,
+  );
+});
+
+test('pickRoute — route within distance window is found', () => {
+  // ~90nm — within [50, 500]
+  const route = pickRoute({ ...INPUT, minDistNm: 50, maxDistNm: 500 }, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B]);
+  assert.ok(route.distanceNm >= 50 && route.distanceNm <= 500);
+});
+
+// ── findDestinationFor — distance filter ──────────────────────────────────────
+
+test('findDestinationFor — minDistNm excludes destinations closer than minimum', () => {
+  // NEAR_A → NEAR_B is ~90nm; minDistNm=500 returns null
+  const result = findDestinationFor(NEAR_A, makeAircraft(), [NEAR_B], undefined, undefined, 500);
+  assert.equal(result, null);
+});
+
+test('findDestinationFor — maxDistNm excludes destinations farther than maximum', () => {
+  // ~90nm; maxDistNm=10 returns null
+  const result = findDestinationFor(NEAR_A, makeAircraft(), [NEAR_B], undefined, undefined, undefined, 10);
+  assert.equal(result, null);
+});
+
+test('findDestinationFor — route within distance window is found', () => {
+  const result = findDestinationFor(NEAR_A, makeAircraft(), [NEAR_B], undefined, undefined, 50, 500);
+  assert.ok(result !== null && result.distanceNm >= 50 && result.distanceNm <= 500);
+});
+
+// ── findDepartureForDest — distance filter ────────────────────────────────────
+
+test('findDepartureForDest — minDistNm excludes departures closer than minimum', () => {
+  const result = findDepartureForDest(NEAR_B, makeAircraft(), [NEAR_A], undefined, undefined, 500);
+  assert.equal(result, null);
+});
+
+test('findDepartureForDest — maxDistNm excludes departures farther than maximum', () => {
+  const result = findDepartureForDest(NEAR_B, makeAircraft(), [NEAR_A], undefined, undefined, undefined, 10);
+  assert.equal(result, null);
+});
+
+test('findDepartureForDest — route within distance window is found', () => {
+  const result = findDepartureForDest(NEAR_B, makeAircraft(), [NEAR_A], undefined, undefined, 50, 500);
+  assert.ok(result !== null && result.distanceNm >= 50 && result.distanceNm <= 500);
 });
 
 // ── departure region filter ───────────────────────────────────────────────────

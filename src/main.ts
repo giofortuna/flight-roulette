@@ -15,23 +15,42 @@ Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
   console.error('Failed to preload app data:', err);
 });
 
-function getSettings(): { flightType: FlightType; simulator: Simulator; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
+const RANGE_CONFIGS = {
+  time: { min: 0, max: 16,   step: 0.5, unit: 'h'  },
+  dist: { min: 0, max: 9900, step: 100, unit: 'nm' },
+} as const;
+
+const filterMinEl = document.getElementById('filter-min') as HTMLInputElement;
+const filterMaxEl = document.getElementById('filter-max') as HTMLInputElement;
+
+function getFilterMode(): 'time' | 'dist' {
+  return (document.querySelector('input[name="filter-mode"]:checked') as HTMLInputElement).value as 'time' | 'dist';
+}
+
+function getSettings(): { flightType: FlightType; simulator: Simulator; scheduledOnly: boolean; minBlockH?: number; maxBlockH?: number; minDistNm?: number; maxDistNm?: number; departureRegion?: AirportRegion; stdMode: DepartureTimeMode; stdPeriod?: DeparturePeriod } {
   const flightType = (document.querySelector('input[name="flight-type"]:checked') as HTMLInputElement).value as FlightType;
   const simulator  = (document.querySelector('input[name="simulator"]:checked')  as HTMLInputElement).value as Simulator;
-  const scheduledOnly    = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
-  const minRaw = (document.getElementById('filter-min') as HTMLInputElement).value;
-  const maxRaw = (document.getElementById('filter-max') as HTMLInputElement).value;
-  const minParsed = Number(minRaw);
-  const maxParsed = Number(maxRaw);
-  const minBlockH = minRaw && minParsed >= 0 ? minParsed : undefined;
-  const maxBlockH = maxRaw && maxParsed >= 0 ? maxParsed : undefined;
+  const scheduledOnly = (document.querySelector('input[name="airports"]:checked') as HTMLInputElement).value === 'scheduled';
+  const filterMode = getFilterMode();
+  const cfg = RANGE_CONFIGS[filterMode];
+  const minParsed = parseFloat(filterMinEl.value);
+  const maxParsed = parseFloat(filterMaxEl.value);
+  let minBlockH: number | undefined, maxBlockH: number | undefined;
+  let minDistNm: number | undefined, maxDistNm: number | undefined;
+  if (filterMode === 'time') {
+    minBlockH = minParsed > cfg.min ? minParsed : undefined;
+    maxBlockH = maxParsed < cfg.max ? maxParsed : undefined;
+  } else {
+    minDistNm = minParsed > cfg.min ? Math.round(minParsed) : undefined;
+    maxDistNm = maxParsed < cfg.max ? Math.round(maxParsed) : undefined;
+  }
   const regionRaw = (document.getElementById('filter-region') as HTMLSelectElement).value;
   const departureRegion = regionRaw ? (regionRaw as AirportRegion) : undefined;
   const stdMode = (document.querySelector('input[name="std-mode"]:checked') as HTMLInputElement).value as DepartureTimeMode;
   const stdPeriod = stdMode === 'period'
     ? (document.querySelector('input[name="std-period"]:checked') as HTMLInputElement).value as DeparturePeriod
     : undefined;
-  return { flightType, simulator, scheduledOnly, minBlockH, maxBlockH, departureRegion, stdMode, stdPeriod };
+  return { flightType, simulator, scheduledOnly, minBlockH, maxBlockH, minDistNm, maxDistNm, departureRegion, stdMode, stdPeriod };
 }
 
 let generating = false;
@@ -68,7 +87,7 @@ async function generate(): Promise<void> {
     renderLoading();
 
     try {
-      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, departureRegion: settings.departureRegion });
+      const route = await selectRoute({ flightType: settings.flightType, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion });
       const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
       const simbriefUrl = buildSimbriefUrl(route, plan);
       const flight = { route, plan, simbriefUrl };
@@ -81,6 +100,8 @@ async function generate(): Promise<void> {
         const hints: string[] = [];
         if (settings.minBlockH !== undefined || settings.maxBlockH !== undefined)
           hints.push('widening the block time filter');
+        if (settings.minDistNm !== undefined || settings.maxDistNm !== undefined)
+          hints.push('widening the distance filter');
         if (settings.scheduledOnly)
           hints.push('switching Airports to All');
         if (settings.departureRegion !== undefined)
@@ -128,7 +149,7 @@ async function handleRerollDestination(): Promise<void> {
     const { route, plan } = currentFlight;
     const allAirports = await loadAll();
     const destPool = allAirports.filter(a => !settings.scheduledOnly || a.scheduled !== false);
-    const result = findDestinationFor(route.departure, route.aircraft, destPool, settings.minBlockH, settings.maxBlockH);
+    const result = findDestinationFor(route.departure, route.aircraft, destPool, settings.minBlockH, settings.maxBlockH, settings.minDistNm, settings.maxDistNm);
     if (!result) return;
     const { destination, distanceNm } = result;
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
@@ -154,7 +175,7 @@ async function handleRerollDeparture(): Promise<void> {
     ]);
     const schedFilter = (a: { scheduled?: boolean }) => !settings.scheduledOnly || a.scheduled !== false;
     const depPool = (depAirports ?? allAirports).filter(schedFilter);
-    const result = findDepartureForDest(route.destination, route.aircraft, depPool, settings.minBlockH, settings.maxBlockH);
+    const result = findDepartureForDest(route.destination, route.aircraft, depPool, settings.minBlockH, settings.maxBlockH, settings.minDistNm, settings.maxDistNm);
     if (!result) return;
     const { departure, distanceNm } = result;
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
@@ -221,18 +242,65 @@ document.getElementById('nav-back')!.addEventListener('click', () => {
   viewMain.classList.remove('hidden');
 });
 
-// ── Block time filter — restore and persist ───────────────────────────────────
+// ── Range filter — dual slider ────────────────────────────────────────────────
 
-const filterMinEl = document.getElementById('filter-min') as HTMLInputElement;
-const filterMaxEl = document.getElementById('filter-max') as HTMLInputElement;
+const dualFillEl    = document.getElementById('dual-range-fill') as HTMLElement;
+const rangeValMinEl = document.getElementById('range-val-min')   as HTMLElement;
+const rangeValMaxEl = document.getElementById('range-val-max')   as HTMLElement;
 
-const savedMin = localStorage.getItem('disp-filter-min');
-const savedMax = localStorage.getItem('disp-filter-max');
-if (savedMin) filterMinEl.value = savedMin;
-if (savedMax) filterMaxEl.value = savedMax;
+function updateDualRange(): void {
+  const cfg = RANGE_CONFIGS[getFilterMode()];
+  const minVal = parseFloat(filterMinEl.value);
+  const maxVal = parseFloat(filterMaxEl.value);
+  const span = cfg.max - cfg.min;
+  dualFillEl.style.left  = `${(minVal - cfg.min) / span * 100}%`;
+  dualFillEl.style.width = `${(maxVal - minVal)  / span * 100}%`;
+  rangeValMinEl.textContent = minVal > cfg.min ? `${minVal}${cfg.unit}` : 'Any';
+  rangeValMaxEl.textContent = maxVal < cfg.max ? `${maxVal}${cfg.unit}` : 'Any';
+  rangeValMinEl.classList.toggle('range-val-any', minVal <= cfg.min);
+  rangeValMaxEl.classList.toggle('range-val-any', maxVal >= cfg.max);
+}
 
-filterMinEl.addEventListener('input', () => localStorage.setItem('disp-filter-min', filterMinEl.value));
-filterMaxEl.addEventListener('input', () => localStorage.setItem('disp-filter-max', filterMaxEl.value));
+function applyFilterMode(mode: 'time' | 'dist'): void {
+  const cfg = RANGE_CONFIGS[mode];
+  for (const el of [filterMinEl, filterMaxEl]) {
+    el.min = String(cfg.min);
+    el.max = String(cfg.max);
+    el.step = String(cfg.step);
+  }
+  filterMinEl.value = localStorage.getItem(mode === 'time' ? 'disp-filter-min'      : 'disp-filter-dist-min') ?? String(cfg.min);
+  filterMaxEl.value = localStorage.getItem(mode === 'time' ? 'disp-filter-max'      : 'disp-filter-dist-max') ?? String(cfg.max);
+  updateDualRange();
+}
+
+filterMinEl.addEventListener('input', () => {
+  if (parseFloat(filterMinEl.value) > parseFloat(filterMaxEl.value))
+    filterMinEl.value = filterMaxEl.value;
+  localStorage.setItem(getFilterMode() === 'time' ? 'disp-filter-min' : 'disp-filter-dist-min', filterMinEl.value);
+  updateDualRange();
+});
+
+filterMaxEl.addEventListener('input', () => {
+  if (parseFloat(filterMaxEl.value) < parseFloat(filterMinEl.value))
+    filterMaxEl.value = filterMinEl.value;
+  localStorage.setItem(getFilterMode() === 'time' ? 'disp-filter-max' : 'disp-filter-dist-max', filterMaxEl.value);
+  updateDualRange();
+});
+
+document.querySelectorAll('input[name="filter-mode"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    const mode = (radio as HTMLInputElement).value as 'time' | 'dist';
+    localStorage.setItem('disp-filter-mode', mode);
+    applyFilterMode(mode);
+  });
+});
+
+const savedFilterMode = (localStorage.getItem('disp-filter-mode') ?? 'time') as 'time' | 'dist';
+if (savedFilterMode === 'dist') {
+  const el = document.getElementById('fmode-dist') as HTMLInputElement | null;
+  if (el) el.checked = true;
+}
+applyFilterMode(savedFilterMode);
 
 const filterRegionEl = document.getElementById('filter-region') as HTMLSelectElement;
 const savedRegion = localStorage.getItem('disp-filter-region');

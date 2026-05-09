@@ -14,6 +14,8 @@ export interface SelectionInput {
   scheduledOnly: boolean;
   minBlockH?: number;
   maxBlockH?: number;
+  minDistNm?: number;
+  maxDistNm?: number;
   departureRegion?: AirportRegion;
 }
 
@@ -59,6 +61,8 @@ export function findDestinationFor(
   destPool: Airport[],
   minBlockH?: number,
   maxBlockH?: number,
+  minDistNm?: number,
+  maxDistNm?: number,
 ): { destination: Airport; distanceNm: number } | null {
   const eligible = filterByRunway(destPool, aircraft.min_runway_m);
   for (let relaxed = 0; relaxed <= 1; relaxed++) {
@@ -73,6 +77,8 @@ export function findDestinationFor(
           if (minBlockH !== undefined && blockH < minBlockH) return false;
           if (maxBlockH !== undefined && blockH > maxBlockH) return false;
         }
+        if (minDistNm !== undefined && distNm < minDistNm) return false;
+        if (maxDistNm !== undefined && distNm > maxDistNm) return false;
         return true;
       });
     if (candidates.length > 0) {
@@ -90,6 +96,8 @@ export function findDepartureForDest(
   depPool: Airport[],
   minBlockH?: number,
   maxBlockH?: number,
+  minDistNm?: number,
+  maxDistNm?: number,
 ): { departure: Airport; distanceNm: number } | null {
   const maxRange = aircraft.range_nm * RANGE_UTILISATION * RANGE_RELAXATION;
   const candidates = filterByRunway(depPool, aircraft.min_runway_m)
@@ -102,6 +110,8 @@ export function findDepartureForDest(
         if (minBlockH !== undefined && blockH < minBlockH) return false;
         if (maxBlockH !== undefined && blockH > maxBlockH) return false;
       }
+      if (minDistNm !== undefined && distNm < minDistNm) return false;
+      if (maxDistNm !== undefined && distNm > maxDistNm) return false;
       return true;
     });
   if (candidates.length === 0) return null;
@@ -160,12 +170,14 @@ export function pickRoute(
           .map(a => ({ airport: a, distNm: haversineNm(departure.lat, departure.lon, a.lat, a.lon) }))
           .filter(({ distNm }) => {
             if (distNm < MIN_DISTANCE_NM || distNm > rangeNm) return false;
-            const { minBlockH, maxBlockH } = input;
+            const { minBlockH, maxBlockH, minDistNm, maxDistNm } = input;
             if (minBlockH !== undefined || maxBlockH !== undefined) {
               const blockH = distNm / pickedAircraft.cruise_kts + 0.5;
               if (minBlockH !== undefined && blockH < minBlockH) return false;
               if (maxBlockH !== undefined && blockH > maxBlockH) return false;
             }
+            if (minDistNm !== undefined && distNm < minDistNm) return false;
+            if (maxDistNm !== undefined && distNm > maxDistNm) return false;
             return true;
           });
 
