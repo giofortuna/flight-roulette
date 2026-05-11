@@ -472,11 +472,17 @@ const ftPassengerEl = document.getElementById('ft-passenger') as HTMLInputElemen
 const ftCargoEl     = document.getElementById('ft-cargo')     as HTMLInputElement;
 
 ftPassengerEl.addEventListener('change', () => {
-  if (!ftPassengerEl.checked && !ftCargoEl.checked) ftPassengerEl.checked = true;
+  if (!ftPassengerEl.checked && !ftCargoEl.checked) {
+    ftCargoEl.checked = true;
+    localStorage.setItem('disp-ft-cargo', '1');
+  }
   localStorage.setItem('disp-ft-passenger', ftPassengerEl.checked ? '1' : '0');
 });
 ftCargoEl.addEventListener('change', () => {
-  if (!ftCargoEl.checked && !ftPassengerEl.checked) ftCargoEl.checked = true;
+  if (!ftCargoEl.checked && !ftPassengerEl.checked) {
+    ftPassengerEl.checked = true;
+    localStorage.setItem('disp-ft-passenger', '1');
+  }
   localStorage.setItem('disp-ft-cargo', ftCargoEl.checked ? '1' : '0');
 });
 
