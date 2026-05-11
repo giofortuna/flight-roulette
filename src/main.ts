@@ -9,11 +9,128 @@ import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
+import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 
-// Warm the caches before the user clicks Generate
-Promise.all([loadAircraft(), loadAirlines()]).catch(err => {
-  console.error('Failed to preload app data:', err);
-});
+// Warm the caches before the user clicks Generate, then populate settings UI
+Promise.all([loadAircraft(), loadAirlines()]).then(
+  ([aircraft]) => { initAircraftSettings(aircraft); },
+  err => { console.error('Failed to preload app data:', err); }
+);
+
+// ── Aircraft enable/disable ───────────────────────────────────────────────────
+
+
+function getDisabledAircraftKeys(): Set<string> {
+  const stored = localStorage.getItem('disp-aircraft-disabled');
+  if (!stored) return new Set();
+  try { return new Set(JSON.parse(stored) as string[]); }
+  catch { return new Set(); }
+}
+
+function saveDisabledAircraftKeys(keys: Set<string>): void {
+  if (keys.size === 0) {
+    localStorage.removeItem('disp-aircraft-disabled');
+  } else {
+    localStorage.setItem('disp-aircraft-disabled', JSON.stringify([...keys]));
+  }
+}
+
+
+function initAircraftSettings(allAircraft: Aircraft[]): void {
+  const container = document.getElementById('prefs-aircraft-list')!;
+  const disabled  = getDisabledAircraftKeys();
+
+  const groups: Array<{ type: 'passenger' | 'cargo'; label: string }> = [
+    { type: 'passenger', label: 'Passenger' },
+    { type: 'cargo',     label: 'Cargo'     },
+  ];
+
+  for (const { type, label } of groups) {
+    const group = allAircraft.filter(a => a.flight_type === type);
+    if (group.length === 0) continue;
+
+    const groupEl = document.createElement('div');
+    groupEl.className = 'ac-group';
+
+    const groupHeader = document.createElement('div');
+    groupHeader.className = 'ac-group-header';
+
+    const groupLabel = document.createElement('div');
+    groupLabel.className = 'ac-group-label';
+    groupLabel.textContent = label;
+
+    const groupActions = document.createElement('div');
+    groupActions.className = 'ac-group-actions';
+
+    const allBtn  = document.createElement('button');
+    allBtn.className  = 'ac-action-btn';
+    allBtn.textContent = 'All';
+
+    const noneBtn = document.createElement('button');
+    noneBtn.className  = 'ac-action-btn';
+    noneBtn.textContent = 'None';
+
+    groupActions.append(allBtn, noneBtn);
+    groupHeader.append(groupLabel, groupActions);
+    groupEl.appendChild(groupHeader);
+
+    const groupInputs: HTMLInputElement[] = [];
+
+    group.forEach((ac, i) => {
+      const key = aircraftKey(ac);
+      const id  = `ac-toggle-${type}-${i}`;
+
+      const item  = document.createElement('div');
+      item.className = 'ac-item';
+
+      const input = document.createElement('input');
+      input.type    = 'checkbox';
+      input.id      = id;
+      input.checked = !disabled.has(key);
+      groupInputs.push(input);
+
+      const lbl   = document.createElement('label');
+      lbl.htmlFor = id;
+
+      const dot = document.createElement('span');
+      dot.className = 'ac-dot';
+
+      const name = document.createElement('span');
+      name.className   = 'ac-name';
+      name.textContent = ac.type_name;
+
+      const addon = document.createElement('span');
+      addon.className   = 'ac-addon';
+      addon.textContent = ac.airframe_name;
+
+      lbl.append(dot, name, addon);
+      item.append(input, lbl);
+      groupEl.appendChild(item);
+
+      input.addEventListener('change', () => {
+        const d = getDisabledAircraftKeys();
+        if (input.checked) { d.delete(key); } else { d.add(key); }
+        saveDisabledAircraftKeys(d);
+      });
+    });
+
+    allBtn.addEventListener('click', () => {
+      const d = getDisabledAircraftKeys();
+      group.forEach((ac, i) => { groupInputs[i].checked = true; d.delete(aircraftKey(ac)); });
+      saveDisabledAircraftKeys(d);
+    });
+
+    noneBtn.addEventListener('click', () => {
+      const d = getDisabledAircraftKeys();
+      group.forEach((ac, i) => { groupInputs[i].checked = false; d.add(aircraftKey(ac)); });
+      saveDisabledAircraftKeys(d);
+    });
+
+    container.appendChild(groupEl);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 const RANGE_CONFIGS = {
   time: { min: 0, max: 16,   step: 0.5, unit: 'h'  },
@@ -78,10 +195,29 @@ async function generate(): Promise<void> {
       return;
     }
     hideRerollButtons();
-    renderLoading();
 
+    const allAircraftList = await loadAircraft();
+    const disabled        = getDisabledAircraftKeys();
+    const enabledAircraft = filterEnabledAircraft(allAircraftList, disabled);
+
+    if (enabledAircraft.length === 0) {
+      currentFlight = null;
+      renderEmpty('No aircraft enabled. Enable at least one aircraft in Settings.');
+      return;
+    }
+
+    const hasMatch = enabledAircraft.some(a =>
+      settings.flightTypes.includes(a.flight_type) && a.simulator.includes(settings.simulator)
+    );
+    if (!hasMatch) {
+      currentFlight = null;
+      renderEmpty('No enabled aircraft match the selected Flight Type and Simulator. Enable more aircraft in Settings.');
+      return;
+    }
+
+    renderLoading();
     try {
-      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion });
+      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft);
       const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
       const simbriefUrl = buildSimbriefUrl(route, plan);
       const flight = { route, plan, simbriefUrl };
@@ -192,7 +328,7 @@ async function handleRerollAircraft(): Promise<void> {
     const { distanceNm } = route;
     const allAircraftList = await loadAircraft();
     const pool = buildRerollAircraftPool(
-      allAircraftList,
+      filterEnabledAircraft(allAircraftList, getDisabledAircraftKeys()),
       settings.flightTypes,
       route.airline.type,
       settings.simulator,
@@ -201,7 +337,12 @@ async function handleRerollAircraft(): Promise<void> {
       route.departure.max_runway_m,
       route.destination.max_runway_m,
     );
-    if (pool.length === 0) return;
+    if (pool.length === 0) {
+      hideRerollButtons();
+      currentFlight = null;
+      renderEmpty('No alternative aircraft available. Enable more aircraft in Settings.');
+      return;
+    }
     const newAircraft  = pickRandom(pool as [Aircraft, ...Aircraft[]]);
     const blockTimeMin = Math.round((distanceNm / newAircraft.cruise_kts) * 60 + 30);
     const newRoute     = { ...route, aircraft: newAircraft };
