@@ -9,6 +9,7 @@ import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
+import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 
 // Warm the caches before the user clicks Generate, then populate settings UI
 Promise.all([loadAircraft(), loadAirlines()]).then(([aircraft]) => {
@@ -19,9 +20,6 @@ Promise.all([loadAircraft(), loadAirlines()]).then(([aircraft]) => {
 
 // ── Aircraft enable/disable ───────────────────────────────────────────────────
 
-function aircraftKey(a: Aircraft): string {
-  return `${a.type_name}:${a.airframe_name}`;
-}
 
 function getDisabledAircraftKeys(): Set<string> {
   const stored = localStorage.getItem('disp-aircraft-disabled');
@@ -38,10 +36,6 @@ function saveDisabledAircraftKeys(keys: Set<string>): void {
   }
 }
 
-function filterEnabledAircraft(all: Aircraft[]): Aircraft[] {
-  const disabled = getDisabledAircraftKeys();
-  return disabled.size === 0 ? all : all.filter(a => !disabled.has(aircraftKey(a)));
-}
 
 function initAircraftSettings(allAircraft: Aircraft[]): void {
   const container = document.getElementById('prefs-aircraft-list')!;
@@ -201,8 +195,9 @@ async function generate(): Promise<void> {
       renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
       return;
     }
-    const allAircraftList  = await loadAircraft();
-    const enabledAircraft  = filterEnabledAircraft(allAircraftList);
+    const allAircraftList = await loadAircraft();
+    const disabled        = getDisabledAircraftKeys();
+    const enabledAircraft = filterEnabledAircraft(allAircraftList, disabled);
     hideRerollButtons();
     renderLoading();
 
@@ -212,10 +207,10 @@ async function generate(): Promise<void> {
       return;
     }
 
-    const matchingAircraft = enabledAircraft.filter(a =>
+    const hasMatch = enabledAircraft.some(a =>
       settings.flightTypes.includes(a.flight_type) && a.simulator.includes(settings.simulator)
     );
-    if (matchingAircraft.length === 0) {
+    if (!hasMatch) {
       currentFlight = null;
       renderEmpty('No enabled aircraft match the selected Flight Type and Simulator. Enable more aircraft in Settings.');
       return;
@@ -333,7 +328,7 @@ async function handleRerollAircraft(): Promise<void> {
     const { distanceNm } = route;
     const allAircraftList = await loadAircraft();
     const pool = buildRerollAircraftPool(
-      filterEnabledAircraft(allAircraftList),
+      filterEnabledAircraft(allAircraftList, getDisabledAircraftKeys()),
       settings.flightTypes,
       route.airline.type,
       settings.simulator,
