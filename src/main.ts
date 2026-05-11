@@ -336,7 +336,12 @@ async function handleRerollAircraft(): Promise<void> {
       route.departure.max_runway_m,
       route.destination.max_runway_m,
     );
-    if (pool.length === 0) return;
+    if (pool.length === 0) {
+      hideRerollButtons();
+      currentFlight = null;
+      renderEmpty('No alternative aircraft available. Enable more aircraft in Settings.');
+      return;
+    }
     const newAircraft  = pickRandom(pool as [Aircraft, ...Aircraft[]]);
     const blockTimeMin = Math.round((distanceNm / newAircraft.cruise_kts) * 60 + 30);
     const newRoute     = { ...route, aircraft: newAircraft };
