@@ -224,6 +224,7 @@ document.getElementById('btn-reroll-aircraft')!.addEventListener('click', handle
 
 const viewMain  = document.getElementById('view-main')!;
 const viewAbout = document.getElementById('view-about')!;
+const viewPrefs = document.getElementById('view-prefs')!;
 
 document.getElementById('nav-about')!.addEventListener('click', () => {
   cancelAnim();
@@ -233,6 +234,17 @@ document.getElementById('nav-about')!.addEventListener('click', () => {
 
 document.getElementById('nav-back')!.addEventListener('click', () => {
   viewAbout.classList.add('hidden');
+  viewMain.classList.remove('hidden');
+});
+
+document.getElementById('nav-prefs')!.addEventListener('click', () => {
+  cancelAnim();
+  viewMain.classList.add('hidden');
+  viewPrefs.classList.remove('hidden');
+});
+
+document.getElementById('nav-back-prefs')!.addEventListener('click', () => {
+  viewPrefs.classList.add('hidden');
   viewMain.classList.remove('hidden');
 });
 

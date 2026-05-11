@@ -59,7 +59,8 @@ body::after {
 /* ── Views ── */
 .view { min-height: 100vh; }
 
-body.electron #view-about {
+body.electron #view-about,
+body.electron #view-prefs {
   min-height: unset;
   height: 100vh;
   overflow-y: auto;
