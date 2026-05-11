@@ -12,11 +12,10 @@ import type { GeneratedFlight } from './renderer.js';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 
 // Warm the caches before the user clicks Generate, then populate settings UI
-Promise.all([loadAircraft(), loadAirlines()]).then(([aircraft]) => {
-  initAircraftSettings(aircraft);
-}).catch(err => {
-  console.error('Failed to preload app data:', err);
-});
+Promise.all([loadAircraft(), loadAirlines()]).then(
+  ([aircraft]) => { initAircraftSettings(aircraft); },
+  err => { console.error('Failed to preload app data:', err); }
+);
 
 // ── Aircraft enable/disable ───────────────────────────────────────────────────
 
