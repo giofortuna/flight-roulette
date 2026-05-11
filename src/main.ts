@@ -59,10 +59,29 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
     const groupEl = document.createElement('div');
     groupEl.className = 'ac-group';
 
+    const groupHeader = document.createElement('div');
+    groupHeader.className = 'ac-group-header';
+
     const groupLabel = document.createElement('div');
     groupLabel.className = 'ac-group-label';
     groupLabel.textContent = label;
-    groupEl.appendChild(groupLabel);
+
+    const groupActions = document.createElement('div');
+    groupActions.className = 'ac-group-actions';
+
+    const allBtn  = document.createElement('button');
+    allBtn.className  = 'ac-action-btn';
+    allBtn.textContent = 'All';
+
+    const noneBtn = document.createElement('button');
+    noneBtn.className  = 'ac-action-btn';
+    noneBtn.textContent = 'None';
+
+    groupActions.append(allBtn, noneBtn);
+    groupHeader.append(groupLabel, groupActions);
+    groupEl.appendChild(groupHeader);
+
+    const groupInputs: HTMLInputElement[] = [];
 
     group.forEach((ac, i) => {
       const key = aircraftKey(ac);
@@ -75,6 +94,7 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
       input.type    = 'checkbox';
       input.id      = id;
       input.checked = !disabled.has(key);
+      groupInputs.push(input);
 
       const lbl   = document.createElement('label');
       lbl.htmlFor = id;
@@ -99,6 +119,18 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
         if (input.checked) { d.delete(key); } else { d.add(key); }
         saveDisabledAircraftKeys(d);
       });
+    });
+
+    allBtn.addEventListener('click', () => {
+      const d = getDisabledAircraftKeys();
+      group.forEach((ac, i) => { groupInputs[i].checked = true; d.delete(aircraftKey(ac)); });
+      saveDisabledAircraftKeys(d);
+    });
+
+    noneBtn.addEventListener('click', () => {
+      const d = getDisabledAircraftKeys();
+      group.forEach((ac, i) => { groupInputs[i].checked = false; d.add(aircraftKey(ac)); });
+      saveDisabledAircraftKeys(d);
     });
 
     container.appendChild(groupEl);
@@ -169,12 +201,28 @@ async function generate(): Promise<void> {
       renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
       return;
     }
-    const allAircraftList = await loadAircraft();
+    const allAircraftList  = await loadAircraft();
+    const enabledAircraft  = filterEnabledAircraft(allAircraftList);
     hideRerollButtons();
     renderLoading();
 
+    if (enabledAircraft.length === 0) {
+      currentFlight = null;
+      renderEmpty('No aircraft enabled. Enable at least one aircraft in Settings.');
+      return;
+    }
+
+    const matchingAircraft = enabledAircraft.filter(a =>
+      settings.flightTypes.includes(a.flight_type) && a.simulator.includes(settings.simulator)
+    );
+    if (matchingAircraft.length === 0) {
+      currentFlight = null;
+      renderEmpty('No enabled aircraft match the selected Flight Type and Simulator. Enable more aircraft in Settings.');
+      return;
+    }
+
     try {
-      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, filterEnabledAircraft(allAircraftList));
+      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft);
       const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
       const simbriefUrl = buildSimbriefUrl(route, plan);
       const flight = { route, plan, simbriefUrl };

@@ -859,25 +859,57 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .prefs-section-title {
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
-  letter-spacing: 0.28em;
-  color: var(--flap-sub);
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--amber);
   text-transform: uppercase;
-  padding: 10px 14px;
+  padding: 12px 14px;
   background: var(--flap-section);
   border-bottom: 1px solid var(--flap-divider);
+  border-left: 3px solid var(--amber);
 }
 
 .ac-group { border-bottom: 1px solid var(--flap-divider); }
 .ac-group:last-child { border-bottom: none; }
 
+.ac-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 14px;
+}
+
 .ac-group-label {
   font-family: 'Orbitron', monospace;
-  font-size: 7px;
-  letter-spacing: 0.3em;
-  color: var(--flap-label);
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  color: var(--flap-sub);
   text-transform: uppercase;
-  padding: 8px 14px 5px;
+  padding: 10px 14px 6px;
+}
+
+.ac-group-actions {
+  display: flex;
+  gap: 1px;
+}
+
+.ac-action-btn {
+  background: var(--flap-tile);
+  border: 1px solid var(--border-active);
+  color: var(--flap-sub);
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.ac-action-btn:hover {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #080604;
 }
 
 .ac-item { border-bottom: 1px solid #0a0a0a; }
