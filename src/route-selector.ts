@@ -223,9 +223,9 @@ export function buildRerollAircraftPool(
   );
 }
 
-export async function selectRoute(input: SelectionInput): Promise<SelectedRoute> {
+export async function selectRoute(input: SelectionInput, aircraft?: Aircraft[]): Promise<SelectedRoute> {
   const [allAircraft, allAirlines, allAirports, depAirports] = await Promise.all([
-    loadAircraft(),
+    aircraft ? Promise.resolve(aircraft) : loadAircraft(),
     loadAirlines(),
     loadAll(),
     input.departureRegion ? loadRegion(input.departureRegion) : Promise.resolve(undefined),
