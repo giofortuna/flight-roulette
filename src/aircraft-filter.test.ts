@@ -1,5 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 import type { Aircraft } from './aircraft-db.js';
 
@@ -69,4 +70,11 @@ test('filterEnabledAircraft — disabled key must match exactly (no partial matc
   const ac = [makeAircraft('Boeing 737-800', 'PMDG')];
   const result = filterEnabledAircraft(ac, new Set(['Boeing 737-800']));
   assert.deepEqual(result, ac);
+});
+
+test('aircraftKey — all entries in aircraft.json produce unique keys', () => {
+  const all = JSON.parse(readFileSync(new URL('../data/aircraft.json', import.meta.url), 'utf8')) as Aircraft[];
+  const keys = all.map(aircraftKey);
+  const dupes = keys.filter((k, i) => keys.indexOf(k) !== i);
+  assert.equal(dupes.length, 0, `duplicate keys: ${dupes.join(', ')}`);
 });
