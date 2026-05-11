@@ -194,11 +194,11 @@ async function generate(): Promise<void> {
       renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
       return;
     }
+    hideRerollButtons();
+
     const allAircraftList = await loadAircraft();
     const disabled        = getDisabledAircraftKeys();
     const enabledAircraft = filterEnabledAircraft(allAircraftList, disabled);
-    hideRerollButtons();
-    renderLoading();
 
     if (enabledAircraft.length === 0) {
       currentFlight = null;
@@ -215,6 +215,7 @@ async function generate(): Promise<void> {
       return;
     }
 
+    renderLoading();
     try {
       const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft);
       const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
