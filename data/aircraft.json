@@ -182,7 +182,7 @@
     "simbrief_airframe_id": ""
   },
   {
-    "icao_type": "A306",
+    "icao_type": "A300",
     "type_name": "Airbus A300B4-600",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
@@ -403,7 +403,7 @@
     "simbrief_airframe_id": ""
   },
   {
-    "icao_type": "A30F",
+    "icao_type": "A306",
     "type_name": "Airbus A300F4-600R",
     "airframe_name": "iniBuilds",
     "flight_type": "cargo",

@@ -964,6 +964,108 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .ac-item input:checked + label .ac-addon { color: var(--flap-label); }
 
+/* ── Sim selector tabs ── */
+.prefs-sim-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.prefs-sim-tab {
+  flex: 1;
+  background: var(--flap-tile);
+  border: 1px solid var(--flap-divider);
+  border-bottom: none;
+  color: var(--flap-sub);
+  font-family: 'Orbitron', monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: color 0.12s, background 0.12s;
+}
+
+.prefs-sim-tab.active {
+  background: var(--flap-bg);
+  color: var(--amber);
+  border-color: var(--flap-divider);
+  border-bottom-color: var(--flap-bg);
+}
+
+/* ── Community folder ── */
+.cf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+}
+
+.cf-path {
+  flex: 1;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  color: var(--flap-label);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.cf-btn {
+  background: var(--flap-tile);
+  border: 1px solid var(--border-active);
+  color: var(--flap-sub);
+  font-family: 'Orbitron', monospace;
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.cf-btn:hover:not(:disabled) {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: #080604;
+}
+
+.cf-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cf-scan-btn {
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+.cf-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px 10px;
+}
+
+.cf-status {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--flap-sub);
+}
+
+.cf-scanning {
+  padding: 24px 14px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  text-align: center;
+  animation: blink 1.2s step-end infinite;
+}
+
 /* ── Animations ── */
 @keyframes flicker {
   0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }

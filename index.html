@@ -524,6 +524,18 @@
 
     <div class="prefs-body">
 
+      <!-- Sim selector — shown only in Electron via JS -->
+      <div class="prefs-sim-tabs hidden" id="prefs-sim-tabs">
+        <button class="prefs-sim-tab active" data-sim="msfs2020">MSFS 2020</button>
+        <button class="prefs-sim-tab" data-sim="msfs2024">MSFS 2024</button>
+      </div>
+
+      <!-- Community folder — shown only in Electron via JS -->
+      <div class="prefs-section hidden" id="prefs-community-section">
+        <div class="prefs-section-title">Community Folder</div>
+        <div id="prefs-community-body"></div>
+      </div>
+
       <div class="prefs-section">
         <div class="prefs-section-title">Aircraft</div>
         <div id="prefs-aircraft-list"></div>
