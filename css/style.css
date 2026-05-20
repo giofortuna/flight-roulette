@@ -611,8 +611,8 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .btn-pln {
   background: none;
-  border: 1px solid var(--flap-label);
-  color: var(--flap-label);
+  border: 1px solid var(--flap-sub);
+  color: var(--flap-sub);
   font-family: 'Orbitron', monospace;
   font-weight: 700;
   font-size: 9px;
@@ -621,15 +621,18 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   cursor: pointer;
   text-transform: uppercase;
   white-space: nowrap;
+  flex-shrink: 0;
   transition: border-color 0.15s, color 0.15s;
 }
 
-.btn-pln:hover:not(.is-disabled) {
-  border-color: var(--flap-sub);
-  color: var(--flap-sub);
+.btn-pln:hover {
+  border-color: var(--flap-text);
+  color: var(--flap-text);
 }
 
 .btn-pln.is-disabled {
+  border-color: var(--flap-label);
+  color: var(--flap-label);
   cursor: not-allowed;
   pointer-events: none;
 }
