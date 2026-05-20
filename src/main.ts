@@ -19,6 +19,9 @@ Promise.all([loadAircraft(), loadAirlines()]).then(
 
 // ── Aircraft enable/disable ───────────────────────────────────────────────────
 
+type PrefsSim = 'msfs2020' | 'msfs2024';
+let currentPrefsSim: PrefsSim = 'msfs2020';
+let allAircraftCache: Aircraft[] | null = null;
 
 function getDisabledAircraftKeys(): Set<string> {
   const stored = localStorage.getItem('disp-aircraft-disabled');
@@ -35,10 +38,39 @@ function saveDisabledAircraftKeys(keys: Set<string>): void {
   }
 }
 
+function getCommunityPath(sim: PrefsSim): string | null {
+  return localStorage.getItem(`disp-community-${sim}`);
+}
 
-function initAircraftSettings(allAircraft: Aircraft[]): void {
+function saveCommunityPath(sim: PrefsSim, p: string): void {
+  localStorage.setItem(`disp-community-${sim}`, p);
+}
+
+function getScanResult(sim: string): Set<string> | null {
+  const stored = localStorage.getItem(`disp-scan-${sim}`);
+  if (!stored) return null;
+  try { return new Set(JSON.parse(stored) as string[]); }
+  catch { return null; }
+}
+
+function saveScanResult(sim: PrefsSim, icaoTypes: string[]): void {
+  localStorage.setItem(`disp-scan-${sim}`, JSON.stringify(icaoTypes));
+}
+
+function getInstalledAircraft(all: Aircraft[], sim: Simulator): Aircraft[] {
+  const scan = getScanResult(sim);
+  if (!scan) return all;
+  return all.filter(a => scan.has(a.icao_type));
+}
+
+function renderAircraftList(sim: PrefsSim): void {
   const container = document.getElementById('prefs-aircraft-list')!;
-  const disabled  = getDisabledAircraftKeys();
+  container.innerHTML = '';
+  if (!allAircraftCache) return;
+
+  const scan     = getScanResult(sim);
+  const visible  = scan ? allAircraftCache.filter(a => scan.has(a.icao_type)) : allAircraftCache;
+  const disabled = getDisabledAircraftKeys();
 
   const groups: Array<{ type: 'passenger' | 'cargo'; label: string }> = [
     { type: 'passenger', label: 'Passenger' },
@@ -46,7 +78,7 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
   ];
 
   for (const { type, label } of groups) {
-    const group = allAircraft.filter(a => a.flight_type === type);
+    const group = visible.filter(a => a.flight_type === type);
     if (group.length === 0) continue;
 
     const groupEl = document.createElement('div');
@@ -63,11 +95,11 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
     groupActions.className = 'ac-group-actions';
 
     const allBtn  = document.createElement('button');
-    allBtn.className  = 'ac-action-btn';
+    allBtn.className   = 'ac-action-btn';
     allBtn.textContent = 'All';
 
     const noneBtn = document.createElement('button');
-    noneBtn.className  = 'ac-action-btn';
+    noneBtn.className   = 'ac-action-btn';
     noneBtn.textContent = 'None';
 
     groupActions.append(allBtn, noneBtn);
@@ -128,6 +160,123 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
 
     container.appendChild(groupEl);
   }
+}
+
+function renderCommunityFolder(sim: PrefsSim): void {
+  const container = document.getElementById('prefs-community-body')!;
+  container.innerHTML = '';
+
+  const folderPath = getCommunityPath(sim);
+  const scanResult = getScanResult(sim);
+
+  const row = document.createElement('div');
+  row.className = 'cf-row';
+
+  const pathEl = document.createElement('span');
+  pathEl.className   = 'cf-path';
+  pathEl.textContent = folderPath ?? 'Not found';
+  pathEl.title       = folderPath ?? '';
+
+  const changeBtn = document.createElement('button');
+  changeBtn.className   = 'cf-btn';
+  changeBtn.textContent = 'Change';
+  changeBtn.addEventListener('click', async () => {
+    const selected = await window.electronAPI!.openFolderDialog();
+    if (selected) { saveCommunityPath(sim, selected); renderCommunityFolder(sim); }
+  });
+
+  const scanBtn = document.createElement('button');
+  scanBtn.className   = 'cf-btn cf-scan-btn';
+  scanBtn.textContent = 'Scan';
+  scanBtn.disabled    = !folderPath;
+  scanBtn.addEventListener('click', async () => {
+    scanBtn.textContent = 'Scanning…';
+    scanBtn.disabled    = true;
+    changeBtn.disabled  = true;
+
+    const listContainer = document.getElementById('prefs-aircraft-list')!;
+    listContainer.innerHTML = '';
+    const progress = document.createElement('div');
+    progress.className   = 'cf-scanning';
+    progress.textContent = 'Scanning community folder…';
+    listContainer.appendChild(progress);
+
+    try {
+      const found = await window.electronAPI!.scanCommunityFolder(folderPath!);
+      saveScanResult(sim, found);
+      renderCommunityFolder(sim);
+      renderAircraftList(sim);
+    } catch {
+      listContainer.innerHTML = '';
+      renderAircraftList(sim);
+      scanBtn.textContent = 'Scan';
+      scanBtn.disabled    = false;
+      changeBtn.disabled  = false;
+    }
+  });
+
+  row.append(pathEl, changeBtn, scanBtn);
+  container.appendChild(row);
+
+  if (scanResult !== null) {
+    const matched = (allAircraftCache ?? []).filter(a => scanResult.has(a.icao_type)).length;
+
+    const statusRow = document.createElement('div');
+    statusRow.className = 'cf-status-row';
+
+    const status = document.createElement('span');
+    status.className   = 'cf-status';
+    status.textContent = `${matched} aircraft detected`;
+
+    const resetBtn = document.createElement('button');
+    resetBtn.className   = 'cf-btn';
+    resetBtn.textContent = 'Reset';
+    resetBtn.addEventListener('click', () => {
+      localStorage.removeItem(`disp-scan-${sim}`);
+      renderCommunityFolder(sim);
+      renderAircraftList(sim);
+    });
+
+    statusRow.append(status, resetBtn);
+    container.appendChild(statusRow);
+  }
+}
+
+async function autoDetectCommunityFolders(): Promise<void> {
+  for (const sim of ['msfs2020', 'msfs2024'] as PrefsSim[]) {
+    if (!getCommunityPath(sim)) {
+      try {
+        const detected = await window.electronAPI!.detectCommunityFolder(sim);
+        if (detected) {
+          saveCommunityPath(sim, detected);
+          if (sim === currentPrefsSim) renderCommunityFolder(sim);
+        }
+      } catch {}
+    }
+  }
+}
+
+function initAircraftSettings(allAircraft: Aircraft[]): void {
+  allAircraftCache = allAircraft;
+
+  if (window.electronAPI) {
+    document.getElementById('prefs-sim-tabs')!.classList.remove('hidden');
+    document.getElementById('prefs-community-section')!.classList.remove('hidden');
+    autoDetectCommunityFolders();
+  }
+
+  document.querySelectorAll<HTMLButtonElement>('.prefs-sim-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.prefs-sim-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentPrefsSim = tab.dataset.sim as PrefsSim;
+      renderAircraftList(currentPrefsSim);
+      if (window.electronAPI) renderCommunityFolder(currentPrefsSim);
+    });
+  });
+
+  renderAircraftList(currentPrefsSim);
+  if (window.electronAPI) renderCommunityFolder(currentPrefsSim);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -198,7 +347,7 @@ async function generate(): Promise<void> {
 
     const allAircraftList = await loadAircraft();
     const disabled        = getDisabledAircraftKeys();
-    const enabledAircraft = filterEnabledAircraft(allAircraftList, disabled);
+    const enabledAircraft = filterEnabledAircraft(getInstalledAircraft(allAircraftList, settings.simulator), disabled);
 
     if (enabledAircraft.length === 0) {
       currentFlight = null;
@@ -328,7 +477,7 @@ async function handleRerollAircraft(): Promise<void> {
     const { distanceNm } = route;
     const allAircraftList = await loadAircraft();
     const pool = buildRerollAircraftPool(
-      filterEnabledAircraft(allAircraftList, getDisabledAircraftKeys()),
+      filterEnabledAircraft(getInstalledAircraft(allAircraftList, settings.simulator), getDisabledAircraftKeys()),
       settings.flightTypes,
       route.airline.type,
       settings.simulator,
@@ -538,7 +687,16 @@ optionsPanelEl.addEventListener('toggle', () =>
 
 // ── Electron window auto-fit ──────────────────────────────────────────────────
 
-declare global { interface Window { electronAPI?: { resizeToHeight(h: number): void } } }
+declare global {
+  interface Window {
+    electronAPI?: {
+      resizeToHeight(h: number): void;
+      detectCommunityFolder(sim: string): Promise<string | null>;
+      scanCommunityFolder(path: string): Promise<string[]>;
+      openFolderDialog(): Promise<string | null>;
+    }
+  }
+}
 
 if (window.electronAPI) {
   document.body.classList.add('electron');

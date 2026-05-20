@@ -1,7 +1,90 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, shell, protocol, net } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, protocol, net, dialog } = require('electron');
 const path = require('path');
+const fs   = require('fs');
+const os   = require('os');
+
+// ── Community folder auto-detect paths ───────────────────────────────────────
+
+const COMMUNITY_PATHS = {
+  msfs2020: [
+    path.join(os.homedir(), 'AppData', 'Roaming', 'Microsoft Flight Simulator', 'Packages', 'Community'),
+    path.join(os.homedir(), 'AppData', 'Local', 'Packages', 'Microsoft.FlightSimulator_8wekyb3d8bbwe', 'LocalCache', 'Packages', 'Community'),
+  ],
+  msfs2024: [
+    path.join(os.homedir(), 'AppData', 'Roaming', 'Microsoft Flight Simulator 2024', 'Packages', 'Community'),
+    path.join(os.homedir(), 'AppData', 'Local', 'Packages', 'Microsoft.Limitless_8wekyb3d8bbwe', 'LocalCache', 'Packages', 'Community'),
+  ],
+};
+
+const fsp = fs.promises;
+
+async function scanPackagesDir(dir, icaoTypes) {
+  let entries;
+  try { entries = await fsp.readdir(dir, { withFileTypes: true }); }
+  catch { return; }
+
+  for (const pkg of entries) {
+    if (!pkg.isDirectory()) continue;
+    const airplanesDir = path.join(dir, pkg.name, 'SimObjects', 'Airplanes');
+    let variants;
+    try { variants = await fsp.readdir(airplanesDir, { withFileTypes: true }); }
+    catch { continue; }
+
+    for (const variant of variants) {
+      if (!variant.isDirectory()) continue;
+      const cfgPath = path.join(airplanesDir, variant.name, 'aircraft.cfg');
+      try {
+        const buf = await fsp.readFile(cfgPath);
+        // Handle both UTF-8 and UTF-16 LE (BOM FF FE)
+        const content = buf[0] === 0xFF && buf[1] === 0xFE
+          ? buf.toString('utf16le')
+          : buf.toString('utf8');
+        const match = content.match(/icao_type_designator\s*=\s*([^\r\n;]+)/i);
+        if (match) {
+          const icao = match[1].trim().replace(/"/g, '');
+          if (icao) icaoTypes.add(icao);
+        }
+      } catch { /* unreadable cfg — skip */ }
+    }
+  }
+}
+
+ipcMain.handle('detect-community-folder', (_, sim) => {
+  const candidates = COMMUNITY_PATHS[sim] ?? [];
+  for (const p of candidates) {
+    try { if (fs.existsSync(p)) return p; } catch {}
+  }
+  return null;
+});
+
+ipcMain.handle('scan-community-folder', async (_, communityPath) => {
+  const icaoTypes = new Set();
+
+  // Scan Community folder itself
+  await scanPackagesDir(communityPath, icaoTypes);
+
+  // Also scan sibling Official folder (base sim + marketplace content)
+  const officialDir = path.join(path.dirname(communityPath), 'Official');
+  try {
+    const subdirs = await fsp.readdir(officialDir, { withFileTypes: true });
+    await Promise.all(
+      subdirs.filter(s => s.isDirectory()).map(s => scanPackagesDir(path.join(officialDir, s.name), icaoTypes))
+    );
+  } catch { /* no Official sibling — fine */ }
+
+  return [...icaoTypes];
+});
+
+ipcMain.handle('open-folder-dialog', async (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showOpenDialog(win, {
+    properties: ['openDirectory'],
+    title: 'Select MSFS Community Folder',
+  });
+  return result.canceled ? null : result.filePaths[0];
+});
 
 // Must be called before app is ready
 protocol.registerSchemesAsPrivileged([
