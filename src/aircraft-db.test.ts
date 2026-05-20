@@ -7,7 +7,7 @@ function makeAircraft(overrides: Record<string, unknown> = {}) {
     icao_type: 'B738', type_name: '737-800', airframe_name: 'Test 737',
     flight_type: 'passenger', simulator: ['msfs2020', 'msfs2024'],
     range_nm: 3000, min_runway_m: 2000,
-    cruise_kts: 450, cruise_fl: 37000, category: 'narrowbody',
+    cruise_kts: 450, category: 'narrowbody',
     simbrief_type: 'B738', simbrief_airframe_id: '',
     ...overrides,
   };
@@ -84,9 +84,3 @@ test('validate — accepts min_runway_m of zero', () => {
   assert.doesNotThrow(() => validate([makeAircraft({ min_runway_m: 0 })]));
 });
 
-test('validate — throws when cruise_fl is zero, negative, or NaN', () => {
-  assert.throws(() => validate([makeAircraft({ cruise_fl: 0 })]),        /invalid entry/);
-  assert.throws(() => validate([makeAircraft({ cruise_fl: -1000 })]),    /invalid entry/);
-  assert.throws(() => validate([makeAircraft({ cruise_fl: NaN })]),      /invalid entry/);
-  assert.throws(() => validate([makeAircraft({ cruise_fl: Infinity })]), /invalid entry/);
-});
