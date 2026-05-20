@@ -530,16 +530,19 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
       savingPln = false;
     }
   } else {
-    const blob = new Blob([content], { type: 'application/xml' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(url), 10000);
-    savingPln = false;
+    try {
+      const blob = new Blob([content], { type: 'application/xml' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } finally {
+      savingPln = false;
+    }
   }
 });
 
