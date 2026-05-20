@@ -94,8 +94,12 @@ ipcMain.handle('save-pln', async (event, { content, filename }) => {
     title: 'Save Flight Plan',
   });
   if (result.canceled || !result.filePath) return false;
-  await fsp.writeFile(result.filePath, content, 'utf8');
-  return true;
+  try {
+    await fsp.writeFile(result.filePath, content, 'utf8');
+    return true;
+  } catch {
+    return false;
+  }
 });
 
 // Must be called before app is ready

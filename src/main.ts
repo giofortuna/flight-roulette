@@ -518,14 +518,16 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
   const content  = buildPln(currentFlight.route);
   const filename = plnFilename(currentFlight.route);
   if (window.electronAPI) {
-    await window.electronAPI.savePln(content, filename);
+    try { await window.electronAPI.savePln(content, filename); } catch { /* dialog closed or write failed */ }
   } else {
     const blob = new Blob([content], { type: 'application/xml' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href     = url;
     a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
 });

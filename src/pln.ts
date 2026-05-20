@@ -1,5 +1,9 @@
 import type { SelectedRoute } from './route-selector.js';
 
+function xmlEscape(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
 export function buildPln(route: SelectedRoute): string {
   const { departure: dep, destination: dest } = route;
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -12,8 +16,8 @@ export function buildPln(route: SelectedRoute): string {
         <DepartureID>${dep.icao}</DepartureID>
         <DestinationID>${dest.icao}</DestinationID>
         <Descr>${dep.icao}, ${dest.icao}</Descr>
-        <DepartureName>${dep.name}</DepartureName>
-        <DestinationName>${dest.name}</DestinationName>
+        <DepartureName>${xmlEscape(dep.name)}</DepartureName>
+        <DestinationName>${xmlEscape(dest.name)}</DestinationName>
         <AppVersion>
             <AppVersionMajor>11</AppVersionMajor>
             <AppVersionBuild>282174</AppVersionBuild>
