@@ -4,7 +4,10 @@
     "type_name": "ATR 42-600",
     "airframe_name": "Hans Hartmann",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 762,
     "min_runway_m": 1107,
     "cruise_kts": 340,
@@ -17,7 +20,10 @@
     "type_name": "ATR 72-600",
     "airframe_name": "Hans Hartmann",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 900,
     "min_runway_m": 1315,
     "cruise_kts": 340,
@@ -30,7 +36,10 @@
     "type_name": "McDonnell Douglas MD-82",
     "airframe_name": "Leonardo",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 2550,
     "min_runway_m": 2134,
     "cruise_kts": 437,
@@ -43,7 +52,10 @@
     "type_name": "Airbus A319-100",
     "airframe_name": "Fenix",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3750,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -56,7 +68,10 @@
     "type_name": "Airbus A320-200",
     "airframe_name": "Fenix",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3300,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -69,7 +84,10 @@
     "type_name": "Airbus A321-200",
     "airframe_name": "Fenix",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 4000,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -82,7 +100,10 @@
     "type_name": "Airbus A320neo",
     "airframe_name": "FlyByWire",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3500,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -95,7 +116,10 @@
     "type_name": "Airbus A320neo",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3500,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -108,7 +132,9 @@
     "type_name": "Airbus A321neo",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2024"],
+    "simulator": [
+      "msfs2024"
+    ],
     "range_nm": 3500,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -121,7 +147,10 @@
     "type_name": "Boeing 737-600",
     "airframe_name": "PMDG",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3235,
     "min_runway_m": 1372,
     "cruise_kts": 447,
@@ -134,7 +163,10 @@
     "type_name": "Boeing 737-700",
     "airframe_name": "PMDG",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3440,
     "min_runway_m": 1372,
     "cruise_kts": 447,
@@ -147,7 +179,10 @@
     "type_name": "Boeing 737-800",
     "airframe_name": "PMDG",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3115,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -160,7 +195,10 @@
     "type_name": "Boeing 737 MAX 8",
     "airframe_name": "iMax",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3550,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -173,7 +211,10 @@
     "type_name": "Boeing 737-900",
     "airframe_name": "PMDG",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 3265,
     "min_runway_m": 1524,
     "cruise_kts": 447,
@@ -186,7 +227,10 @@
     "type_name": "Airbus A300B4-600",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 4050,
     "min_runway_m": 2134,
     "cruise_kts": 447,
@@ -199,7 +243,10 @@
     "type_name": "Airbus A310-300",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 5150,
     "min_runway_m": 2134,
     "cruise_kts": 459,
@@ -212,7 +259,9 @@
     "type_name": "Airbus A330-200",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2024"],
+    "simulator": [
+      "msfs2024"
+    ],
     "range_nm": 7250,
     "min_runway_m": 2134,
     "cruise_kts": 459,
@@ -225,7 +274,9 @@
     "type_name": "Airbus A330-300",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2024"],
+    "simulator": [
+      "msfs2024"
+    ],
     "range_nm": 6350,
     "min_runway_m": 2134,
     "cruise_kts": 459,
@@ -238,7 +289,10 @@
     "type_name": "Airbus A330-900neo",
     "airframe_name": "Headwind",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 7200,
     "min_runway_m": 2134,
     "cruise_kts": 459,
@@ -251,7 +305,9 @@
     "type_name": "Airbus A340-300",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2024"],
+    "simulator": [
+      "msfs2024"
+    ],
     "range_nm": 7400,
     "min_runway_m": 2134,
     "cruise_kts": 459,
@@ -264,7 +320,10 @@
     "type_name": "Airbus A350-900",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 8500,
     "min_runway_m": 2134,
     "cruise_kts": 488,
@@ -277,7 +336,10 @@
     "type_name": "Airbus A350-1000",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 9000,
     "min_runway_m": 2134,
     "cruise_kts": 488,
@@ -290,7 +352,10 @@
     "type_name": "Airbus A380-800",
     "airframe_name": "FlyByWire",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 8200,
     "min_runway_m": 2134,
     "cruise_kts": 488,
@@ -303,7 +368,9 @@
     "type_name": "Lockheed L-1011-500 TriStar",
     "airframe_name": "iniBuilds",
     "flight_type": "passenger",
-    "simulator": ["msfs2024"],
+    "simulator": [
+      "msfs2024"
+    ],
     "range_nm": 5345,
     "min_runway_m": 2134,
     "cruise_kts": 476,
@@ -316,7 +383,10 @@
     "type_name": "Boeing 777-200LR",
     "airframe_name": "PMDG",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 9395,
     "min_runway_m": 2134,
     "cruise_kts": 481,
@@ -329,7 +399,10 @@
     "type_name": "Boeing 777-300ER",
     "airframe_name": "PMDG",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 7930,
     "min_runway_m": 2134,
     "cruise_kts": 481,
@@ -342,7 +415,10 @@
     "type_name": "Boeing 747-8I",
     "airframe_name": "Microsoft",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 8000,
     "min_runway_m": 2134,
     "cruise_kts": 487,
@@ -355,7 +431,10 @@
     "type_name": "Boeing 787-9 Dreamliner",
     "airframe_name": "Headwind",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 7565,
     "min_runway_m": 2134,
     "cruise_kts": 481,
@@ -368,7 +447,10 @@
     "type_name": "Boeing 787-10 Dreamliner",
     "airframe_name": "Microsoft",
     "flight_type": "passenger",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 6300,
     "min_runway_m": 2134,
     "cruise_kts": 481,
@@ -381,7 +463,9 @@
     "type_name": "Boeing 747-8F",
     "airframe_name": "Working Title",
     "flight_type": "cargo",
-    "simulator": ["msfs2024"],
+    "simulator": [
+      "msfs2024"
+    ],
     "range_nm": 4300,
     "min_runway_m": 2134,
     "cruise_kts": 481,
@@ -394,7 +478,10 @@
     "type_name": "Boeing 777F",
     "airframe_name": "PMDG",
     "flight_type": "cargo",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 4900,
     "min_runway_m": 2134,
     "cruise_kts": 481,
@@ -407,7 +494,10 @@
     "type_name": "Airbus A300F4-600R",
     "airframe_name": "iniBuilds",
     "flight_type": "cargo",
-    "simulator": ["msfs2020", "msfs2024"],
+    "simulator": [
+      "msfs2020",
+      "msfs2024"
+    ],
     "range_nm": 4800,
     "min_runway_m": 2134,
     "cruise_kts": 447,

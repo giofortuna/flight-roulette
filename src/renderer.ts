@@ -98,7 +98,7 @@ function numFinalChars(numStr: string, numWidth: number): string[] {
   return [...Array<string>(pad).fill(''), ...[...s]];
 }
 
-// --- Dispatch button helpers ---
+// --- Dispatch + PLN button helpers ---
 
 function fmtBlk(blockTimeMin: number): string {
   const h = Math.floor(blockTimeMin / 60);
@@ -117,6 +117,21 @@ function scheduleDispatchEnable(url: string, delay: number): void {
     (el('btn-dispatch') as HTMLAnchorElement).href = url;
     el('btn-dispatch').classList.remove('is-disabled');
     el('btn-dispatch').removeAttribute('aria-disabled');
+  }, delay);
+  _pending.push(t);
+}
+
+function disablePln(): void {
+  const btn = el('btn-pln') as HTMLButtonElement;
+  btn.classList.add('is-disabled');
+  btn.disabled = true;
+}
+
+function schedulePlnEnable(delay: number): void {
+  const t = setTimeout(() => {
+    const btn = el('btn-pln') as HTMLButtonElement;
+    btn.classList.remove('is-disabled');
+    btn.disabled = false;
   }, delay);
   _pending.push(t);
 }
@@ -214,6 +229,7 @@ export function renderBlank(): void {
   blankFlaps();
   blankText();
   disableDispatch();
+  disablePln();
   el('status-msg').classList.add('hidden');
 }
 
@@ -233,6 +249,7 @@ export function renderLoading(): void {
   cycleField(el('card-blocktime'), BLK_WIDTH,    'md', false, FLIP_CHARS_NUM);
 
   disableDispatch();
+  disablePln();
   el('status-msg').classList.add('hidden');
 }
 
@@ -280,6 +297,7 @@ export function renderFlight(flight: GeneratedFlight): void {
   revealText(el('card-aircraft-frame'), route.aircraft.airframe_name);
 
   scheduleDispatchEnable(flight.simbriefUrl, f(5) + (BLK_WIDTH - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(5) + (BLK_WIDTH - 1) * TILE_MS + 50);
   el('status-msg').classList.add('hidden');
 }
 
@@ -288,6 +306,7 @@ export function renderEmpty(message: string): void {
   blankFlaps();
   blankText();
   disableDispatch();
+  disablePln();
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
@@ -298,12 +317,14 @@ export function renderEmpty(message: string): void {
 export function reRenderAirline(flightNumber: string, airlineName: string, simbriefUrl: string): void {
   cancelAnim();
   disableDispatch();
+  disablePln();
   const f = (n: number) => n * FIELD_MS;
   cycleField(el('card-fltnum'),  FLTNUM_TILES,  'xl');
   cycleField(el('card-airline'), AIRLINE_TILES, 'lg');
   resolveField(el('card-fltnum'),  minFinalChars(flightNumber, FLTNUM_TILES),  f(0));
   resolveField(el('card-airline'), minFinalChars(airlineName,  AIRLINE_TILES), f(1));
   scheduleDispatchEnable(simbriefUrl, f(1) + (AIRLINE_TILES - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(1) + (AIRLINE_TILES - 1) * TILE_MS + 50);
 }
 
 export function reRenderDestination(
@@ -314,6 +335,7 @@ export function reRenderDestination(
 ): void {
   cancelAnim();
   disableDispatch();
+  disablePln();
   const f = (n: number) => n * FIELD_MS;
   el('card-dest-name').style.opacity    = '0';
   el('card-dest-country').style.opacity = '0';
@@ -328,6 +350,7 @@ export function reRenderDestination(
   revealText(el('card-dest-name'),    dest.name);
   revealText(el('card-dest-country'), countryName(dest.country));
   scheduleDispatchEnable(simbriefUrl, f(0) + (CITY_TILES - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(0) + (CITY_TILES - 1) * TILE_MS + 50);
 }
 
 export function reRenderDeparture(
@@ -339,6 +362,7 @@ export function reRenderDeparture(
 ): void {
   cancelAnim();
   disableDispatch();
+  disablePln();
   const f = (n: number) => n * FIELD_MS;
   el('card-dep-name').style.opacity    = '0';
   el('card-dep-country').style.opacity = '0';
@@ -355,6 +379,7 @@ export function reRenderDeparture(
   revealText(el('card-dep-name'),    dep.name);
   revealText(el('card-dep-country'), countryName(dep.country));
   scheduleDispatchEnable(simbriefUrl, f(1) + (CITY_TILES - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(1) + (CITY_TILES - 1) * TILE_MS + 50);
 }
 
 export function reRenderAircraft(
@@ -364,10 +389,12 @@ export function reRenderAircraft(
 ): void {
   cancelAnim();
   disableDispatch();
+  disablePln();
   const f = (n: number) => n * FIELD_MS;
   revealText(el('card-aircraft-type'),  aircraft.type_name);
   revealText(el('card-aircraft-frame'), aircraft.airframe_name);
   cycleField(el('card-blocktime'), BLK_WIDTH, 'md', false, FLIP_CHARS_NUM);
   resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH), f(0));
   scheduleDispatchEnable(simbriefUrl, f(0) + (BLK_WIDTH - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(0) + (BLK_WIDTH - 1) * TILE_MS + 50);
 }

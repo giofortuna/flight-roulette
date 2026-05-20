@@ -83,3 +83,4 @@ test('validate — throws when min_runway_m is negative', () => {
 test('validate — accepts min_runway_m of zero', () => {
   assert.doesNotThrow(() => validate([makeAircraft({ min_runway_m: 0 })]));
 });
+

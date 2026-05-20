@@ -7,6 +7,7 @@ import { loadAll, loadRegion } from './airport-db.js';
 import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, buildRerollAircraftPool } from './route-selector.js';
 import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
+import { buildPln, plnFilename } from './pln.js';
 import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
@@ -512,6 +513,39 @@ document.getElementById('btn-reroll-dest')!.addEventListener('click', handleRero
 document.getElementById('btn-reroll-dep')!.addEventListener('click', handleRerollDeparture);
 document.getElementById('btn-reroll-aircraft')!.addEventListener('click', handleRerollAircraft);
 
+let savingPln = false;
+document.getElementById('btn-pln')!.addEventListener('click', async () => {
+  if (!currentFlight || savingPln) return;
+  savingPln = true;
+  const content  = buildPln(currentFlight.route);
+  const filename = plnFilename(currentFlight.route);
+  if (window.electronAPI?.savePln) {
+    try {
+      const ok = await window.electronAPI.savePln(content, filename);
+      if (ok === false) alert('Failed to save flight plan. Check folder permissions.');
+    } catch (err) {
+      console.error('savePln IPC error:', err);
+      alert('Failed to save flight plan. Check folder permissions.');
+    } finally {
+      savingPln = false;
+    }
+  } else {
+    try {
+      const blob = new Blob([content], { type: 'application/xml' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } finally {
+      savingPln = false;
+    }
+  }
+});
+
 const viewMain  = document.getElementById('view-main')!;
 const viewAbout = document.getElementById('view-about')!;
 const viewPrefs = document.getElementById('view-prefs')!;
@@ -694,6 +728,7 @@ declare global {
       detectCommunityFolder(sim: string): Promise<string | null>;
       scanCommunityFolder(path: string): Promise<string[]>;
       openFolderDialog(): Promise<string | null>;
+      savePln(content: string, filename: string): Promise<boolean | null>;
     }
   }
 }

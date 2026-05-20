@@ -86,6 +86,23 @@ ipcMain.handle('open-folder-dialog', async (event) => {
   return result.canceled ? null : result.filePaths[0];
 });
 
+ipcMain.handle('save-pln', async (event, { content, filename }) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const result = await dialog.showSaveDialog(win, {
+    defaultPath: filename,
+    filters: [{ name: 'Flight Plan', extensions: ['pln'] }],
+    title: 'Save Flight Plan',
+  });
+  if (result.canceled || !result.filePath) return null;
+  try {
+    await fsp.writeFile(result.filePath, content, 'utf8');
+    return true;
+  } catch (err) {
+    console.error('save-pln write failed:', err);
+    return false;
+  }
+});
+
 // Must be called before app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true, supportFetchAPI: true } },
