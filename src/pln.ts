@@ -1,7 +1,7 @@
 import type { SelectedRoute } from './route-selector.js';
 
 export function buildPln(route: SelectedRoute): string {
-  const { departure: dep, destination: dest, aircraft } = route;
+  const { departure: dep, destination: dest } = route;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <SimBase.Document Type="AceXML" version="1,0">
     <Descr>AceXML Document</Descr>
@@ -9,7 +9,6 @@ export function buildPln(route: SelectedRoute): string {
         <Title>${dep.icao} to ${dest.icao}</Title>
         <FPType>IFR</FPType>
         <RouteType>LowAlt</RouteType>
-        <CruisingAlt>${aircraft.cruise_fl}</CruisingAlt>
         <DepartureID>${dep.icao}</DepartureID>
         <DestinationID>${dest.icao}</DestinationID>
         <Descr>${dep.icao}, ${dest.icao}</Descr>
