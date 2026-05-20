@@ -602,6 +602,38 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   text-transform: uppercase;
 }
 
+.footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-pln {
+  background: none;
+  border: 1px solid var(--flap-label);
+  color: var(--flap-label);
+  font-family: 'Orbitron', monospace;
+  font-weight: 700;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  padding: 9px 16px;
+  cursor: pointer;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.btn-pln:hover:not(.is-disabled) {
+  border-color: var(--flap-sub);
+  color: var(--flap-sub);
+}
+
+.btn-pln.is-disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 .btn-dispatch {
   background: none;
   border: 1px solid var(--flap-sub);

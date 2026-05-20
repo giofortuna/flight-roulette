@@ -10,6 +10,7 @@ export interface Aircraft {
   range_nm: number;
   min_runway_m: number;
   cruise_kts: number;
+  cruise_fl: number;
   category: 'narrowbody' | 'widebody' | 'regional' | 'turboprop';
   simbrief_type: string;
   simbrief_airframe_id: string;
@@ -35,6 +36,7 @@ export function validate(data: unknown): Aircraft[] {
      || !Number.isFinite(item.range_nm)       || item.range_nm <= 0
      || !Number.isFinite(item.min_runway_m)   || item.min_runway_m < 0
      || !Number.isFinite(item.cruise_kts)     || item.cruise_kts <= 0
+     || !Number.isFinite(item.cruise_fl)      || item.cruise_fl <= 0
      || !(item.category in VALID_CATEGORIES)
      || typeof item.simbrief_type !== 'string'
      || typeof item.simbrief_airframe_id !== 'string')

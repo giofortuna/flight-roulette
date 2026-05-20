@@ -8,6 +8,7 @@
     "range_nm": 762,
     "min_runway_m": 1107,
     "cruise_kts": 340,
+    "cruise_fl": 20000,
     "category": "turboprop",
     "simbrief_type": "AT46",
     "simbrief_airframe_id": ""
@@ -21,6 +22,7 @@
     "range_nm": 900,
     "min_runway_m": 1315,
     "cruise_kts": 340,
+    "cruise_fl": 20000,
     "category": "turboprop",
     "simbrief_type": "AT76",
     "simbrief_airframe_id": ""
@@ -34,6 +36,7 @@
     "range_nm": 2550,
     "min_runway_m": 2134,
     "cruise_kts": 437,
+    "cruise_fl": 35000,
     "category": "narrowbody",
     "simbrief_type": "MD82",
     "simbrief_airframe_id": ""
@@ -47,6 +50,7 @@
     "range_nm": 3750,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 37000,
     "category": "narrowbody",
     "simbrief_type": "A319",
     "simbrief_airframe_id": ""
@@ -60,6 +64,7 @@
     "range_nm": 3300,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 37000,
     "category": "narrowbody",
     "simbrief_type": "A320",
     "simbrief_airframe_id": ""
@@ -73,6 +78,7 @@
     "range_nm": 4000,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 37000,
     "category": "narrowbody",
     "simbrief_type": "A321",
     "simbrief_airframe_id": ""
@@ -86,6 +92,7 @@
     "range_nm": 3500,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 39000,
     "category": "narrowbody",
     "simbrief_type": "A20N",
     "simbrief_airframe_id": ""
@@ -99,6 +106,7 @@
     "range_nm": 3500,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 39000,
     "category": "narrowbody",
     "simbrief_type": "A20N",
     "simbrief_airframe_id": ""
@@ -112,6 +120,7 @@
     "range_nm": 3500,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 39000,
     "category": "narrowbody",
     "simbrief_type": "A21N",
     "simbrief_airframe_id": ""
@@ -125,6 +134,7 @@
     "range_nm": 3235,
     "min_runway_m": 1372,
     "cruise_kts": 447,
+    "cruise_fl": 37000,
     "category": "narrowbody",
     "simbrief_type": "B736",
     "simbrief_airframe_id": ""
@@ -138,6 +148,7 @@
     "range_nm": 3440,
     "min_runway_m": 1372,
     "cruise_kts": 447,
+    "cruise_fl": 37000,
     "category": "narrowbody",
     "simbrief_type": "B737",
     "simbrief_airframe_id": ""
@@ -151,6 +162,7 @@
     "range_nm": 3115,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 37000,
     "category": "narrowbody",
     "simbrief_type": "B738",
     "simbrief_airframe_id": ""
@@ -164,6 +176,7 @@
     "range_nm": 3550,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 39000,
     "category": "narrowbody",
     "simbrief_type": "B38M",
     "simbrief_airframe_id": ""
@@ -177,6 +190,7 @@
     "range_nm": 3265,
     "min_runway_m": 1524,
     "cruise_kts": 447,
+    "cruise_fl": 37000,
     "category": "narrowbody",
     "simbrief_type": "B739",
     "simbrief_airframe_id": ""
@@ -190,6 +204,7 @@
     "range_nm": 4050,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 35000,
     "category": "widebody",
     "simbrief_type": "A306",
     "simbrief_airframe_id": ""
@@ -203,6 +218,7 @@
     "range_nm": 5150,
     "min_runway_m": 2134,
     "cruise_kts": 459,
+    "cruise_fl": 37000,
     "category": "widebody",
     "simbrief_type": "A310",
     "simbrief_airframe_id": ""
@@ -216,6 +232,7 @@
     "range_nm": 7250,
     "min_runway_m": 2134,
     "cruise_kts": 459,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "A332",
     "simbrief_airframe_id": ""
@@ -229,6 +246,7 @@
     "range_nm": 6350,
     "min_runway_m": 2134,
     "cruise_kts": 459,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "A333",
     "simbrief_airframe_id": ""
@@ -242,6 +260,7 @@
     "range_nm": 7200,
     "min_runway_m": 2134,
     "cruise_kts": 459,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "A339",
     "simbrief_airframe_id": ""
@@ -255,6 +274,7 @@
     "range_nm": 7400,
     "min_runway_m": 2134,
     "cruise_kts": 459,
+    "cruise_fl": 37000,
     "category": "widebody",
     "simbrief_type": "A346",
     "simbrief_airframe_id": ""
@@ -268,6 +288,7 @@
     "range_nm": 8500,
     "min_runway_m": 2134,
     "cruise_kts": 488,
+    "cruise_fl": 41000,
     "category": "widebody",
     "simbrief_type": "A359",
     "simbrief_airframe_id": ""
@@ -281,6 +302,7 @@
     "range_nm": 9000,
     "min_runway_m": 2134,
     "cruise_kts": 488,
+    "cruise_fl": 41000,
     "category": "widebody",
     "simbrief_type": "A359",
     "simbrief_airframe_id": ""
@@ -294,6 +316,7 @@
     "range_nm": 8200,
     "min_runway_m": 2134,
     "cruise_kts": 488,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "A388",
     "simbrief_airframe_id": ""
@@ -307,6 +330,7 @@
     "range_nm": 5345,
     "min_runway_m": 2134,
     "cruise_kts": 476,
+    "cruise_fl": 33000,
     "category": "widebody",
     "simbrief_type": "L101",
     "simbrief_airframe_id": ""
@@ -320,6 +344,7 @@
     "range_nm": 9395,
     "min_runway_m": 2134,
     "cruise_kts": 481,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "B77L",
     "simbrief_airframe_id": ""
@@ -333,6 +358,7 @@
     "range_nm": 7930,
     "min_runway_m": 2134,
     "cruise_kts": 481,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "B77W",
     "simbrief_airframe_id": ""
@@ -346,6 +372,7 @@
     "range_nm": 8000,
     "min_runway_m": 2134,
     "cruise_kts": 487,
+    "cruise_fl": 35000,
     "category": "widebody",
     "simbrief_type": "B748",
     "simbrief_airframe_id": ""
@@ -359,6 +386,7 @@
     "range_nm": 7565,
     "min_runway_m": 2134,
     "cruise_kts": 481,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "B789",
     "simbrief_airframe_id": ""
@@ -372,6 +400,7 @@
     "range_nm": 6300,
     "min_runway_m": 2134,
     "cruise_kts": 481,
+    "cruise_fl": 39000,
     "category": "widebody",
     "simbrief_type": "B78X",
     "simbrief_airframe_id": ""
@@ -385,6 +414,7 @@
     "range_nm": 4300,
     "min_runway_m": 2134,
     "cruise_kts": 481,
+    "cruise_fl": 35000,
     "category": "widebody",
     "simbrief_type": "B48F",
     "simbrief_airframe_id": ""
@@ -398,6 +428,7 @@
     "range_nm": 4900,
     "min_runway_m": 2134,
     "cruise_kts": 481,
+    "cruise_fl": 37000,
     "category": "widebody",
     "simbrief_type": "B77F",
     "simbrief_airframe_id": ""
@@ -411,6 +442,7 @@
     "range_nm": 4800,
     "min_runway_m": 2134,
     "cruise_kts": 447,
+    "cruise_fl": 35000,
     "category": "widebody",
     "simbrief_type": "A30F",
     "simbrief_airframe_id": ""
