@@ -518,7 +518,10 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
   const content  = buildPln(currentFlight.route);
   const filename = plnFilename(currentFlight.route);
   if (window.electronAPI) {
-    try { await window.electronAPI.savePln(content, filename); } catch { /* dialog closed or write failed */ }
+    try {
+      const ok = await window.electronAPI.savePln(content, filename);
+      if (!ok) alert('Failed to save flight plan. Check folder permissions.');
+    } catch { /* dialog closed */ }
   } else {
     const blob = new Blob([content], { type: 'application/xml' });
     const url  = URL.createObjectURL(blob);
@@ -528,7 +531,7 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
   }
 });
 
