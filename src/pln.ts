@@ -8,7 +8,6 @@ export function buildPln(route: SelectedRoute): string {
     <FlightPlan.FlightPlan>
         <Title>${dep.icao} to ${dest.icao}</Title>
         <FPType>IFR</FPType>
-        <RouteType>LowAlt</RouteType>
         <DepartureID>${dep.icao}</DepartureID>
         <DestinationID>${dest.icao}</DestinationID>
         <Descr>${dep.icao}, ${dest.icao}</Descr>
