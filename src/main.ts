@@ -522,7 +522,7 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
   if (window.electronAPI?.savePln) {
     try {
       const ok = await window.electronAPI.savePln(content, filename);
-      if (!ok) alert('Failed to save flight plan. Check folder permissions.');
+      if (ok === false) alert('Failed to save flight plan. Check folder permissions.');
     } catch (err) {
       console.error('savePln IPC error:', err);
       alert('Failed to save flight plan. Check folder permissions.');
@@ -725,7 +725,7 @@ declare global {
       detectCommunityFolder(sim: string): Promise<string | null>;
       scanCommunityFolder(path: string): Promise<string[]>;
       openFolderDialog(): Promise<string | null>;
-      savePln(content: string, filename: string): Promise<boolean>;
+      savePln(content: string, filename: string): Promise<boolean | null>;
     }
   }
 }

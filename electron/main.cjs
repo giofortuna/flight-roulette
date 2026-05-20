@@ -93,7 +93,7 @@ ipcMain.handle('save-pln', async (event, { content, filename }) => {
     filters: [{ name: 'Flight Plan', extensions: ['pln'] }],
     title: 'Save Flight Plan',
   });
-  if (result.canceled || !result.filePath) return false;
+  if (result.canceled || !result.filePath) return null;
   try {
     await fsp.writeFile(result.filePath, content, 'utf8');
     return true;
