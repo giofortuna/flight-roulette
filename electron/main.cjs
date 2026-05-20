@@ -97,7 +97,8 @@ ipcMain.handle('save-pln', async (event, { content, filename }) => {
   try {
     await fsp.writeFile(result.filePath, content, 'utf8');
     return true;
-  } catch {
+  } catch (err) {
+    console.error('save-pln write failed:', err);
     return false;
   }
 });

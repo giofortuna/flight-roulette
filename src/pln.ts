@@ -6,16 +6,18 @@ function xmlEscape(s: string): string {
 
 export function buildPln(route: SelectedRoute): string {
   const { departure: dep, destination: dest } = route;
+  const depIcao  = xmlEscape(dep.icao);
+  const destIcao = xmlEscape(dest.icao);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <SimBase.Document Type="AceXML" version="1,0">
     <Descr>AceXML Document</Descr>
     <FlightPlan.FlightPlan>
-        <Title>${dep.icao} to ${dest.icao}</Title>
+        <Title>${depIcao} to ${destIcao}</Title>
         <FPType>IFR</FPType>
         <CruisingAlt>0</CruisingAlt>
-        <DepartureID>${dep.icao}</DepartureID>
-        <DestinationID>${dest.icao}</DestinationID>
-        <Descr>${dep.icao}, ${dest.icao}</Descr>
+        <DepartureID>${depIcao}</DepartureID>
+        <DestinationID>${destIcao}</DestinationID>
+        <Descr>${depIcao}, ${destIcao}</Descr>
         <DepartureName>${xmlEscape(dep.name)}</DepartureName>
         <DestinationName>${xmlEscape(dest.name)}</DestinationName>
         <AppVersion>
