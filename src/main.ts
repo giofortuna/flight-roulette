@@ -513,8 +513,10 @@ document.getElementById('btn-reroll-dest')!.addEventListener('click', handleRero
 document.getElementById('btn-reroll-dep')!.addEventListener('click', handleRerollDeparture);
 document.getElementById('btn-reroll-aircraft')!.addEventListener('click', handleRerollAircraft);
 
+let savingPln = false;
 document.getElementById('btn-pln')!.addEventListener('click', async () => {
-  if (!currentFlight) return;
+  if (!currentFlight || savingPln) return;
+  savingPln = true;
   const content  = buildPln(currentFlight.route);
   const filename = plnFilename(currentFlight.route);
   if (window.electronAPI?.savePln) {
@@ -524,6 +526,8 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
     } catch (err) {
       console.error('savePln IPC error:', err);
       alert('Failed to save flight plan. Check folder permissions.');
+    } finally {
+      savingPln = false;
     }
   } else {
     const blob = new Blob([content], { type: 'application/xml' });
@@ -535,6 +539,7 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
     a.click();
     document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 10000);
+    savingPln = false;
   }
 });
 

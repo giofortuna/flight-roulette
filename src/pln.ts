@@ -29,5 +29,6 @@ export function buildPln(route: SelectedRoute): string {
 }
 
 export function plnFilename(route: SelectedRoute): string {
-  return `${route.departure.icao}-${route.destination.icao}.pln`;
+  const sanitize = (s: string) => s.replace(/[/\\:*?"<>|]/g, '_');
+  return `${sanitize(route.departure.icao)}-${sanitize(route.destination.icao)}.pln`;
 }
