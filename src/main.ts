@@ -517,11 +517,14 @@ document.getElementById('btn-pln')!.addEventListener('click', async () => {
   if (!currentFlight) return;
   const content  = buildPln(currentFlight.route);
   const filename = plnFilename(currentFlight.route);
-  if (window.electronAPI) {
+  if (window.electronAPI?.savePln) {
     try {
       const ok = await window.electronAPI.savePln(content, filename);
       if (!ok) alert('Failed to save flight plan. Check folder permissions.');
-    } catch { /* dialog closed */ }
+    } catch (err) {
+      console.error('savePln IPC error:', err);
+      alert('Failed to save flight plan. Check folder permissions.');
+    }
   } else {
     const blob = new Blob([content], { type: 'application/xml' });
     const url  = URL.createObjectURL(blob);
