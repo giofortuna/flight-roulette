@@ -380,8 +380,18 @@ async function generate(): Promise<void> {
         const hints: string[] = [];
         if (settings.minBlockH !== undefined || settings.maxBlockH !== undefined)
           hints.push('widening the block time filter');
-        if (settings.minDistNm !== undefined || settings.maxDistNm !== undefined)
-          hints.push('widening the distance filter');
+        if (settings.minDistNm !== undefined || settings.maxDistNm !== undefined) {
+          const eligibleAircraft = enabledAircraft.filter(a =>
+            settings.flightTypes.includes(a.flight_type) && a.simulator.includes(settings.simulator)
+          );
+          const anyCanReachMin = settings.minDistNm === undefined ||
+            eligibleAircraft.some(a => a.range_nm * 0.8 >= settings.minDistNm!);
+          if (!anyCanReachMin) {
+            hints.push('enabling aircraft with a longer range, or widening the distance filter');
+          } else {
+            hints.push('widening the distance filter');
+          }
+        }
         if (settings.scheduledOnly)
           hints.push('switching Airports to All');
         if (settings.departureRegion !== undefined)
