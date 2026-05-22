@@ -11,6 +11,7 @@ import { buildPln, plnFilename } from './pln.js';
 import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
+import { loadCustomAircraft, addCustomAircraft, removeCustomAircraftAt, validateCustomEntry } from './custom-aircraft.js';
 
 // Warm the caches before the user clicks Generate, then populate settings UI
 Promise.all([loadAircraft(), loadAirlines()]).then(
@@ -278,7 +279,106 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
 
   renderAircraftList(currentPrefsSim);
   if (window.electronAPI) renderCommunityFolder(currentPrefsSim);
+  renderCustomAircraftList();
 }
+
+function renderCustomAircraftList(): void {
+  const container = document.getElementById('prefs-custom-list')!;
+  container.innerHTML = '';
+  const custom   = loadCustomAircraft();
+  const disabled = getDisabledAircraftKeys();
+
+  if (custom.length === 0) {
+    const empty = document.createElement('div');
+    empty.className   = 'custom-ac-empty';
+    empty.textContent = 'No custom aircraft added yet.';
+    container.appendChild(empty);
+    return;
+  }
+
+  custom.forEach((ac, i) => {
+    const key = aircraftKey(ac);
+    const id  = `cac-toggle-${i}`;
+
+    const item = document.createElement('div');
+    item.className = 'ac-item ac-item-custom';
+
+    const input = document.createElement('input');
+    input.type    = 'checkbox';
+    input.id      = id;
+    input.checked = !disabled.has(key);
+
+    const lbl = document.createElement('label');
+    lbl.htmlFor = id;
+
+    const dot = document.createElement('span');
+    dot.className = 'ac-dot';
+
+    const name = document.createElement('span');
+    name.className   = 'ac-name';
+    name.textContent = ac.type_name;
+
+    const addon = document.createElement('span');
+    addon.className   = 'ac-addon';
+    addon.textContent = ac.airframe_name;
+
+    lbl.append(dot, name, addon);
+
+    const delBtn = document.createElement('button');
+    delBtn.type      = 'button';
+    delBtn.className = 'ac-delete-btn';
+    delBtn.textContent = '×';
+    delBtn.title     = 'Remove';
+    delBtn.addEventListener('click', () => {
+      removeCustomAircraftAt(i);
+      renderCustomAircraftList();
+    });
+
+    item.append(input, lbl, delBtn);
+    container.appendChild(item);
+
+    input.addEventListener('change', () => {
+      const d = getDisabledAircraftKeys();
+      if (input.checked) { d.delete(key); } else { d.add(key); }
+      saveDisabledAircraftKeys(d);
+    });
+  });
+}
+
+document.getElementById('custom-ac-form')!.addEventListener('submit', e => {
+  e.preventDefault();
+  const errorEl = document.getElementById('custom-ac-error')!;
+  errorEl.textContent = '';
+
+  const simulators: string[] = [];
+  if ((document.getElementById('cac-sim-2020') as HTMLInputElement).checked) simulators.push('msfs2020');
+  if ((document.getElementById('cac-sim-2024') as HTMLInputElement).checked) simulators.push('msfs2024');
+
+  const data: Record<string, unknown> = {
+    type_name:           (document.getElementById('cac-type-name')      as HTMLInputElement).value,
+    airframe_name:       (document.getElementById('cac-addon')           as HTMLInputElement).value,
+    simbrief_type:       (document.getElementById('cac-simbrief-type')   as HTMLInputElement).value,
+    simbrief_airframe_id:(document.getElementById('cac-simbrief-id')     as HTMLInputElement).value,
+    flight_type:         (document.querySelector('input[name="cac-ftype"]:checked') as HTMLInputElement | null)?.value ?? '',
+    simulator:           simulators,
+    range_nm:            parseFloat((document.getElementById('cac-range')   as HTMLInputElement).value),
+    min_runway_m:        parseFloat((document.getElementById('cac-runway')  as HTMLInputElement).value),
+    cruise_kts:          parseFloat((document.getElementById('cac-cruise')  as HTMLInputElement).value),
+    category:            (document.getElementById('cac-category') as HTMLSelectElement).value,
+  };
+
+  try {
+    addCustomAircraft(validateCustomEntry(data));
+    (e.target as HTMLFormElement).reset();
+    (document.getElementById('cac-ftype-pax')  as HTMLInputElement).checked = true;
+    (document.getElementById('cac-sim-2024')   as HTMLInputElement).checked = true;
+    (document.getElementById('cac-category')   as HTMLSelectElement).value  = 'narrowbody';
+    (document.getElementById('custom-ac-details') as HTMLDetailsElement).open = false;
+    renderCustomAircraftList();
+  } catch (err) {
+    errorEl.textContent = err instanceof Error ? err.message : 'Invalid entry';
+  }
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -346,9 +446,11 @@ async function generate(): Promise<void> {
     }
     hideRerollButtons();
 
-    const allAircraftList = await loadAircraft();
+    const curated         = await loadAircraft();
+    const custom          = loadCustomAircraft();
     const disabled        = getDisabledAircraftKeys();
-    const enabledAircraft = filterEnabledAircraft(getInstalledAircraft(allAircraftList, settings.simulator), disabled);
+    const installed       = [...getInstalledAircraft(curated, settings.simulator), ...custom];
+    const enabledAircraft = filterEnabledAircraft(installed, disabled);
 
     if (enabledAircraft.length === 0) {
       currentFlight = null;
@@ -486,9 +588,11 @@ async function handleRerollAircraft(): Promise<void> {
     const settings = getSettings();
     const { route, plan } = currentFlight;
     const { distanceNm } = route;
-    const allAircraftList = await loadAircraft();
+    const curated  = await loadAircraft();
+    const custom   = loadCustomAircraft();
+    const installed = [...getInstalledAircraft(curated, settings.simulator), ...custom];
     const pool = buildRerollAircraftPool(
-      filterEnabledAircraft(getInstalledAircraft(allAircraftList, settings.simulator), getDisabledAircraftKeys()),
+      filterEnabledAircraft(installed, getDisabledAircraftKeys()),
       settings.flightTypes,
       route.airline.type,
       settings.simulator,
