@@ -407,8 +407,7 @@ export function renderEmpty(message: string): void {
   blankText();
   disableDispatch();
   disablePln();
-  clearTimeout(_noticeTimer);
-  _noticeTimer = undefined;
+  hideStatus();
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
