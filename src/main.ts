@@ -322,7 +322,9 @@ function renderCustomAircraftList(): void {
 
     const addon = document.createElement('span');
     addon.className   = 'ac-addon';
-    addon.textContent = ac.airframe_name;
+    addon.textContent = ac.simbrief_airframe_id
+      ? `${ac.airframe_name} · ${ac.simbrief_airframe_id}`
+      : ac.airframe_name;
 
     const sims = document.createElement('span');
     sims.className   = 'ac-sims';
@@ -378,8 +380,7 @@ document.getElementById('custom-ac-form')!.addEventListener('submit', e => {
   };
 
   try {
-    const curatedKeys = new Set((allAircraftCache ?? []).map(aircraftKey));
-    addCustomAircraft(validateCustomEntry(data), curatedKeys);
+    addCustomAircraft(validateCustomEntry(data), allAircraftCache ?? []);
     (e.target as HTMLFormElement).reset();
     (document.getElementById('cac-ftype-pax')  as HTMLInputElement).checked = true;
     (document.getElementById('cac-sim-2024')   as HTMLInputElement).checked = true;

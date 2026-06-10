@@ -168,27 +168,40 @@ describe('custom aircraft storage', () => {
     assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry())), /already exists/);
   });
 
-  it('addCustomAircraft — throws when key collides with takenKeys', () => {
-    const taken = new Set(['Boeing 737-800:PMDG']);
-    assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry()), taken), /already exists/);
+  it('addCustomAircraft — rejects same ICAO/developer/airframe even when type name differs', () => {
+    addCustomAircraft(validateCustomEntry(makeEntry()));
+    assert.throws(
+      () => addCustomAircraft(validateCustomEntry(makeEntry({ type_name: 'My Other 737' }))),
+      /already exists/,
+    );
+  });
+
+  it('addCustomAircraft — allows same name with a different SimBrief airframe id', () => {
+    addCustomAircraft(validateCustomEntry(makeEntry({ simbrief_airframe_id: 'sb-1' })));
+    assert.doesNotThrow(() => addCustomAircraft(validateCustomEntry(makeEntry({ simbrief_airframe_id: 'sb-2' }))));
+  });
+
+  it('addCustomAircraft — allows same name with a different ICAO type', () => {
+    addCustomAircraft(validateCustomEntry(makeEntry()));
+    assert.doesNotThrow(() => addCustomAircraft(validateCustomEntry(makeEntry({ simbrief_type: 'B739' }))));
+  });
+
+  it('addCustomAircraft — throws when entry collides with a curated aircraft', () => {
+    const curated = [validateCustomEntry(makeEntry({ type_name: 'Curated 737' }))];
+    assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry()), curated), /already exists/);
   });
 
   it('addCustomAircraft — duplicate check is case-insensitive', () => {
     addCustomAircraft(validateCustomEntry(makeEntry()));
     assert.throws(
-      () => addCustomAircraft(validateCustomEntry(makeEntry({ type_name: 'BOEING 737-800', airframe_name: 'pmdg' }))),
+      () => addCustomAircraft(validateCustomEntry(makeEntry({ airframe_name: 'pmdg', simbrief_type: 'b738' }))),
       /already exists/,
     );
   });
 
-  it('addCustomAircraft — takenKeys check is case-insensitive', () => {
-    const taken = new Set(['bOeInG 737-800:pmdg']);
-    assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry()), taken), /already exists/);
-  });
-
   it('removeCustomAircraftAt — removes the entry at index', () => {
     addCustomAircraft(validateCustomEntry(makeEntry()));
-    addCustomAircraft(validateCustomEntry(makeEntry({ type_name: 'Airbus A320' })));
+    addCustomAircraft(validateCustomEntry(makeEntry({ type_name: 'Airbus A320', simbrief_type: 'A320' })));
     removeCustomAircraftAt(0);
     const loaded = loadCustomAircraft();
     assert.equal(loaded.length, 1);

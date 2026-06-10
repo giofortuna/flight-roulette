@@ -1,6 +1,5 @@
 import type { Aircraft } from './aircraft-db.js';
 import type { Simulator, FlightType } from './types.js';
-import { aircraftKey } from './aircraft-filter.js';
 
 const STORAGE_KEY = 'disp-custom-aircraft';
 
@@ -74,13 +73,18 @@ export function validateCustomEntry(data: Record<string, unknown>): Aircraft {
   };
 }
 
-export function addCustomAircraft(entry: Aircraft, takenKeys?: ReadonlySet<string>): void {
+// Identity for duplicate detection: the same physical addon and SimBrief
+// airframe, regardless of the display name the user typed. Case-insensitive
+// so "PMDG" and "pmdg" can't create near-duplicates.
+function identityKey(a: Aircraft): string {
+  return `${a.icao_type}:${a.airframe_name}:${a.simbrief_airframe_id}`.toLowerCase();
+}
+
+export function addCustomAircraft(entry: Aircraft, curated: readonly Aircraft[] = []): void {
   const entries = loadCustomAircraft();
-  // Compare case-insensitively so "PMDG" and "pmdg" can't create near-duplicates
-  const key = aircraftKey(entry).toLowerCase();
-  const taken = takenKeys !== undefined && [...takenKeys].some(k => k.toLowerCase() === key);
-  if (taken || entries.some(e => aircraftKey(e).toLowerCase() === key))
-    throw new Error('An aircraft with this type name and developer already exists');
+  const key = identityKey(entry);
+  if ([...curated, ...entries].some(a => identityKey(a) === key))
+    throw new Error('An aircraft with this ICAO type, developer, and SimBrief airframe already exists');
   entries.push(entry);
   saveCustomAircraft(entries);
 }
