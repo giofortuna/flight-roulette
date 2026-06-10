@@ -430,33 +430,23 @@ function fitWidthRows(): { airline: number; depCity: number; destCity: number } 
 
 /**
  * Statically repaints the displayed flight with freshly fitted tile counts —
- * final characters only, no flap cycling. Returns false (DOM untouched) when
- * the fitted counts are unchanged, so height-only resizes (e.g. Electron's
- * window sizing) are no-ops. Cancels any running animation, which also clears
- * the pending dispatch/PLN enable timers — so it enables both directly.
+ * final characters only, no flap cycling. Returns false without repainting
+ * when the fitted counts are unchanged, so height-only resizes (e.g.
+ * Electron's window sizing) are no-ops. Cancels any running animation, which
+ * also clears the pending dispatch/PLN enable timers — so it enables both
+ * directly.
  */
 export function repaintFlight(flight: GeneratedFlight): boolean {
-  const fit = fitWidthRows();
-  if (!fit) return false;
+  if (!fitWidthRows()) return false;
   cancelAnim();
-  _airlineTiles  = fit.airline;
-  _depCityTiles  = fit.depCity;
-  _destCityTiles = fit.destCity;
 
   const { route, plan } = flight;
   const { h, m } = stdLocalHM(plan.std_ms);
-  setFlapsMin(el('card-fltnum'),    plan.flight_number,     'xl', FLTNUM_TILES);
-  setFlapsMin(el('card-std-h'),     h,                      'xl', STD_TILES, true);
-  setFlapsMin(el('card-std-m'),     m,                      'xl', STD_TILES, true);
-  setFlapsMin(el('card-airline'),   route.airline.name,     'lg', _airlineTiles);
-  setFlapsMin(el('card-dep-icao'),  route.departure.icao,   'xl', ICAO_TILES);
-  setFlapsMin(el('card-dep-city'),  route.departure.city,   'lg', _depCityTiles);
-  revealText(el('card-dep-name'),    route.departure.name);
-  revealText(el('card-dep-country'), countryName(route.departure.country));
-  setFlapsMin(el('card-dest-icao'), route.destination.icao, 'xl', ICAO_TILES);
-  setFlapsMin(el('card-dest-city'), route.destination.city, 'lg', _destCityTiles);
-  revealText(el('card-dest-name'),    route.destination.name);
-  revealText(el('card-dest-country'), countryName(route.destination.country));
+  paintFltnum(plan.flight_number);
+  paintStd(`${h}:${m}`);
+  paintAirline(route.airline.name);
+  paintAirport('dep',  route.departure);
+  paintAirport('dest', route.destination);
   setFlapsNumber(el('card-distance'),  plan.distance_nm.toLocaleString('en-US'), DIST_WIDTH, 'md');
   setFlapsNumber(el('card-blocktime'), fmtBlk(plan.block_time_min), BLK_WIDTH, 'md');
   paintAircraft(route.aircraft.type_name, route.aircraft.airframe_name);

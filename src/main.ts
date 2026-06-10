@@ -1183,7 +1183,12 @@ function lockedPresetFields(): ('fltnum' | 'dep' | 'dest' | 'std' | 'aircraft')[
 // Hidden rows measure 0 and would fall back to max tiles, so never refit
 // while another view covers the board — the back handlers refit instead.
 function refitBoard(): void {
-  if (generating || editorOpen || viewMain.classList.contains('hidden')) return;
+  if (generating || editorOpen) {
+    // busy, not stale — retry so a rotation during these isn't lost
+    refitTimer = setTimeout(refitBoard, RESIZE_REFIT_MS);
+    return;
+  }
+  if (viewMain.classList.contains('hidden')) return;
   const refitted = currentFlight ? repaintFlight(currentFlight) : refitBlankRows();
   if (!refitted) return;
   // the static repaint painted from the flight — restore pre-set overrides
