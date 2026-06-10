@@ -301,6 +301,26 @@ export function paintAircraft(typeName: string, frameName: string): void {
   f.style.opacity = '';
 }
 
+// --- Status message / transient notice ---
+
+const NOTICE_MS = 4000;
+let _noticeTimer: ReturnType<typeof setTimeout> | undefined;
+
+function hideStatus(): void {
+  clearTimeout(_noticeTimer);
+  _noticeTimer = undefined;
+  el('status-msg').classList.add('hidden');
+}
+
+/** Shows a self-dismissing message above the card without disturbing the rendered flight. */
+export function showNotice(message: string): void {
+  clearTimeout(_noticeTimer);
+  const msg = el('status-msg');
+  msg.textContent = message;
+  msg.classList.remove('hidden');
+  _noticeTimer = setTimeout(() => hideStatus(), NOTICE_MS);
+}
+
 // --- Public render functions ---
 
 export function renderBlank(): void {
@@ -309,7 +329,7 @@ export function renderBlank(): void {
   blankText();
   disableDispatch();
   disablePln();
-  el('status-msg').classList.add('hidden');
+  hideStatus();
 }
 
 export function renderLoading(): void {
@@ -330,7 +350,7 @@ export function renderLoading(): void {
 
   disableDispatch();
   disablePln();
-  el('status-msg').classList.add('hidden');
+  hideStatus();
 }
 
 function stdLocalHM(stdMs: number): { h: string; m: string } {
@@ -378,7 +398,7 @@ export function renderFlight(flight: GeneratedFlight): void {
 
   scheduleDispatchEnable(flight.simbriefUrl, f(5) + (BLK_WIDTH - 1) * TILE_MS + 50);
   schedulePlnEnable(f(5) + (BLK_WIDTH - 1) * TILE_MS + 50);
-  el('status-msg').classList.add('hidden');
+  hideStatus();
 }
 
 export function renderEmpty(message: string): void {
@@ -387,6 +407,7 @@ export function renderEmpty(message: string): void {
   blankText();
   disableDispatch();
   disablePln();
+  hideStatus();
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
@@ -396,6 +417,7 @@ export function renderEmpty(message: string): void {
 
 export function reRenderAirline(flightNumber: string, airlineName: string, simbriefUrl: string): void {
   cancelAnim();
+  hideStatus();
   disableDispatch();
   disablePln();
   const f = (n: number) => n * FIELD_MS;
@@ -415,6 +437,7 @@ export function reRenderDestination(
   simbriefUrl: string,
 ): void {
   cancelAnim();
+  hideStatus();
   disableDispatch();
   disablePln();
   const f = (n: number) => n * FIELD_MS;
@@ -443,6 +466,7 @@ export function reRenderDeparture(
   simbriefUrl: string,
 ): void {
   cancelAnim();
+  hideStatus();
   disableDispatch();
   disablePln();
   const f = (n: number) => n * FIELD_MS;
@@ -471,6 +495,7 @@ export function reRenderAircraft(
   simbriefUrl: string,
 ): void {
   cancelAnim();
+  hideStatus();
   disableDispatch();
   disablePln();
   const f = (n: number) => n * FIELD_MS;
