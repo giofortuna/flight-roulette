@@ -412,8 +412,19 @@ interface PresetState {
 }
 let presetState: PresetState = {};
 
+// Value container per edit button — carries the .preset-locked highlight so
+// it survives renderFlight repainting the tiles inside
+const PRESET_FIELD_EL: Record<string, string> = {
+  'btn-edit-fltnum':   'card-fltnum',
+  'btn-edit-dep':      'card-dep-icao',
+  'btn-edit-dest':     'card-dest-icao',
+  'btn-edit-std':      'std-time',
+  'btn-edit-aircraft': 'aircraft-cell',
+};
+
 function markLocked(btnId: string, locked: boolean): void {
   document.getElementById(btnId)!.classList.toggle('locked', locked);
+  document.getElementById(PRESET_FIELD_EL[btnId])!.classList.toggle('preset-locked', locked);
 }
 
 // Re-rolling a locked field clears its lock — the user explicitly asked for a

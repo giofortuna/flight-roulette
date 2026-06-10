@@ -931,6 +931,11 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   max-width: 100%;
 }
 
+/* Manually pinned field values: amber ring on the tiles, amber aircraft text */
+.preset-locked .flap-char { box-shadow: inset 0 0 0 1px var(--amber-dim); }
+
+#aircraft-cell.preset-locked .aircraft-type { color: var(--amber); }
+
 /* ════════════════════════════════════════
    SETTINGS PAGE
 ════════════════════════════════════════ */
