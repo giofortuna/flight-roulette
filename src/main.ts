@@ -282,7 +282,7 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
   renderCustomAircraftList();
 }
 
-const SIM_BADGE: Record<Simulator, string> = { msfs2020: '2020', msfs2024: '2024', xplane12: 'XP12' };
+const SIM_BADGE: Record<Simulator, string> = { msfs2020: 'MSFS2020', msfs2024: 'MSFS2024', xplane12: 'XP12' };
 
 function renderCustomAircraftList(): void {
   const container = document.getElementById('prefs-custom-list')!;
