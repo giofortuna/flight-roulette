@@ -859,7 +859,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .btn-reroll {
   background: none;
   border: none;
-  color: var(--flap-label);
+  color: var(--amber-dim);
   font-size: 14px;
   cursor: pointer;
   padding: 0;
@@ -885,7 +885,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .prefs-body {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 10px;
 }
 
 .prefs-section {
@@ -1021,11 +1021,14 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   transition: color 0.12s, background 0.12s;
 }
 
+.prefs-sim-tab:hover { color: var(--flap-text); }
+
 .prefs-sim-tab.active {
   background: var(--flap-bg);
   color: var(--amber);
   border-color: var(--flap-divider);
   border-bottom-color: var(--flap-bg);
+  box-shadow: inset 0 2px 0 var(--amber);
 }
 
 /* ── Community folder ── */
@@ -1039,12 +1042,15 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .cf-path {
   flex: 1;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
-  color: var(--flap-label);
+  font-size: 11px;
+  color: var(--flap-sub);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
+  /* Truncate the head of the path, not the tail — the folder name matters */
+  direction: rtl;
+  text-align: left;
 }
 
 .cf-btn {
@@ -1087,7 +1093,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .cf-status {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.06em;
   color: var(--flap-sub);
 }
