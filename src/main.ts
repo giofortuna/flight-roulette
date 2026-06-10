@@ -5,6 +5,8 @@ import { loadAirlines } from './airline-db.js';
 import type { Airline } from './airline-db.js';
 import { loadAll, loadRegion } from './airport-db.js';
 import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, buildRerollAircraftPool } from './route-selector.js';
+import type { RouteLocks } from './route-selector.js';
+import { parsePresetFlightNumber, parsePresetIcao, parsePresetStd, PresetError } from './preset.js';
 import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { buildPln, plnFilename } from './pln.js';
@@ -397,6 +399,107 @@ document.getElementById('custom-ac-form')!.addEventListener('submit', e => {
   }
 });
 
+// ── Pre-set fields (issue #35) ────────────────────────────────────────────────
+
+const presetFltnumEl   = document.getElementById('preset-fltnum')   as HTMLInputElement;
+const presetDepEl      = document.getElementById('preset-dep')      as HTMLInputElement;
+const presetDestEl     = document.getElementById('preset-dest')     as HTMLInputElement;
+const presetAircraftEl = document.getElementById('preset-aircraft') as HTMLSelectElement;
+const presetStdEl      = document.getElementById('preset-std')      as HTMLInputElement;
+const presetErrorEl    = document.getElementById('preset-error')!;
+const presetDetailsEl  = document.getElementById('preset-details')  as HTMLDetailsElement;
+
+function resetPresetFields(): void {
+  presetFltnumEl.value   = '';
+  presetDepEl.value      = '';
+  presetDestEl.value     = '';
+  presetAircraftEl.value = '';
+  presetStdEl.value      = '';
+  presetErrorEl.textContent = '';
+}
+
+document.getElementById('preset-reset')!.addEventListener('click', resetPresetFields);
+
+// Rebuild the aircraft dropdown from the currently enabled pool each time the
+// panel opens, keeping a still-valid selection
+async function populatePresetAircraft(): Promise<void> {
+  const settings  = getSettings();
+  const curated   = await loadAircraft();
+  const installed = [...getInstalledAircraft(curated, settings.simulator), ...loadCustomAircraft()];
+  const enabled   = filterEnabledAircraft(installed, getDisabledAircraftKeys())
+    .filter(a => a.simulator.includes(settings.simulator));
+
+  const prev = presetAircraftEl.value;
+  presetAircraftEl.innerHTML = '';
+  const random = document.createElement('option');
+  random.value = '';
+  random.textContent = 'Random';
+  presetAircraftEl.appendChild(random);
+  for (const a of enabled) {
+    const opt = document.createElement('option');
+    opt.value = aircraftKey(a);
+    opt.textContent = `${a.type_name} — ${a.airframe_name}`;
+    presetAircraftEl.appendChild(opt);
+  }
+  if ([...presetAircraftEl.options].some(o => o.value === prev)) presetAircraftEl.value = prev;
+}
+
+presetDetailsEl.addEventListener('toggle', () => {
+  if (presetDetailsEl.open) void populatePresetAircraft();
+});
+
+interface ResolvedPreset {
+  locks?: RouteLocks;
+  flightNumber?: string;
+  stdMs?: number;
+}
+
+// Throws PresetError on malformed values or unresolvable references
+async function resolvePreset(enabledAircraft: Aircraft[]): Promise<ResolvedPreset> {
+  const fltnum   = parsePresetFlightNumber(presetFltnumEl.value);
+  const depIcao  = parsePresetIcao(presetDepEl.value,  'Departure');
+  const destIcao = parsePresetIcao(presetDestEl.value, 'Destination');
+  const stdMs    = parsePresetStd(presetStdEl.value);
+  const lockKey  = presetAircraftEl.value;
+
+  if (!fltnum && !depIcao && !destIcao && stdMs === null && !lockKey) return {};
+
+  const locks: RouteLocks = {};
+  if (depIcao || destIcao) {
+    if (depIcao && destIcao && depIcao === destIcao)
+      throw new PresetError('Departure and destination must differ');
+    const all = await loadAll();
+    if (depIcao) {
+      locks.departure = all.find(a => a.icao === depIcao);
+      if (!locks.departure) throw new PresetError(`Departure ${depIcao} not found in the airport database`);
+    }
+    if (destIcao) {
+      locks.destination = all.find(a => a.icao === destIcao);
+      if (!locks.destination) throw new PresetError(`Destination ${destIcao} not found in the airport database`);
+    }
+  }
+  if (lockKey) {
+    locks.aircraft = enabledAircraft.find(a => aircraftKey(a) === lockKey);
+    if (!locks.aircraft) throw new PresetError('Pre-set aircraft is no longer enabled — re-select it');
+  }
+  if (fltnum) {
+    const allAirlines = await loadAirlines();
+    locks.airline = allAirlines.find(a => a.icao === fltnum.airlineIcao);
+    if (!locks.airline) throw new PresetError(`Unknown airline code ${fltnum.airlineIcao}`);
+  }
+
+  const hasLocks = Object.values(locks).some(v => v !== undefined);
+  return {
+    locks: hasLocks ? locks : undefined,
+    flightNumber: fltnum?.flightNumber,
+    stdMs: stdMs ?? undefined,
+  };
+}
+
+function presetActive(p: ResolvedPreset): boolean {
+  return p.locks !== undefined || p.flightNumber !== undefined || p.stdMs !== undefined;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RANGE_CONFIGS = {
@@ -484,18 +587,39 @@ async function generate(): Promise<void> {
       return;
     }
 
+    presetErrorEl.textContent = '';
+    let preset: ResolvedPreset;
+    try {
+      preset = await resolvePreset(enabledAircraft);
+    } catch (err) {
+      if (err instanceof PresetError) {
+        currentFlight = null;
+        presetDetailsEl.open = true;
+        presetErrorEl.textContent = err.message;
+        renderEmpty(`Pre-set fields: ${err.message}`);
+        return;
+      }
+      throw err;
+    }
+
     renderLoading();
     try {
-      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft);
-      const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
+      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft, preset.locks);
+      let plan = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
+      if (preset.flightNumber !== undefined) plan = { ...plan, flight_number: preset.flightNumber };
+      if (preset.stdMs        !== undefined) plan = { ...plan, std_ms: preset.stdMs };
       const simbriefUrl = buildSimbriefUrl(route, plan);
       const flight = { route, plan, simbriefUrl };
       currentFlight = flight;
       renderFlight(flight);
       showRerollButtons();
+      if (presetActive(preset)) resetPresetFields();
     } catch (err) {
       currentFlight = null;
-      if (err instanceof NoRouteError) {
+      if (err instanceof NoRouteError && preset.locks) {
+        renderEmpty(`${err.message}. Adjust or reset the pre-set fields.`);
+        console.error(err);
+      } else if (err instanceof NoRouteError) {
         const hints: string[] = [];
         if (settings.minBlockH !== undefined || settings.maxBlockH !== undefined)
           hints.push('widening the block time filter');

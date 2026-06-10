@@ -132,6 +132,41 @@
         </div>
       </details>
 
+      <div class="divider"></div>
+
+      <details class="advanced-section" id="preset-details">
+        <summary class="advanced-toggle">
+          <span class="advanced-label">Pre-Set Fields</span>
+          <span class="advanced-arrow">▸</span>
+        </summary>
+        <div class="advanced-content">
+          <div class="setting-row">
+            <span class="setting-label">Flight No</span>
+            <input type="text" class="custom-ac-input" id="preset-fltnum" maxlength="7" placeholder="Random — e.g. BAW123" autocomplete="off">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">From</span>
+            <input type="text" class="custom-ac-input" id="preset-dep" maxlength="4" placeholder="Random — ICAO, e.g. EGLL" autocomplete="off">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">To</span>
+            <input type="text" class="custom-ac-input" id="preset-dest" maxlength="4" placeholder="Random — ICAO, e.g. KJFK" autocomplete="off">
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">Aircraft</span>
+            <select id="preset-aircraft" class="region-select">
+              <option value="">Random</option>
+            </select>
+          </div>
+          <div class="setting-row">
+            <span class="setting-label">STD</span>
+            <input type="time" class="custom-ac-input" id="preset-std">
+          </div>
+          <div id="preset-error" class="custom-ac-error"></div>
+          <button type="button" class="btn-add-custom" id="preset-reset">Reset Pre-Set Fields</button>
+        </div>
+      </details>
+
       <button class="btn-generate" id="btn-generate">▶ Generate Flight</button>
     </div>
 
