@@ -39,6 +39,12 @@ test('aircraftKey — same airframe different type_name produces distinct keys',
   assert.notEqual(aircraftKey(a350_900), aircraftKey(a350_1000));
 });
 
+test('aircraftKey — simbrief_airframe_id distinguishes otherwise identical entries', () => {
+  const a = { ...makeAircraft('Boeing 737-800', 'PMDG'), simbrief_airframe_id: 'sb-1' };
+  const b = { ...makeAircraft('Boeing 737-800', 'PMDG'), simbrief_airframe_id: 'sb-2' };
+  assert.notEqual(aircraftKey(a), aircraftKey(b));
+});
+
 // ── filterEnabledAircraft ─────────────────────────────────────────────────────
 
 test('filterEnabledAircraft — empty disabled set returns full list', () => {

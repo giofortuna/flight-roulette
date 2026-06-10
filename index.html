@@ -544,6 +544,76 @@
         <div id="prefs-aircraft-list"></div>
       </div>
 
+      <div class="prefs-section" id="prefs-custom-section">
+        <div class="prefs-section-title">Custom Aircraft</div>
+        <div id="prefs-custom-list"></div>
+        <details id="custom-ac-details">
+          <summary class="advanced-toggle">
+            <span class="advanced-label">Add Custom Aircraft</span>
+            <span class="advanced-arrow">▸</span>
+          </summary>
+          <form id="custom-ac-form" class="custom-ac-form" novalidate>
+            <div class="setting-row">
+              <span class="setting-label">Type Name</span>
+              <input type="text" class="custom-ac-input" id="cac-type-name" placeholder="e.g. Boeing 737-800">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Developer</span>
+              <input type="text" class="custom-ac-input" id="cac-developer" placeholder="e.g. PMDG">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">SB Type</span>
+              <input type="text" class="custom-ac-input" id="cac-simbrief-type" placeholder="e.g. B738">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">SB Airframe</span>
+              <input type="text" class="custom-ac-input" id="cac-simbrief-id" placeholder="SimBrief airframe ID (optional)">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Flight Type</span>
+              <div class="seg">
+                <input type="radio" name="cac-ftype" id="cac-ftype-pax" value="passenger" checked>
+                <label for="cac-ftype-pax">Passenger</label>
+                <input type="radio" name="cac-ftype" id="cac-ftype-cargo" value="cargo">
+                <label for="cac-ftype-cargo">Cargo</label>
+              </div>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Simulator</span>
+              <div class="seg seg-multi">
+                <input type="checkbox" id="cac-sim-2020" value="msfs2020">
+                <label for="cac-sim-2020">MSFS 2020</label>
+                <input type="checkbox" id="cac-sim-2024" value="msfs2024" checked>
+                <label for="cac-sim-2024">MSFS 2024</label>
+              </div>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Category</span>
+              <select id="cac-category" class="region-select">
+                <option value="narrowbody">Narrowbody</option>
+                <option value="widebody">Widebody</option>
+                <option value="regional">Regional</option>
+                <option value="turboprop">Turboprop</option>
+              </select>
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Range (NM)</span>
+              <input type="number" class="custom-ac-input" id="cac-range" min="1" max="20000" placeholder="e.g. 3500">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Min RWY (m)</span>
+              <input type="number" class="custom-ac-input" id="cac-runway" min="0" max="5000" placeholder="e.g. 1800">
+            </div>
+            <div class="setting-row">
+              <span class="setting-label">Cruise (kts)</span>
+              <input type="number" class="custom-ac-input" id="cac-cruise" min="1" max="1000" placeholder="e.g. 450">
+            </div>
+            <div id="custom-ac-error" class="custom-ac-error"></div>
+            <button type="submit" class="btn-add-custom">Add Aircraft</button>
+          </form>
+        </details>
+      </div>
+
     </div>
 
   </div><!-- /.app-shell -->
