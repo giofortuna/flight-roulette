@@ -1240,3 +1240,46 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   50% { transform: translateY(-4px); }
 }
 
+/* ════════════════════════════════════════
+   RESPONSIVE — phone portrait
+════════════════════════════════════════ */
+@media (max-width: 560px) {
+  .app-shell {
+    padding-left:   max(12px, env(safe-area-inset-left));
+    padding-right:  max(12px, env(safe-area-inset-right));
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+
+  .app-header { padding: 16px 0 14px; }
+  .logo { font-size: 20px; }
+  .header-right { gap: 12px; }
+
+  /* Smaller flap tiles so the board fits the screen; sized so the
+     tightest row (flight number + STD clock) clears a 360px phone */
+  .flap-char.flap-xl { width: 24px; height: 36px; font-size: 19px; }
+  .flap-char.flap-lg { width: 16px; height: 25px; font-size: 12px; }
+  .flap-char.flap-md { width: 13px; height: 21px; font-size: 11px; }
+
+  /* Fallback for very narrow (320px) devices: STD drops below FLT */
+  .card-header-row1 { flex-wrap: wrap; }
+
+  /* Settings rows: label above a full-width control */
+  .setting-row { flex-direction: column; align-items: stretch; gap: 7px; }
+  .setting-label { width: auto; }
+  .setting-label:empty { display: none; }
+
+  /* Route stacks vertically: departure → stats strip → destination */
+  .card-route { grid-template-columns: 1fr; gap: 18px; }
+  .route-mid { flex-direction: row; justify-content: center; padding: 0; gap: 14px; }
+
+  .card-section { padding: 12px 14px; }
+  .stat-cell { padding: 12px 14px; min-height: unset; }
+  .aircraft-type { font-size: 18px; }
+  .apt-sub { max-width: 100%; }
+
+  .card-footer { flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+  .about-hero { padding: 22px 0 20px; margin-bottom: 24px; }
+  .about-title { font-size: 26px; }
+}
+
