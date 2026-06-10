@@ -1,7 +1,7 @@
 {
   "name": "airways-roulette",
   "type": "module",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Random flight generator for flight simulator pilots",
   "license": "MIT",
   "author": "Gio Fortuna",
