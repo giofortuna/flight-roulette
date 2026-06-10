@@ -8,7 +8,8 @@
   --bg3: #161718;
   --border: #1e1f20;
   --border-active: #272829;
-  --text-dim: #404244;
+  --text-dim: #5c5f63;
+  --amber-text: #c09a4a;
   --green: #39FF14;
   --red: #FF3B3B;
 
@@ -20,7 +21,7 @@
   --flap-divider: #181818;
   --flap-text:    #f2ede3;
   --flap-sub:     #aaa89e;
-  --flap-label:   #3a3830;
+  --flap-label:   #56524a;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -515,7 +516,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   font-family: 'Share Tech Mono', monospace;
   font-size: 13px;
   letter-spacing: 0.04em;
-  color: #6e6c64;
+  color: #807d72;
   height: 20px;
   line-height: 20px;
   max-width: 298px;
@@ -577,7 +578,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   font-family: 'Share Tech Mono', monospace;
   font-size: 13px;
   letter-spacing: 0.06em;
-  color: #6e6c64;
+  color: #807d72;
   margin-top: 5px;
   white-space: nowrap;
   transition: opacity 200ms ease;
@@ -688,7 +689,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .about-tagline {
   font-size: 14px;
-  color: var(--amber-dim);
+  color: var(--amber-text);
   letter-spacing: 0.15em;
   line-height: 1.6;
   margin-top: 14px;
@@ -711,7 +712,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .about-text {
   font-size: 14px;
-  color: var(--amber-dim);
+  color: var(--amber-text);
   line-height: 1.85;
   letter-spacing: 0.04em;
 }
@@ -730,7 +731,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   display: flex;
   gap: 12px;
   font-size: 14px;
-  color: var(--amber-dim);
+  color: var(--amber-text);
   line-height: 1.5;
   letter-spacing: 0.04em;
 }
@@ -760,7 +761,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .aircraft-table td {
   font-size: 13px;
-  color: var(--amber-dim);
+  color: var(--amber-text);
   padding: 10px 12px;
   border-bottom: 1px solid var(--border);
   letter-spacing: 0.05em;
@@ -825,7 +826,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .about-link {
   font-size: 12px;
   letter-spacing: 0.2em;
-  color: var(--amber-dim);
+  color: var(--amber-text);
   text-decoration: none;
   text-transform: uppercase;
   border-bottom: 1px solid var(--border-active);
