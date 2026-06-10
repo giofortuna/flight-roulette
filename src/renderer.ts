@@ -196,15 +196,42 @@ const DIST_WIDTH    = 6;
 const BLK_WIDTH     = 5;
 const AIRLINE_TILES = 31;
 
+// Text rows fit their tile count to the available row width so long fields
+// stay on a single line on narrow viewports. Counts are computed when a
+// render cycle starts and reused when it resolves, so the cycling tiles and
+// the resolved characters always agree.
+let _airlineTiles  = AIRLINE_TILES;
+let _depCityTiles  = CITY_TILES;
+let _destCityTiles = CITY_TILES;
+
+function fitTileCount(target: HTMLElement, size: FlapSize, maxTiles: number): number {
+  const probe = document.createElement('span');
+  probe.className = `flap-char flap-${size}`;
+  target.appendChild(probe);
+  const tileW = probe.offsetWidth;
+  probe.remove();
+  const avail = target.clientWidth;
+  if (!tileW || !avail) return maxTiles;
+  const gap = 2; // .flap-row gap
+  return Math.max(6, Math.min(maxTiles, Math.floor((avail + gap) / (tileW + gap))));
+}
+
+function fitTextRows(): void {
+  _airlineTiles  = fitTileCount(el('card-airline'),   'lg', AIRLINE_TILES);
+  _depCityTiles  = fitTileCount(el('card-dep-city'),  'lg', CITY_TILES);
+  _destCityTiles = fitTileCount(el('card-dest-city'), 'lg', CITY_TILES);
+}
+
 function blankFlaps(): void {
+  fitTextRows();
   setBlankTiles(el('card-fltnum'),    FLTNUM_TILES,  'xl');
   setBlankTiles(el('card-std-h'),     STD_TILES,     'xl', true);
   setBlankTiles(el('card-std-m'),     STD_TILES,     'xl', true);
-  setFlapsMin(el('card-airline'),    '', 'lg', AIRLINE_TILES);
+  setFlapsMin(el('card-airline'),    '', 'lg', _airlineTiles);
   setBlankTiles(el('card-dep-icao'),  ICAO_TILES,    'xl');
-  setFlapsMin(el('card-dep-city'),   '', 'lg', CITY_TILES);
+  setFlapsMin(el('card-dep-city'),   '', 'lg', _depCityTiles);
   setBlankTiles(el('card-dest-icao'), ICAO_TILES,    'xl');
-  setFlapsMin(el('card-dest-city'),  '', 'lg', CITY_TILES);
+  setFlapsMin(el('card-dest-city'),  '', 'lg', _destCityTiles);
   setFlapsNumber(el('card-distance'),  '00,000', DIST_WIDTH, 'md');
   setFlapsNumber(el('card-blocktime'), '00+00',  BLK_WIDTH,  'md');
 }
@@ -236,15 +263,16 @@ export function renderBlank(): void {
 export function renderLoading(): void {
   cancelAnim();
   blankText();
+  fitTextRows();
 
-  cycleField(el('card-fltnum'),    FLTNUM_TILES,  'xl');
-  cycleField(el('card-std-h'),     STD_TILES,     'xl', true, FLIP_CHARS_NUM);
-  cycleField(el('card-std-m'),     STD_TILES,     'xl', true, FLIP_CHARS_NUM);
-  cycleField(el('card-airline'),   AIRLINE_TILES, 'lg');
-  cycleField(el('card-dep-icao'),  ICAO_TILES,   'xl');
-  cycleField(el('card-dep-city'),  CITY_TILES,   'lg');
-  cycleField(el('card-dest-icao'), ICAO_TILES,   'xl');
-  cycleField(el('card-dest-city'), CITY_TILES,   'lg');
+  cycleField(el('card-fltnum'),    FLTNUM_TILES,   'xl');
+  cycleField(el('card-std-h'),     STD_TILES,      'xl', true, FLIP_CHARS_NUM);
+  cycleField(el('card-std-m'),     STD_TILES,      'xl', true, FLIP_CHARS_NUM);
+  cycleField(el('card-airline'),   _airlineTiles,  'lg');
+  cycleField(el('card-dep-icao'),  ICAO_TILES,     'xl');
+  cycleField(el('card-dep-city'),  _depCityTiles,  'lg');
+  cycleField(el('card-dest-icao'), ICAO_TILES,     'xl');
+  cycleField(el('card-dest-city'), _destCityTiles, 'lg');
   cycleField(el('card-distance'),  DIST_WIDTH,   'md', false, FLIP_CHARS_NUM);
   cycleField(el('card-blocktime'), BLK_WIDTH,    'md', false, FLIP_CHARS_NUM);
 
@@ -278,15 +306,15 @@ export function renderFlight(flight: GeneratedFlight): void {
   resolveField(el('card-fltnum'),    minFinalChars(plan.flight_number, FLTNUM_TILES),   f(0));
   resolveField(el('card-std-h'),     [...stdH],                                         f(1));
   resolveField(el('card-std-m'),     [...stdM],                                         f(1));
-  resolveField(el('card-airline'),   minFinalChars(route.airline.name, AIRLINE_TILES),  f(2));
+  resolveField(el('card-airline'),   minFinalChars(route.airline.name, _airlineTiles),  f(2));
 
-  resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, ICAO_TILES),  f(3));
-  resolveField(el('card-dep-city'),  minFinalChars(route.departure.city, CITY_TILES),  f(3));
+  resolveField(el('card-dep-icao'),  minFinalChars(route.departure.icao, ICAO_TILES),    f(3));
+  resolveField(el('card-dep-city'),  minFinalChars(route.departure.city, _depCityTiles), f(3));
   revealText(el('card-dep-name'),    route.departure.name);
   revealText(el('card-dep-country'), countryName(route.departure.country));
 
-  resolveField(el('card-dest-icao'), minFinalChars(route.destination.icao, ICAO_TILES), f(4));
-  resolveField(el('card-dest-city'), minFinalChars(route.destination.city, CITY_TILES), f(4));
+  resolveField(el('card-dest-icao'), minFinalChars(route.destination.icao, ICAO_TILES),     f(4));
+  resolveField(el('card-dest-city'), minFinalChars(route.destination.city, _destCityTiles), f(4));
   revealText(el('card-dest-name'),    route.destination.name);
   revealText(el('card-dest-country'), countryName(route.destination.country));
 
@@ -319,12 +347,13 @@ export function reRenderAirline(flightNumber: string, airlineName: string, simbr
   disableDispatch();
   disablePln();
   const f = (n: number) => n * FIELD_MS;
+  _airlineTiles = fitTileCount(el('card-airline'), 'lg', AIRLINE_TILES);
   cycleField(el('card-fltnum'),  FLTNUM_TILES,  'xl');
-  cycleField(el('card-airline'), AIRLINE_TILES, 'lg');
+  cycleField(el('card-airline'), _airlineTiles, 'lg');
   resolveField(el('card-fltnum'),  minFinalChars(flightNumber, FLTNUM_TILES),  f(0));
-  resolveField(el('card-airline'), minFinalChars(airlineName,  AIRLINE_TILES), f(1));
-  scheduleDispatchEnable(simbriefUrl, f(1) + (AIRLINE_TILES - 1) * TILE_MS + 50);
-  schedulePlnEnable(f(1) + (AIRLINE_TILES - 1) * TILE_MS + 50);
+  resolveField(el('card-airline'), minFinalChars(airlineName,  _airlineTiles), f(1));
+  scheduleDispatchEnable(simbriefUrl, f(1) + (_airlineTiles - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(1) + (_airlineTiles - 1) * TILE_MS + 50);
 }
 
 export function reRenderDestination(
@@ -339,18 +368,19 @@ export function reRenderDestination(
   const f = (n: number) => n * FIELD_MS;
   el('card-dest-name').style.opacity    = '0';
   el('card-dest-country').style.opacity = '0';
-  cycleField(el('card-dest-icao'), ICAO_TILES, 'xl');
-  cycleField(el('card-dest-city'), CITY_TILES, 'lg');
-  cycleField(el('card-distance'),  DIST_WIDTH, 'md', false, FLIP_CHARS_NUM);
-  cycleField(el('card-blocktime'), BLK_WIDTH,  'md', false, FLIP_CHARS_NUM);
+  _destCityTiles = fitTileCount(el('card-dest-city'), 'lg', CITY_TILES);
+  cycleField(el('card-dest-icao'), ICAO_TILES,     'xl');
+  cycleField(el('card-dest-city'), _destCityTiles, 'lg');
+  cycleField(el('card-distance'),  DIST_WIDTH,     'md', false, FLIP_CHARS_NUM);
+  cycleField(el('card-blocktime'), BLK_WIDTH,      'md', false, FLIP_CHARS_NUM);
   resolveField(el('card-dest-icao'), minFinalChars(dest.icao, ICAO_TILES),                         f(0));
-  resolveField(el('card-dest-city'), minFinalChars(dest.city, CITY_TILES),                         f(0));
+  resolveField(el('card-dest-city'), minFinalChars(dest.city, _destCityTiles),                     f(0));
   resolveField(el('card-distance'),  numFinalChars(distanceNm.toLocaleString('en-US'), DIST_WIDTH), f(1));
   resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),               f(1));
   revealText(el('card-dest-name'),    dest.name);
   revealText(el('card-dest-country'), countryName(dest.country));
-  scheduleDispatchEnable(simbriefUrl, f(0) + (CITY_TILES - 1) * TILE_MS + 50);
-  schedulePlnEnable(f(0) + (CITY_TILES - 1) * TILE_MS + 50);
+  scheduleDispatchEnable(simbriefUrl, f(0) + (_destCityTiles - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(0) + (_destCityTiles - 1) * TILE_MS + 50);
 }
 
 export function reRenderDeparture(
@@ -366,20 +396,21 @@ export function reRenderDeparture(
   const f = (n: number) => n * FIELD_MS;
   el('card-dep-name').style.opacity    = '0';
   el('card-dep-country').style.opacity = '0';
-  cycleField(el('card-fltnum'),    FLTNUM_TILES, 'xl');
-  cycleField(el('card-dep-icao'),  ICAO_TILES,   'xl');
-  cycleField(el('card-dep-city'),  CITY_TILES,   'lg');
-  cycleField(el('card-distance'),  DIST_WIDTH,   'md', false, FLIP_CHARS_NUM);
-  cycleField(el('card-blocktime'), BLK_WIDTH,    'md', false, FLIP_CHARS_NUM);
+  _depCityTiles = fitTileCount(el('card-dep-city'), 'lg', CITY_TILES);
+  cycleField(el('card-fltnum'),    FLTNUM_TILES,  'xl');
+  cycleField(el('card-dep-icao'),  ICAO_TILES,    'xl');
+  cycleField(el('card-dep-city'),  _depCityTiles, 'lg');
+  cycleField(el('card-distance'),  DIST_WIDTH,    'md', false, FLIP_CHARS_NUM);
+  cycleField(el('card-blocktime'), BLK_WIDTH,     'md', false, FLIP_CHARS_NUM);
   resolveField(el('card-fltnum'),   minFinalChars(flightNumber, FLTNUM_TILES),                     f(0));
   resolveField(el('card-dep-icao'), minFinalChars(dep.icao,     ICAO_TILES),                       f(1));
-  resolveField(el('card-dep-city'), minFinalChars(dep.city,     CITY_TILES),                       f(1));
+  resolveField(el('card-dep-city'), minFinalChars(dep.city,     _depCityTiles),                    f(1));
   resolveField(el('card-distance'), numFinalChars(distanceNm.toLocaleString('en-US'), DIST_WIDTH), f(2));
   resolveField(el('card-blocktime'), numFinalChars(fmtBlk(blockTimeMin), BLK_WIDTH),              f(2));
   revealText(el('card-dep-name'),    dep.name);
   revealText(el('card-dep-country'), countryName(dep.country));
-  scheduleDispatchEnable(simbriefUrl, f(1) + (CITY_TILES - 1) * TILE_MS + 50);
-  schedulePlnEnable(f(1) + (CITY_TILES - 1) * TILE_MS + 50);
+  scheduleDispatchEnable(simbriefUrl, f(1) + (_depCityTiles - 1) * TILE_MS + 50);
+  schedulePlnEnable(f(1) + (_depCityTiles - 1) * TILE_MS + 50);
 }
 
 export function reRenderAircraft(
