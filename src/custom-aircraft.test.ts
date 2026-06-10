@@ -56,7 +56,7 @@ it('validateCustomEntry — throws on missing type_name', () => {
 });
 
 it('validateCustomEntry — throws on missing airframe_name', () => {
-  assert.throws(() => validateCustomEntry(makeEntry({ airframe_name: '' })), /Addon name/);
+  assert.throws(() => validateCustomEntry(makeEntry({ airframe_name: '' })), /Developer name/);
 });
 
 it('validateCustomEntry — throws on missing simbrief_type', () => {

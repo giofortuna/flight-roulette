@@ -40,7 +40,7 @@ export function validateCustomEntry(data: Record<string, unknown>): Aircraft {
   if (typeof type_name !== 'string' || !type_name.trim())
     throw new Error('Type name is required');
   if (typeof airframe_name !== 'string' || !airframe_name.trim())
-    throw new Error('Addon name is required');
+    throw new Error('Developer name is required');
   if (typeof simbrief_type !== 'string' || !simbrief_type.trim())
     throw new Error('SimBrief type code is required');
   if (!/^[A-Z0-9]{2,4}$/.test(simbrief_type.trim().toUpperCase()))
@@ -80,7 +80,7 @@ export function addCustomAircraft(entry: Aircraft, takenKeys?: ReadonlySet<strin
   const key = aircraftKey(entry).toLowerCase();
   const taken = takenKeys !== undefined && [...takenKeys].some(k => k.toLowerCase() === key);
   if (taken || entries.some(e => aircraftKey(e).toLowerCase() === key))
-    throw new Error('An aircraft with this type name and addon already exists');
+    throw new Error('An aircraft with this type name and developer already exists');
   entries.push(entry);
   saveCustomAircraft(entries);
 }

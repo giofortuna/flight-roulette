@@ -366,7 +366,7 @@ document.getElementById('custom-ac-form')!.addEventListener('submit', e => {
 
   const data: Record<string, unknown> = {
     type_name:           (document.getElementById('cac-type-name')      as HTMLInputElement).value,
-    airframe_name:       (document.getElementById('cac-addon')           as HTMLInputElement).value,
+    airframe_name:       (document.getElementById('cac-developer')       as HTMLInputElement).value,
     simbrief_type:       (document.getElementById('cac-simbrief-type')   as HTMLInputElement).value,
     simbrief_airframe_id:(document.getElementById('cac-simbrief-id')     as HTMLInputElement).value,
     flight_type:         (document.querySelector('input[name="cac-ftype"]:checked') as HTMLInputElement | null)?.value ?? '',
