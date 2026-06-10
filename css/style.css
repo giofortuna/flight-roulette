@@ -998,7 +998,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   transition: color 0.12s;
 }
 
-.ac-item input:checked + label .ac-addon { color: var(--flap-label); }
+.ac-item input:checked + label .ac-addon { color: var(--flap-sub); }
 
 /* ── Sim selector tabs ── */
 .prefs-sim-tabs {
@@ -1142,7 +1142,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   transition: color 0.12s;
 }
 
-.ac-item input:checked + label .ac-sim-badge { color: var(--flap-label); }
+.ac-item input:checked + label .ac-sim-badge { color: var(--flap-sub); }
 
 .ac-delete-btn {
   background: none;
