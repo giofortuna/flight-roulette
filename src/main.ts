@@ -735,6 +735,13 @@ function hideRerollButtons(): void {
   document.querySelectorAll('.btn-reroll').forEach(b => b.classList.remove('visible'));
 }
 
+// A validation failure before generation starts must not destroy an already
+// generated flight: keep it and show a transient notice instead.
+function reportGenerateBlocked(message: string): void {
+  if (currentFlight) showNotice(message);
+  else renderEmpty(message);
+}
+
 async function generate(): Promise<void> {
   if (generating) return;
   generating = true;
@@ -742,12 +749,9 @@ async function generate(): Promise<void> {
     const settings = getSettings();
 
     if (settings.simulator === 'xplane12') {
-      hideRerollButtons();
-      currentFlight = null;
-      renderEmpty('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
+      reportGenerateBlocked('X-Plane 12 support is coming soon. Please select MSFS 2020 or MSFS 2024.');
       return;
     }
-    hideRerollButtons();
 
     const curated         = await loadAircraft();
     const custom          = loadCustomAircraft();
@@ -756,8 +760,7 @@ async function generate(): Promise<void> {
     const enabledAircraft = filterEnabledAircraft(installed, disabled);
 
     if (enabledAircraft.length === 0) {
-      currentFlight = null;
-      renderEmpty('No aircraft enabled. Enable at least one aircraft in Settings.');
+      reportGenerateBlocked('No aircraft enabled. Enable at least one aircraft in Settings.');
       return;
     }
 
@@ -765,8 +768,7 @@ async function generate(): Promise<void> {
       settings.flightTypes.includes(a.flight_type) && a.simulator.includes(settings.simulator)
     );
     if (!hasMatch) {
-      currentFlight = null;
-      renderEmpty('No enabled aircraft match the selected Flight Type and Simulator. Enable more aircraft in Settings.');
+      reportGenerateBlocked('No enabled aircraft match the selected Flight Type and Simulator. Enable more aircraft in Settings.');
       return;
     }
 
@@ -775,13 +777,13 @@ async function generate(): Promise<void> {
       preset = resolvePreset(enabledAircraft);
     } catch (err) {
       if (err instanceof PresetError) {
-        currentFlight = null;
-        renderEmpty(`Pre-set fields: ${err.message}`);
+        reportGenerateBlocked(`Pre-set fields: ${err.message}`);
         return;
       }
       throw err;
     }
 
+    hideRerollButtons();
     renderLoading();
     try {
       const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft, preset.locks);
