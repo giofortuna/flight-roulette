@@ -326,11 +326,16 @@ function renderCustomAircraftList(): void {
       ? `${ac.airframe_name} · ${ac.simbrief_airframe_id}`
       : ac.airframe_name;
 
-    const sims = document.createElement('span');
-    sims.className   = 'ac-sims';
-    sims.textContent = ac.simulator.map(s => SIM_BADGE[s] ?? s).join(' · ');
+    const badges = document.createElement('span');
+    badges.className = 'ac-sim-badges';
+    for (const s of ac.simulator) {
+      const badge = document.createElement('span');
+      badge.className   = 'ac-sim-badge';
+      badge.textContent = SIM_BADGE[s] ?? s;
+      badges.appendChild(badge);
+    }
 
-    lbl.append(dot, name, addon, sims);
+    lbl.append(dot, name, addon, badges);
 
     const delBtn = document.createElement('button');
     delBtn.type      = 'button';

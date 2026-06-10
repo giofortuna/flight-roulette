@@ -1119,18 +1119,23 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   flex: 1;
 }
 
-.ac-sims {
+.ac-sim-badges {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ac-sim-badge {
   font-family: 'Share Tech Mono', monospace;
   font-size: 9px;
   letter-spacing: 0.08em;
   color: var(--text-dim);
   border: 1px solid var(--flap-divider);
   padding: 2px 6px;
-  flex-shrink: 0;
   transition: color 0.12s;
 }
 
-.ac-item input:checked + label .ac-sims { color: var(--flap-label); }
+.ac-item input:checked + label .ac-sim-badge { color: var(--flap-label); }
 
 .ac-delete-btn {
   background: none;
