@@ -78,6 +78,9 @@ body.electron .app-shell {
   max-width: 860px;
   margin: 0 auto;
   padding: 0 20px 100px;
+  padding-left:   max(20px, env(safe-area-inset-left));
+  padding-right:  max(20px, env(safe-area-inset-right));
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
 }
 
 /* ── App header ── */
