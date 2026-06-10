@@ -256,6 +256,51 @@ function blankText(): void {
   }
 }
 
+// --- Pre-set field painting (issue #35): static, no animation ---
+
+export function paintFltnum(text: string): void {
+  setFlapsMin(el('card-fltnum'), text, 'xl', FLTNUM_TILES);
+}
+
+export function paintAirline(name: string): void {
+  const row = el('card-airline');
+  _airlineTiles = fitTileCount(row, 'lg', AIRLINE_TILES);
+  setFlapsMin(row, name, 'lg', _airlineTiles);
+}
+
+// Paints the whole airport block — ICAO tiles plus the linked city, name,
+// and country lines. null blanks the block.
+export function paintAirport(which: 'dep' | 'dest', airport: Airport | null): void {
+  const icaoRow = el(which === 'dep' ? 'card-dep-icao' : 'card-dest-icao');
+  const cityRow = el(which === 'dep' ? 'card-dep-city' : 'card-dest-city');
+  setFlapsMin(icaoRow, airport?.icao ?? '', 'xl', ICAO_TILES);
+  const tiles = fitTileCount(cityRow, 'lg', CITY_TILES);
+  if (which === 'dep') _depCityTiles = tiles; else _destCityTiles = tiles;
+  setFlapsMin(cityRow, airport?.city ?? '', 'lg', tiles);
+  revealText(el(which === 'dep' ? 'card-dep-name'    : 'card-dest-name'),    airport?.name ?? '');
+  revealText(el(which === 'dep' ? 'card-dep-country' : 'card-dest-country'), airport ? countryName(airport.country) : '');
+}
+
+export function paintStd(hhmm: string): void {
+  if (!hhmm) {
+    setBlankTiles(el('card-std-h'), STD_TILES, 'xl', true);
+    setBlankTiles(el('card-std-m'), STD_TILES, 'xl', true);
+    return;
+  }
+  const [h, m] = hhmm.split(':');
+  setFlapsMin(el('card-std-h'), h, 'xl', STD_TILES, true);
+  setFlapsMin(el('card-std-m'), m, 'xl', STD_TILES, true);
+}
+
+export function paintAircraft(typeName: string, frameName: string): void {
+  const t = el('card-aircraft-type');
+  t.textContent = typeName;
+  t.style.opacity = '';
+  const f = el('card-aircraft-frame');
+  f.textContent = frameName;
+  f.style.opacity = '';
+}
+
 // --- Public render functions ---
 
 export function renderBlank(): void {

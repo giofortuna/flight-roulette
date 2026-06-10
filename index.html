@@ -143,12 +143,18 @@
         <div class="card-section card-section-dark">
           <div class="card-header-row1">
             <div>
-              <div class="flap-label">Flight</div>
+              <div class="label-row">
+                <div class="flap-label">Flight</div>
+                <button class="btn-edit" id="btn-edit-fltnum" title="Pre-set flight number">✎</button>
+              </div>
               <div class="flap-row" id="card-fltnum"></div>
             </div>
             <div>
-              <div class="flap-label" style="text-align:right;">STD</div>
-              <div class="std-time">
+              <div class="label-row label-row-right">
+                <button class="btn-edit" id="btn-edit-std" title="Pre-set departure time">✎</button>
+                <div class="flap-label">STD</div>
+              </div>
+              <div class="std-time" id="std-time">
                 <div class="flap-row" id="card-std-h"></div>
                 <span class="flap-char flap-xl flap-amber">:</span>
                 <div class="flap-row" id="card-std-m"></div>
@@ -171,6 +177,7 @@
               <div class="label-row">
                 <div class="flap-label">From</div>
                 <button class="btn-reroll" id="btn-reroll-dep" title="Re-roll departure">↺</button>
+                <button class="btn-edit" id="btn-edit-dep" title="Pre-set departure ICAO">✎</button>
               </div>
               <div class="flap-row" id="card-dep-icao"></div>
               <div class="flap-row" id="card-dep-city"></div>
@@ -200,6 +207,7 @@
 
             <div class="apt right">
               <div class="label-row label-row-right">
+                <button class="btn-edit" id="btn-edit-dest" title="Pre-set destination ICAO">✎</button>
                 <button class="btn-reroll" id="btn-reroll-dest" title="Re-roll destination">↺</button>
                 <div class="flap-label">To</div>
               </div>
@@ -213,10 +221,11 @@
 
         <!-- Stats: aircraft -->
         <div class="card-stats">
-          <div class="stat-cell">
+          <div class="stat-cell" id="aircraft-cell">
             <div class="label-row">
               <div class="flap-label">Aircraft</div>
               <button class="btn-reroll" id="btn-reroll-aircraft" title="Re-roll aircraft">↺</button>
+              <button class="btn-edit" id="btn-edit-aircraft" title="Pre-set aircraft">✎</button>
             </div>
             <div class="aircraft-type" id="card-aircraft-type"></div>
             <div class="stat-sub" id="card-aircraft-frame"></div>

@@ -389,3 +389,79 @@ test('buildRerollAircraftPool — excludes aircraft not available for the select
   assert.equal(pool[0].icao_type, 'BOTH');
 });
 
+
+// ── pickRoute with locks ──────────────────────────────────────────────────────
+
+test('pickRoute — locked aircraft is always selected', () => {
+  const locked = makeAircraft({ icao_type: 'A20N', type_name: 'A320neo' });
+  const other  = makeAircraft({ icao_type: 'B738' });
+  const route = pickRoute(INPUT, [other], [makeAirline()], [NEAR_A, NEAR_B], undefined, { aircraft: locked });
+  assert.equal(route.aircraft.icao_type, 'A20N');
+});
+
+test('pickRoute — locked aircraft incompatible with simulator throws with a pre-set message', () => {
+  const locked = makeAircraft({ simulator: ['xplane12'] });
+  assert.throws(
+    () => pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B], undefined, { aircraft: locked }),
+    /pre-set aircraft/,
+  );
+});
+
+test('pickRoute — locked departure is always used', () => {
+  const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B], undefined, { departure: NEAR_A });
+  assert.equal(route.departure.icao, 'XAAA');
+  assert.equal(route.destination.icao, 'XBBB');
+});
+
+test('pickRoute — locked destination is always used', () => {
+  const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B], undefined, { destination: NEAR_B });
+  assert.equal(route.destination.icao, 'XBBB');
+  assert.equal(route.departure.icao, 'XAAA');
+});
+
+test('pickRoute — locked departure and destination produce the exact pair', () => {
+  const extra = makeAirport('XCCC', 0, 3);
+  const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()],
+    [NEAR_A, NEAR_B, extra], undefined, { departure: NEAR_A, destination: NEAR_B });
+  assert.equal(route.departure.icao, 'XAAA');
+  assert.equal(route.destination.icao, 'XBBB');
+  assert.ok(route.distanceNm > 80 && route.distanceNm < 100);
+});
+
+test('pickRoute — locked destination out of aircraft range throws', () => {
+  assert.throws(
+    () => pickRoute(INPUT, [makeAircraft({ range_nm: 1000 })], [makeAirline()],
+      [FAR_A, FAR_B], undefined, { departure: FAR_A, destination: FAR_B }),
+    /pre-set fields/,
+  );
+});
+
+test('pickRoute — locked destination with too-short runway throws', () => {
+  const shortRwy = makeAirport('XSRT', 0, 1.5, { max_runway_m: 1000 });
+  assert.throws(
+    () => pickRoute(INPUT, [makeAircraft({ min_runway_m: 2000 })], [makeAirline()],
+      [NEAR_A, shortRwy], undefined, { destination: shortRwy }),
+    /pre-set fields/,
+  );
+});
+
+test('pickRoute — locked airline is always selected', () => {
+  const locked = makeAirline({ icao: 'DLH', name: 'Lufthansa' });
+  const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B], undefined, { airline: locked });
+  assert.equal(route.airline.icao, 'DLH');
+});
+
+test('pickRoute — locked airline with mismatched type throws', () => {
+  const cargoAirline = makeAirline({ icao: 'FDX', type: 'cargo' });
+  assert.throws(
+    () => pickRoute(INPUT, [makeAircraft()], [makeAirline()], [NEAR_A, NEAR_B], undefined, { airline: cargoAirline }),
+    /pre-set fields/,
+  );
+});
+
+test('pickRoute — locked unscheduled airport bypasses scheduledOnly', () => {
+  const unscheduled = makeAirport('XUNS', 0, 1.5, { scheduled: false });
+  const route = pickRoute(INPUT, [makeAircraft()], [makeAirline()],
+    [NEAR_A, unscheduled], undefined, { destination: unscheduled });
+  assert.equal(route.destination.icao, 'XUNS');
+});

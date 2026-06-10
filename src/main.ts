@@ -4,11 +4,14 @@ import type { Aircraft } from './aircraft-db.js';
 import { loadAirlines } from './airline-db.js';
 import type { Airline } from './airline-db.js';
 import { loadAll, loadRegion } from './airport-db.js';
+import type { Airport } from './airport-db.js';
 import { selectRoute, NoRouteError, pickRandom, findDestinationFor, findDepartureForDest, buildRerollAircraftPool } from './route-selector.js';
+import type { RouteLocks } from './route-selector.js';
+import { parsePresetFlightNumber, parsePresetIcao, parsePresetStd, PresetError } from './preset.js';
 import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { buildPln, plnFilename } from './pln.js';
-import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft } from './renderer.js';
+import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft, paintFltnum, paintAirline, paintAirport, paintStd, paintAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 import { loadCustomAircraft, addCustomAircraft, removeCustomAircraftAt, validateCustomEntry } from './custom-aircraft.js';
@@ -397,6 +400,289 @@ document.getElementById('custom-ac-form')!.addEventListener('submit', e => {
   }
 });
 
+// ── Pre-set fields (issue #35): card fields editable in place ────────────────
+
+interface PresetState {
+  flightNumber?: string;
+  airline?: Airline;     // derived from the flight number's 3-letter prefix
+  departure?: Airport;
+  destination?: Airport;
+  aircraft?: Aircraft;
+  stdHM?: string;        // "HH:MM" as typed; resolved to ms at each generate
+}
+let presetState: PresetState = {};
+
+// Value container per edit button — carries the .preset-locked highlight so
+// it survives renderFlight repainting the tiles inside
+const PRESET_FIELD_EL: Record<string, string> = {
+  'btn-edit-fltnum':   'card-fltnum',
+  'btn-edit-dep':      'card-dep-icao',
+  'btn-edit-dest':     'card-dest-icao',
+  'btn-edit-std':      'std-time',
+  'btn-edit-aircraft': 'aircraft-cell',
+};
+
+function markLocked(btnId: string, locked: boolean): void {
+  document.getElementById(btnId)!.classList.toggle('locked', locked);
+  document.getElementById(PRESET_FIELD_EL[btnId])!.classList.toggle('preset-locked', locked);
+}
+
+// Re-rolling a locked field clears its lock — the user explicitly asked for a
+// random value, and a glowing pencil over a re-rolled value would lie
+function clearPresetField(field: 'fltnum' | 'dep' | 'dest' | 'aircraft'): void {
+  switch (field) {
+    case 'fltnum':
+      delete presetState.flightNumber;
+      delete presetState.airline;
+      markLocked('btn-edit-fltnum', false);
+      break;
+    case 'dep':
+      delete presetState.departure;
+      markLocked('btn-edit-dep', false);
+      break;
+    case 'dest':
+      delete presetState.destination;
+      markLocked('btn-edit-dest', false);
+      break;
+    case 'aircraft':
+      delete presetState.aircraft;
+      markLocked('btn-edit-aircraft', false);
+      break;
+  }
+}
+
+function fmtLocalHM(ms: number): string {
+  const d = new Date(ms);
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
+// Repaint a card field from the preset lock, the current flight, or blank
+function repaintPresetField(field: 'fltnum' | 'dep' | 'dest' | 'std' | 'aircraft'): void {
+  switch (field) {
+    case 'fltnum':
+      paintFltnum(presetState.flightNumber ?? currentFlight?.plan.flight_number ?? '');
+      paintAirline(presetState.airline?.name ?? currentFlight?.route.airline.name ?? '');
+      break;
+    case 'dep':
+      paintAirport('dep', presetState.departure ?? currentFlight?.route.departure ?? null);
+      break;
+    case 'dest':
+      paintAirport('dest', presetState.destination ?? currentFlight?.route.destination ?? null);
+      break;
+    case 'std':
+      paintStd(presetState.stdHM ?? (currentFlight ? fmtLocalHM(currentFlight.plan.std_ms) : ''));
+      break;
+    case 'aircraft': {
+      const ac = presetState.aircraft ?? currentFlight?.route.aircraft;
+      paintAircraft(ac?.type_name ?? '', ac?.airframe_name ?? '');
+      break;
+    }
+  }
+}
+
+let editorOpen = false;
+
+// Hides the host's children and shows an input in their place. Enter commits
+// (invalid input turns red and stays open); Escape or clicking away cancels.
+// Committing an empty value clears the lock.
+function openInlineEditor(
+  host: HTMLElement,
+  initial: string,
+  commit: (value: string) => Promise<void>,
+  after: () => void,
+  type: 'text' | 'time' = 'text',
+  maxLength = 7,
+): void {
+  if (editorOpen || generating) return;
+  editorOpen = true;
+
+  const hidden = (Array.from(host.children) as HTMLElement[]).filter(c => c.style.display !== 'none');
+  hidden.forEach(c => { c.style.display = 'none'; });
+
+  const input = document.createElement('input');
+  input.type = type;
+  input.className = 'preset-inline-input';
+  input.value = initial;
+  if (type === 'text') input.maxLength = maxLength;
+  host.appendChild(input);
+  input.focus();
+  if (type === 'text') input.select();
+
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    input.remove();
+    hidden.forEach(c => { c.style.display = ''; });
+    editorOpen = false;
+    after();
+  };
+  const tryCommit = async (cancelOnError: boolean) => {
+    try {
+      await commit(input.value);
+      finish();
+    } catch (err) {
+      if (!(err instanceof PresetError)) { finish(); throw err; }
+      if (cancelOnError) { finish(); return; }
+      input.classList.add('invalid');
+      input.title = err.message;
+      input.focus();
+    }
+  };
+  input.addEventListener('keydown', e => {
+    input.classList.remove('invalid');
+    if (e.key === 'Enter')  { e.preventDefault(); void tryCommit(false); }
+    if (e.key === 'Escape') finish();
+  });
+  input.addEventListener('blur', () => { void tryCommit(true); });
+}
+
+async function getEnabledAircraftPool(sim: Simulator): Promise<Aircraft[]> {
+  const curated   = await loadAircraft();
+  const installed = [...getInstalledAircraft(curated, sim), ...loadCustomAircraft()];
+  return filterEnabledAircraft(installed, getDisabledAircraftKeys());
+}
+
+document.getElementById('btn-edit-fltnum')!.addEventListener('click', () => {
+  openInlineEditor(document.getElementById('card-fltnum')!, presetState.flightNumber ?? '', async v => {
+    const parsed = parsePresetFlightNumber(v);
+    if (!parsed) {
+      delete presetState.flightNumber;
+      delete presetState.airline;
+      markLocked('btn-edit-fltnum', false);
+      return;
+    }
+    const airline = (await loadAirlines()).find(a => a.icao === parsed.airlineIcao);
+    if (!airline) throw new PresetError(`Unknown airline code ${parsed.airlineIcao}`);
+    presetState.flightNumber = parsed.flightNumber;
+    presetState.airline = airline;
+    markLocked('btn-edit-fltnum', true);
+  }, () => repaintPresetField('fltnum'));
+});
+
+function icaoEditor(which: 'dep' | 'dest', rowId: string, btnId: string, label: string): void {
+  const stateKey = which === 'dep' ? 'departure' as const : 'destination' as const;
+  const otherKey = which === 'dep' ? 'destination' as const : 'departure' as const;
+  openInlineEditor(document.getElementById(rowId)!, presetState[stateKey]?.icao ?? '', async v => {
+    const icao = parsePresetIcao(v, label);
+    if (!icao) {
+      delete presetState[stateKey];
+      markLocked(btnId, false);
+      return;
+    }
+    if (presetState[otherKey]?.icao === icao)
+      throw new PresetError('Departure and destination must differ');
+    const airport = (await loadAll()).find(a => a.icao === icao);
+    if (!airport) throw new PresetError(`${label} ${icao} not found in the airport database`);
+    presetState[stateKey] = airport;
+    markLocked(btnId, true);
+  }, () => repaintPresetField(which), 'text', 4);
+}
+
+document.getElementById('btn-edit-dep')!.addEventListener('click', () =>
+  icaoEditor('dep', 'card-dep-icao', 'btn-edit-dep', 'Departure'));
+document.getElementById('btn-edit-dest')!.addEventListener('click', () =>
+  icaoEditor('dest', 'card-dest-icao', 'btn-edit-dest', 'Destination'));
+
+document.getElementById('btn-edit-std')!.addEventListener('click', () => {
+  openInlineEditor(document.getElementById('std-time')!, presetState.stdHM ?? '', async v => {
+    if (parsePresetStd(v) === null) {
+      delete presetState.stdHM;
+      markLocked('btn-edit-std', false);
+      return;
+    }
+    presetState.stdHM = v;
+    markLocked('btn-edit-std', true);
+  }, () => repaintPresetField('std'), 'time');
+});
+
+document.getElementById('btn-edit-aircraft')!.addEventListener('click', async () => {
+  if (editorOpen || generating) return;
+  editorOpen = true;
+
+  const typeEl  = document.getElementById('card-aircraft-type')!;
+  const frameEl = document.getElementById('card-aircraft-frame')!;
+  typeEl.style.display  = 'none';
+  frameEl.style.display = 'none';
+
+  const settings = getSettings();
+  const pool = (await getEnabledAircraftPool(settings.simulator))
+    .filter(a => a.simulator.includes(settings.simulator));
+
+  const select = document.createElement('select');
+  select.className = 'preset-inline-input preset-inline-select';
+  const random = document.createElement('option');
+  random.value = '';
+  random.textContent = 'Random';
+  select.appendChild(random);
+  for (const a of pool) {
+    const opt = document.createElement('option');
+    opt.value = aircraftKey(a);
+    opt.textContent = `${a.type_name} — ${a.airframe_name}`;
+    select.appendChild(opt);
+  }
+  if (presetState.aircraft) select.value = aircraftKey(presetState.aircraft);
+  typeEl.parentElement!.insertBefore(select, typeEl);
+  select.focus();
+
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    select.remove();
+    typeEl.style.display  = '';
+    frameEl.style.display = '';
+    editorOpen = false;
+    repaintPresetField('aircraft');
+  };
+  select.addEventListener('change', () => {
+    const found = pool.find(a => aircraftKey(a) === select.value);
+    if (found) {
+      presetState.aircraft = found;
+      markLocked('btn-edit-aircraft', true);
+    } else {
+      delete presetState.aircraft;
+      markLocked('btn-edit-aircraft', false);
+    }
+    finish();
+  });
+  select.addEventListener('blur', finish);
+  select.addEventListener('keydown', e => { if (e.key === 'Escape') finish(); });
+});
+
+interface ResolvedPreset {
+  locks?: RouteLocks;
+  flightNumber?: string;
+  stdMs?: number;
+}
+
+// Throws PresetError when locked values no longer resolve (e.g. the aircraft
+// was disabled in Settings after being locked)
+function resolvePreset(enabledAircraft: Aircraft[]): ResolvedPreset {
+  const { flightNumber, airline, departure, destination, aircraft, stdHM } = presetState;
+  if (!flightNumber && !departure && !destination && !aircraft && !stdHM) return {};
+
+  // Recompute each time so a locked "14:00" is always the next 14:00, not a
+  // timestamp frozen when the lock was set
+  const stdMs = stdHM ? parsePresetStd(stdHM) ?? undefined : undefined;
+
+  if (departure && destination && departure.icao === destination.icao)
+    throw new PresetError('Departure and destination must differ');
+
+  const locks: RouteLocks = {};
+  if (departure)   locks.departure   = departure;
+  if (destination) locks.destination = destination;
+  if (airline)     locks.airline     = airline;
+  if (aircraft) {
+    const found = enabledAircraft.find(a => aircraftKey(a) === aircraftKey(aircraft));
+    if (!found) throw new PresetError(`Pre-set aircraft ${aircraft.type_name} is no longer enabled`);
+    locks.aircraft = found;
+  }
+
+  const hasLocks = Object.values(locks).some(v => v !== undefined);
+  return { locks: hasLocks ? locks : undefined, flightNumber, stdMs };
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 
 const RANGE_CONFIGS = {
@@ -484,10 +770,24 @@ async function generate(): Promise<void> {
       return;
     }
 
+    let preset: ResolvedPreset;
+    try {
+      preset = resolvePreset(enabledAircraft);
+    } catch (err) {
+      if (err instanceof PresetError) {
+        currentFlight = null;
+        renderEmpty(`Pre-set fields: ${err.message}`);
+        return;
+      }
+      throw err;
+    }
+
     renderLoading();
     try {
-      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft);
-      const plan        = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
+      const route = await selectRoute({ flightTypes: settings.flightTypes, simulator: settings.simulator, scheduledOnly: settings.scheduledOnly, minBlockH: settings.minBlockH, maxBlockH: settings.maxBlockH, minDistNm: settings.minDistNm, maxDistNm: settings.maxDistNm, departureRegion: settings.departureRegion }, enabledAircraft, preset.locks);
+      let plan = planFlight(route.airline, route.aircraft, route.distanceNm, settings.stdMode, settings.stdPeriod);
+      if (preset.flightNumber !== undefined) plan = { ...plan, flight_number: preset.flightNumber };
+      if (preset.stdMs        !== undefined) plan = { ...plan, std_ms: preset.stdMs };
       const simbriefUrl = buildSimbriefUrl(route, plan);
       const flight = { route, plan, simbriefUrl };
       currentFlight = flight;
@@ -495,7 +795,10 @@ async function generate(): Promise<void> {
       showRerollButtons();
     } catch (err) {
       currentFlight = null;
-      if (err instanceof NoRouteError) {
+      if (err instanceof NoRouteError && preset.locks) {
+        renderEmpty(`${err.message}. Adjust or reset the pre-set fields.`);
+        console.error(err);
+      } else if (err instanceof NoRouteError) {
         const hints: string[] = [];
         if (settings.minBlockH !== undefined || settings.maxBlockH !== undefined)
           hints.push('widening the block time filter');
@@ -543,6 +846,7 @@ async function handleRerollAirline(): Promise<void> {
     const newPlan  = { ...plan, flight_number: newFlightNumber };
     const newUrl   = buildSimbriefUrl(newRoute, newPlan);
     currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('fltnum');
     reRenderAirline(newFlightNumber, newAirline.name, newUrl);
   } finally {
     generating = false;
@@ -565,6 +869,7 @@ async function handleRerollDestination(): Promise<void> {
     const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin };
     const newUrl   = buildSimbriefUrl(newRoute, newPlan);
     currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('dest');
     reRenderDestination(destination, distanceNm, blockTimeMin, newUrl);
   } finally {
     generating = false;
@@ -592,6 +897,7 @@ async function handleRerollDeparture(): Promise<void> {
     const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin, flight_number: newFlightNumber };
     const newUrl   = buildSimbriefUrl(newRoute, newPlan);
     currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('dep');
     reRenderDeparture(departure, distanceNm, blockTimeMin, newFlightNumber, newUrl);
   } finally {
     generating = false;
@@ -630,6 +936,7 @@ async function handleRerollAircraft(): Promise<void> {
     const newPlan      = { ...plan, block_time_min: blockTimeMin };
     const newUrl       = buildSimbriefUrl(newRoute, newPlan);
     currentFlight      = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('aircraft');
     reRenderAircraft(newAircraft, blockTimeMin, newUrl);
   } finally {
     generating = false;
