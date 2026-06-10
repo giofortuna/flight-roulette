@@ -11,7 +11,7 @@ import { parsePresetFlightNumber, parsePresetIcao, parsePresetStd, PresetError }
 import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { buildPln, plnFilename } from './pln.js';
-import { renderFlight, renderBlank, renderEmpty, renderLoading, showNotice, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft, paintFltnum, paintAirline, paintAirport, paintStd, paintAircraft } from './renderer.js';
+import { renderFlight, renderBlank, renderEmpty, renderLoading, showNotice, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft, paintFltnum, paintAirline, paintAirport, paintStd, paintAircraft, repaintFlight, refitBlankRows } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 import { loadCustomAircraft, addCustomAircraft, removeCustomAircraftAt, validateCustomEntry } from './custom-aircraft.js';
@@ -1003,6 +1003,7 @@ document.getElementById('nav-about')!.addEventListener('click', () => {
 document.getElementById('nav-back')!.addEventListener('click', () => {
   viewAbout.classList.add('hidden');
   viewMain.classList.remove('hidden');
+  refitBoard(); // viewport may have resized/rotated while the board was hidden
 });
 
 document.getElementById('nav-prefs')!.addEventListener('click', () => {
@@ -1014,6 +1015,7 @@ document.getElementById('nav-prefs')!.addEventListener('click', () => {
 document.getElementById('nav-back-prefs')!.addEventListener('click', () => {
   viewPrefs.classList.add('hidden');
   viewMain.classList.remove('hidden');
+  refitBoard(); // viewport may have resized/rotated while the board was hidden
 });
 
 // ── Range filter — dual slider ────────────────────────────────────────────────
@@ -1162,6 +1164,36 @@ if (savedOptionsOpen !== null) optionsPanelEl.open = savedOptionsOpen === '1';
 optionsPanelEl.addEventListener('toggle', () =>
   localStorage.setItem('disp-options-open', optionsPanelEl.open ? '1' : '0')
 );
+
+// ── Re-fit the flap board on viewport resize / rotation (issue #43) ──────────
+
+const RESIZE_REFIT_MS = 200;
+let refitTimer: ReturnType<typeof setTimeout> | undefined;
+
+function lockedPresetFields(): ('fltnum' | 'dep' | 'dest' | 'std' | 'aircraft')[] {
+  const fields: ('fltnum' | 'dep' | 'dest' | 'std' | 'aircraft')[] = [];
+  if (presetState.flightNumber !== undefined) fields.push('fltnum');
+  if (presetState.departure   !== undefined) fields.push('dep');
+  if (presetState.destination !== undefined) fields.push('dest');
+  if (presetState.stdHM       !== undefined) fields.push('std');
+  if (presetState.aircraft    !== undefined) fields.push('aircraft');
+  return fields;
+}
+
+// Hidden rows measure 0 and would fall back to max tiles, so never refit
+// while another view covers the board — the back handlers refit instead.
+function refitBoard(): void {
+  if (generating || editorOpen || viewMain.classList.contains('hidden')) return;
+  const refitted = currentFlight ? repaintFlight(currentFlight) : refitBlankRows();
+  if (!refitted) return;
+  // the static repaint painted from the flight — restore pre-set overrides
+  for (const field of lockedPresetFields()) repaintPresetField(field);
+}
+
+window.addEventListener('resize', () => {
+  clearTimeout(refitTimer);
+  refitTimer = setTimeout(refitBoard, RESIZE_REFIT_MS);
+});
 
 // ── Electron window auto-fit ──────────────────────────────────────────────────
 
