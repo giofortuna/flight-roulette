@@ -913,6 +913,8 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   align-items: center;
   justify-content: space-between;
   padding-right: 14px;
+  background: var(--flap-section);
+  border-bottom: 1px solid var(--flap-divider);
 }
 
 .ac-group-label {
@@ -921,7 +923,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   letter-spacing: 0.25em;
   color: var(--flap-sub);
   text-transform: uppercase;
-  padding: 10px 14px 6px;
+  padding: 9px 14px;
 }
 
 .ac-group-actions {
