@@ -143,7 +143,7 @@ body.electron .app-shell {
 /* ── Section label ── */
 .section-label {
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.3em;
   color: var(--flap-label);
   text-transform: uppercase;
@@ -172,12 +172,12 @@ body.electron .app-shell {
 
 .setting-label {
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
-  letter-spacing: 0.28em;
+  font-size: 9px;
+  letter-spacing: 0.24em;
   color: var(--flap-sub);
   text-transform: uppercase;
   flex-shrink: 0;
-  width: 100px;
+  width: 108px;
 }
 
 /* Segmented toggle — dark tiles, amber active */
@@ -251,7 +251,7 @@ body.electron .app-shell {
 
 .advanced-label {
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.28em;
   color: var(--flap-sub);
   text-transform: uppercase;
@@ -411,7 +411,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 /* ── Status message (unsupported simulator/type warnings) ── */
 .status-msg {
   font-family: 'Orbitron', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.22em;
   color: var(--amber-dim);
   text-transform: uppercase;
@@ -471,7 +471,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 /* ── Field label ── */
 .flap-label {
   font-family: 'Orbitron', monospace;
-  font-size: 7px;
+  font-size: 8px;
   letter-spacing: 0.28em;
   color: var(--flap-sub);
   text-transform: uppercase;
@@ -597,7 +597,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .footer-note {
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.15em;
   color: var(--flap-label);
   text-transform: uppercase;
@@ -895,7 +895,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .prefs-section-title {
   font-family: 'Orbitron', monospace;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.22em;
   color: var(--amber);
   text-transform: uppercase;
@@ -934,7 +934,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   border: 1px solid var(--border-active);
   color: var(--flap-sub);
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   padding: 5px 10px;
@@ -982,7 +982,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   flex: 1;
   font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.06em;
   color: var(--text-dim);
   transition: color 0.12s;
@@ -992,7 +992,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 
 .ac-addon {
   font-family: 'Share Tech Mono', monospace;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   color: var(--text-dim);
   transition: color 0.12s;
@@ -1013,7 +1013,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   border-bottom: none;
   color: var(--flap-sub);
   font-family: 'Orbitron', monospace;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
   padding: 10px 14px;
@@ -1052,7 +1052,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   border: 1px solid var(--border-active);
   color: var(--flap-sub);
   font-family: 'Orbitron', monospace;
-  font-size: 8px;
+  font-size: 9px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   padding: 5px 10px;
