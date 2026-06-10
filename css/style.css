@@ -1283,3 +1283,25 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   .about-title { font-size: 26px; }
 }
 
+/* ════════════════════════════════════════
+   RESPONSIVE — touch input (any viewport)
+════════════════════════════════════════ */
+@media (pointer: coarse) {
+  .nav-link { padding: 8px 2px; }
+
+  .btn-reroll    { font-size: 18px; }
+  .ac-delete-btn { font-size: 18px; padding: 0 16px; }
+
+  .seg label        { padding: 11px 6px; }
+  .ac-item label    { padding: 12px 14px; }
+  .prefs-sim-tab    { padding: 12px 14px; }
+
+  .ac-action-btn, .cf-btn   { padding: 8px 12px; }
+  .btn-pln, .btn-dispatch   { padding: 11px 16px; }
+  .custom-ac-input          { padding: 11px 8px; }
+  .region-select            { padding: 11px 24px 11px 8px; }
+
+  .dual-range-input::-webkit-slider-thumb { width: 18px; height: 26px; }
+  .dual-range-input::-moz-range-thumb     { width: 18px; height: 26px; }
+}
+
