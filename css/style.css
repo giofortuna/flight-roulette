@@ -929,6 +929,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
 .ac-group-actions {
   display: flex;
   gap: 1px;
+  margin: 6px 0;
 }
 
 .ac-action-btn {
