@@ -1,5 +1,6 @@
 import type { Aircraft } from './aircraft-db.js';
 import type { Simulator, FlightType } from './types.js';
+import { aircraftKey } from './aircraft-filter.js';
 
 const STORAGE_KEY = 'disp-custom-aircraft';
 
@@ -10,8 +11,18 @@ const VALID_CATEGORIES   = new Set<Aircraft['category']>(['narrowbody', 'widebod
 export function loadCustomAircraft(): Aircraft[] {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return [];
-  try { return JSON.parse(stored) as Aircraft[]; }
+  let parsed: unknown;
+  try { parsed = JSON.parse(stored); }
   catch { return []; }
+  if (!Array.isArray(parsed)) return [];
+  // Re-validate each entry so malformed storage (manual edits, schema drift)
+  // can never reach route selection
+  const valid: Aircraft[] = [];
+  for (const entry of parsed) {
+    try { valid.push(validateCustomEntry(entry as Record<string, unknown>)); }
+    catch { /* drop invalid entry */ }
+  }
+  return valid;
 }
 
 export function saveCustomAircraft(entries: Aircraft[]): void {
@@ -61,8 +72,11 @@ export function validateCustomEntry(data: Record<string, unknown>): Aircraft {
   };
 }
 
-export function addCustomAircraft(entry: Aircraft): void {
+export function addCustomAircraft(entry: Aircraft, takenKeys?: ReadonlySet<string>): void {
   const entries = loadCustomAircraft();
+  const key = aircraftKey(entry);
+  if (takenKeys?.has(key) || entries.some(e => aircraftKey(e) === key))
+    throw new Error('An aircraft with this type name and addon already exists');
   entries.push(entry);
   saveCustomAircraft(entries);
 }

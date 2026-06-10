@@ -1,6 +1,19 @@
-import { describe, it } from 'node:test';
+import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateCustomEntry } from './custom-aircraft.js';
+import { validateCustomEntry, loadCustomAircraft, addCustomAircraft, removeCustomAircraftAt } from './custom-aircraft.js';
+
+// node's test runner has no localStorage — minimal in-memory stub
+const store = new Map<string, string>();
+Object.defineProperty(globalThis, 'localStorage', {
+  configurable: true,
+  value: {
+    getItem:    (k: string) => store.get(k) ?? null,
+    setItem:    (k: string, v: string) => { store.set(k, v); },
+    removeItem: (k: string) => { store.delete(k); },
+  },
+});
+
+const STORAGE_KEY = 'disp-custom-aircraft';
 
 function makeEntry(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
@@ -105,4 +118,57 @@ it('validateCustomEntry — simbrief_airframe_id defaults to empty string when a
   delete data.simbrief_airframe_id;
   const result = validateCustomEntry(data);
   assert.equal(result.simbrief_airframe_id, '');
+});
+
+describe('custom aircraft storage', () => {
+  beforeEach(() => store.clear());
+
+  it('loadCustomAircraft — returns [] when nothing stored', () => {
+    assert.deepEqual(loadCustomAircraft(), []);
+  });
+
+  it('addCustomAircraft + loadCustomAircraft — round-trips an entry', () => {
+    addCustomAircraft(validateCustomEntry(makeEntry()));
+    const loaded = loadCustomAircraft();
+    assert.equal(loaded.length, 1);
+    assert.equal(loaded[0].type_name, 'Boeing 737-800');
+  });
+
+  it('loadCustomAircraft — returns [] on corrupted JSON', () => {
+    store.set(STORAGE_KEY, 'not json{');
+    assert.deepEqual(loadCustomAircraft(), []);
+  });
+
+  it('loadCustomAircraft — returns [] when stored value is not an array', () => {
+    store.set(STORAGE_KEY, JSON.stringify({ type_name: 'x' }));
+    assert.deepEqual(loadCustomAircraft(), []);
+  });
+
+  it('loadCustomAircraft — drops invalid entries, keeps valid ones', () => {
+    const valid = validateCustomEntry(makeEntry());
+    const broken = { type_name: 'Broken', simulator: 'not-an-array' };
+    store.set(STORAGE_KEY, JSON.stringify([valid, broken, null]));
+    const loaded = loadCustomAircraft();
+    assert.equal(loaded.length, 1);
+    assert.equal(loaded[0].type_name, 'Boeing 737-800');
+  });
+
+  it('addCustomAircraft — throws on duplicate of existing custom entry', () => {
+    addCustomAircraft(validateCustomEntry(makeEntry()));
+    assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry())), /already exists/);
+  });
+
+  it('addCustomAircraft — throws when key collides with takenKeys', () => {
+    const taken = new Set(['Boeing 737-800:PMDG']);
+    assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry()), taken), /already exists/);
+  });
+
+  it('removeCustomAircraftAt — removes the entry at index', () => {
+    addCustomAircraft(validateCustomEntry(makeEntry()));
+    addCustomAircraft(validateCustomEntry(makeEntry({ type_name: 'Airbus A320' })));
+    removeCustomAircraftAt(0);
+    const loaded = loadCustomAircraft();
+    assert.equal(loaded.length, 1);
+    assert.equal(loaded[0].type_name, 'Airbus A320');
+  });
 });

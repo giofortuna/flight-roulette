@@ -331,6 +331,10 @@ function renderCustomAircraftList(): void {
     delBtn.title     = 'Remove';
     delBtn.addEventListener('click', () => {
       removeCustomAircraftAt(i);
+      // Keys are unique across curated + custom, so dropping the disabled
+      // entry can't affect another aircraft
+      const d = getDisabledAircraftKeys();
+      if (d.delete(key)) saveDisabledAircraftKeys(d);
       renderCustomAircraftList();
     });
 
@@ -368,7 +372,8 @@ document.getElementById('custom-ac-form')!.addEventListener('submit', e => {
   };
 
   try {
-    addCustomAircraft(validateCustomEntry(data));
+    const curatedKeys = new Set((allAircraftCache ?? []).map(aircraftKey));
+    addCustomAircraft(validateCustomEntry(data), curatedKeys);
     (e.target as HTMLFormElement).reset();
     (document.getElementById('cac-ftype-pax')  as HTMLInputElement).checked = true;
     (document.getElementById('cac-sim-2024')   as HTMLInputElement).checked = true;
