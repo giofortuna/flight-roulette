@@ -112,12 +112,14 @@ function disableDispatch(): void {
   el('btn-dispatch').setAttribute('aria-disabled', 'true');
 }
 
+function enableDispatch(url: string): void {
+  (el('btn-dispatch') as HTMLAnchorElement).href = url;
+  el('btn-dispatch').classList.remove('is-disabled');
+  el('btn-dispatch').removeAttribute('aria-disabled');
+}
+
 function scheduleDispatchEnable(url: string, delay: number): void {
-  const t = setTimeout(() => {
-    (el('btn-dispatch') as HTMLAnchorElement).href = url;
-    el('btn-dispatch').classList.remove('is-disabled');
-    el('btn-dispatch').removeAttribute('aria-disabled');
-  }, delay);
+  const t = setTimeout(() => enableDispatch(url), delay);
   _pending.push(t);
 }
 
@@ -127,12 +129,14 @@ function disablePln(): void {
   btn.disabled = true;
 }
 
+function enablePln(): void {
+  const btn = el('btn-pln') as HTMLButtonElement;
+  btn.classList.remove('is-disabled');
+  btn.disabled = false;
+}
+
 function schedulePlnEnable(delay: number): void {
-  const t = setTimeout(() => {
-    const btn = el('btn-pln') as HTMLButtonElement;
-    btn.classList.remove('is-disabled');
-    btn.disabled = false;
-  }, delay);
+  const t = setTimeout(enablePln, delay);
   _pending.push(t);
 }
 
@@ -411,6 +415,58 @@ export function renderEmpty(message: string): void {
   const msg = el('status-msg');
   msg.textContent = message;
   msg.classList.remove('hidden');
+}
+
+// --- Static re-fit on viewport resize / rotation (issue #43) ---
+
+// Fresh fitted counts for the width-fitted rows, or null when nothing changed
+function fitWidthRows(): { airline: number; depCity: number; destCity: number } | null {
+  const airline  = fitTileCount(el('card-airline'),   'lg', AIRLINE_TILES);
+  const depCity  = fitTileCount(el('card-dep-city'),  'lg', CITY_TILES);
+  const destCity = fitTileCount(el('card-dest-city'), 'lg', CITY_TILES);
+  if (airline === _airlineTiles && depCity === _depCityTiles && destCity === _destCityTiles) return null;
+  return { airline, depCity, destCity };
+}
+
+/**
+ * Statically repaints the displayed flight with freshly fitted tile counts —
+ * final characters only, no flap cycling. Returns false without repainting
+ * when the fitted counts are unchanged, so height-only resizes (e.g.
+ * Electron's window sizing) are no-ops. Cancels any running animation, which
+ * also clears the pending dispatch/PLN enable timers — so it enables both
+ * directly.
+ */
+export function repaintFlight(flight: GeneratedFlight): boolean {
+  if (!fitWidthRows()) return false;
+  cancelAnim();
+
+  const { route, plan } = flight;
+  const { h, m } = stdLocalHM(plan.std_ms);
+  paintFltnum(plan.flight_number);
+  paintStd(`${h}:${m}`);
+  paintAirline(route.airline.name);
+  paintAirport('dep',  route.departure);
+  paintAirport('dest', route.destination);
+  setFlapsNumber(el('card-distance'),  plan.distance_nm.toLocaleString('en-US'), DIST_WIDTH, 'md');
+  setFlapsNumber(el('card-blocktime'), fmtBlk(plan.block_time_min), BLK_WIDTH, 'md');
+  paintAircraft(route.aircraft.type_name, route.aircraft.airframe_name);
+
+  enableDispatch(flight.simbriefUrl);
+  enablePln();
+  return true;
+}
+
+/** Re-fits the width-fitted rows of a blank/empty board. Same no-op contract. */
+export function refitBlankRows(): boolean {
+  const fit = fitWidthRows();
+  if (!fit) return false;
+  _airlineTiles  = fit.airline;
+  _depCityTiles  = fit.depCity;
+  _destCityTiles = fit.destCity;
+  setFlapsMin(el('card-airline'),   '', 'lg', _airlineTiles);
+  setFlapsMin(el('card-dep-city'),  '', 'lg', _depCityTiles);
+  setFlapsMin(el('card-dest-city'), '', 'lg', _destCityTiles);
+  return true;
 }
 
 // --- Partial re-renders for individual field re-rolls ---
