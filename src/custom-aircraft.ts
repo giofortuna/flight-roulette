@@ -43,6 +43,8 @@ export function validateCustomEntry(data: Record<string, unknown>): Aircraft {
     throw new Error('Addon name is required');
   if (typeof simbrief_type !== 'string' || !simbrief_type.trim())
     throw new Error('SimBrief type code is required');
+  if (!/^[A-Z0-9]{2,4}$/.test(simbrief_type.trim().toUpperCase()))
+    throw new Error('SimBrief type must be an ICAO type code like B738 (2–4 letters/digits)');
   if (typeof flight_type !== 'string' || !VALID_FLIGHT_TYPES.has(flight_type as FlightType))
     throw new Error('Invalid flight type');
   if (!Array.isArray(simulator) || simulator.length === 0
@@ -74,8 +76,10 @@ export function validateCustomEntry(data: Record<string, unknown>): Aircraft {
 
 export function addCustomAircraft(entry: Aircraft, takenKeys?: ReadonlySet<string>): void {
   const entries = loadCustomAircraft();
-  const key = aircraftKey(entry);
-  if (takenKeys?.has(key) || entries.some(e => aircraftKey(e) === key))
+  // Compare case-insensitively so "PMDG" and "pmdg" can't create near-duplicates
+  const key = aircraftKey(entry).toLowerCase();
+  const taken = takenKeys !== undefined && [...takenKeys].some(k => k.toLowerCase() === key);
+  if (taken || entries.some(e => aircraftKey(e).toLowerCase() === key))
     throw new Error('An aircraft with this type name and addon already exists');
   entries.push(entry);
   saveCustomAircraft(entries);

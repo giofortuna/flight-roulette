@@ -63,6 +63,16 @@ it('validateCustomEntry — throws on missing simbrief_type', () => {
   assert.throws(() => validateCustomEntry(makeEntry({ simbrief_type: '' })), /SimBrief type/);
 });
 
+it('validateCustomEntry — throws when simbrief_type is not an ICAO type code', () => {
+  for (const bad of ['BOEING 737', 'B7388X', 'B', 'B73-8'])
+    assert.throws(() => validateCustomEntry(makeEntry({ simbrief_type: bad })), /ICAO type code/);
+});
+
+it('validateCustomEntry — accepts 2–4 character alphanumeric type codes', () => {
+  for (const ok of ['B738', 'A20N', 'AT76', 'C172', 'DH8D', 'BE20', 'SF34', 'E190', 'F50'])
+    assert.doesNotThrow(() => validateCustomEntry(makeEntry({ simbrief_type: ok })));
+});
+
 it('validateCustomEntry — throws on invalid flight_type', () => {
   assert.throws(() => validateCustomEntry(makeEntry({ flight_type: 'helicopter' })), /flight type/);
 });
@@ -160,6 +170,19 @@ describe('custom aircraft storage', () => {
 
   it('addCustomAircraft — throws when key collides with takenKeys', () => {
     const taken = new Set(['Boeing 737-800:PMDG']);
+    assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry()), taken), /already exists/);
+  });
+
+  it('addCustomAircraft — duplicate check is case-insensitive', () => {
+    addCustomAircraft(validateCustomEntry(makeEntry()));
+    assert.throws(
+      () => addCustomAircraft(validateCustomEntry(makeEntry({ type_name: 'BOEING 737-800', airframe_name: 'pmdg' }))),
+      /already exists/,
+    );
+  });
+
+  it('addCustomAircraft — takenKeys check is case-insensitive', () => {
+    const taken = new Set(['bOeInG 737-800:pmdg']);
     assert.throws(() => addCustomAircraft(validateCustomEntry(makeEntry()), taken), /already exists/);
   });
 

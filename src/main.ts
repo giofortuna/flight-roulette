@@ -282,6 +282,8 @@ function initAircraftSettings(allAircraft: Aircraft[]): void {
   renderCustomAircraftList();
 }
 
+const SIM_BADGE: Record<Simulator, string> = { msfs2020: '2020', msfs2024: '2024', xplane12: 'XP12' };
+
 function renderCustomAircraftList(): void {
   const container = document.getElementById('prefs-custom-list')!;
   container.innerHTML = '';
@@ -322,7 +324,11 @@ function renderCustomAircraftList(): void {
     addon.className   = 'ac-addon';
     addon.textContent = ac.airframe_name;
 
-    lbl.append(dot, name, addon);
+    const sims = document.createElement('span');
+    sims.className   = 'ac-sims';
+    sims.textContent = ac.simulator.map(s => SIM_BADGE[s] ?? s).join(' · ');
+
+    lbl.append(dot, name, addon, sims);
 
     const delBtn = document.createElement('button');
     delBtn.type      = 'button';
