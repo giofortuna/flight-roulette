@@ -58,7 +58,10 @@ body::after {
 .hidden { display: none !important; }
 
 /* ── Views ── */
-.view { min-height: 100vh; }
+.view {
+  min-height: 100vh;
+  min-height: 100dvh; /* iOS: exclude the collapsed Safari toolbar area */
+}
 
 body.electron #view-about,
 body.electron #view-prefs {

@@ -204,16 +204,23 @@ let _airlineTiles  = AIRLINE_TILES;
 let _depCityTiles  = CITY_TILES;
 let _destCityTiles = CITY_TILES;
 
+const TILE_GAP_PX  = 2; // .flap-row gap
+const MIN_FIT_TILES = 6;
+
+// Exported for tests. Returns maxTiles when either measurement is 0
+// (element hidden or not laid out yet) — never shrink on bad data.
+export function clampTileCount(availPx: number, tilePx: number, maxTiles: number): number {
+  if (!tilePx || !availPx) return maxTiles;
+  return Math.max(MIN_FIT_TILES, Math.min(maxTiles, Math.floor((availPx + TILE_GAP_PX) / (tilePx + TILE_GAP_PX))));
+}
+
 function fitTileCount(target: HTMLElement, size: FlapSize, maxTiles: number): number {
   const probe = document.createElement('span');
   probe.className = `flap-char flap-${size}`;
   target.appendChild(probe);
   const tileW = probe.offsetWidth;
   probe.remove();
-  const avail = target.clientWidth;
-  if (!tileW || !avail) return maxTiles;
-  const gap = 2; // .flap-row gap
-  return Math.max(6, Math.min(maxTiles, Math.floor((avail + gap) / (tileW + gap))));
+  return clampTileCount(target.clientWidth, tileW, maxTiles);
 }
 
 function fitTextRows(): void {
