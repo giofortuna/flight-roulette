@@ -176,7 +176,9 @@ function renderCommunityFolder(sim: PrefsSim): void {
 
   const pathEl = document.createElement('span');
   pathEl.className   = 'cf-path';
-  pathEl.textContent = folderPath ?? 'Not found';
+  // LRM prefix: .cf-path renders RTL for head-truncation, which would move a
+  // leading "/" (bidi-neutral) of macOS paths to the visual end of the string
+  pathEl.textContent = folderPath ? '\u200E' + folderPath : 'Not found';
   pathEl.title       = folderPath ?? '';
 
   const changeBtn = document.createElement('button');
