@@ -11,7 +11,7 @@ import { parsePresetFlightNumber, parsePresetIcao, parsePresetStd, PresetError }
 import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { buildPln, plnFilename } from './pln.js';
-import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft, paintFltnum, paintIcao, paintStd, paintAircraft } from './renderer.js';
+import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft, paintFltnum, paintAirline, paintAirport, paintStd, paintAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 import { loadCustomAircraft, addCustomAircraft, removeCustomAircraftAt, validateCustomEntry } from './custom-aircraft.js';
@@ -461,12 +461,13 @@ function repaintPresetField(field: 'fltnum' | 'dep' | 'dest' | 'std' | 'aircraft
   switch (field) {
     case 'fltnum':
       paintFltnum(presetState.flightNumber ?? currentFlight?.plan.flight_number ?? '');
+      paintAirline(presetState.airline?.name ?? currentFlight?.route.airline.name ?? '');
       break;
     case 'dep':
-      paintIcao('dep', presetState.departure?.icao ?? currentFlight?.route.departure.icao ?? '');
+      paintAirport('dep', presetState.departure ?? currentFlight?.route.departure ?? null);
       break;
     case 'dest':
-      paintIcao('dest', presetState.destination?.icao ?? currentFlight?.route.destination.icao ?? '');
+      paintAirport('dest', presetState.destination ?? currentFlight?.route.destination ?? null);
       break;
     case 'std':
       paintStd(presetState.stdHM ?? (currentFlight ? fmtLocalHM(currentFlight.plan.std_ms) : ''));
