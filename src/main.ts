@@ -322,9 +322,7 @@ function renderCustomAircraftList(): void {
 
     const addon = document.createElement('span');
     addon.className   = 'ac-addon';
-    addon.textContent = ac.simbrief_airframe_id
-      ? `${ac.airframe_name} · ${ac.simbrief_airframe_id}`
-      : ac.airframe_name;
+    addon.textContent = ac.airframe_name;
 
     const badges = document.createElement('span');
     badges.className = 'ac-sim-badges';
