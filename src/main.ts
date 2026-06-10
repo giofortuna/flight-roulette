@@ -834,7 +834,6 @@ async function generate(): Promise<void> {
 async function handleRerollAirline(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
-  clearPresetField('fltnum');
   try {
     const { route, plan } = currentFlight;
     const allAirlines = await loadAirlines();
@@ -847,6 +846,7 @@ async function handleRerollAirline(): Promise<void> {
     const newPlan  = { ...plan, flight_number: newFlightNumber };
     const newUrl   = buildSimbriefUrl(newRoute, newPlan);
     currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('fltnum');
     reRenderAirline(newFlightNumber, newAirline.name, newUrl);
   } finally {
     generating = false;
@@ -856,7 +856,6 @@ async function handleRerollAirline(): Promise<void> {
 async function handleRerollDestination(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
-  clearPresetField('dest');
   try {
     const settings = getSettings();
     const { route, plan } = currentFlight;
@@ -870,6 +869,7 @@ async function handleRerollDestination(): Promise<void> {
     const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin };
     const newUrl   = buildSimbriefUrl(newRoute, newPlan);
     currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('dest');
     reRenderDestination(destination, distanceNm, blockTimeMin, newUrl);
   } finally {
     generating = false;
@@ -879,7 +879,6 @@ async function handleRerollDestination(): Promise<void> {
 async function handleRerollDeparture(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
-  clearPresetField('dep');
   try {
     const settings = getSettings();
     const { route, plan } = currentFlight;
@@ -898,6 +897,7 @@ async function handleRerollDeparture(): Promise<void> {
     const newPlan  = { ...plan, distance_nm: distanceNm, block_time_min: blockTimeMin, flight_number: newFlightNumber };
     const newUrl   = buildSimbriefUrl(newRoute, newPlan);
     currentFlight  = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('dep');
     reRenderDeparture(departure, distanceNm, blockTimeMin, newFlightNumber, newUrl);
   } finally {
     generating = false;
@@ -907,7 +907,6 @@ async function handleRerollDeparture(): Promise<void> {
 async function handleRerollAircraft(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
-  clearPresetField('aircraft');
   try {
     const settings = getSettings();
     const { route, plan } = currentFlight;
@@ -937,6 +936,7 @@ async function handleRerollAircraft(): Promise<void> {
     const newPlan      = { ...plan, block_time_min: blockTimeMin };
     const newUrl       = buildSimbriefUrl(newRoute, newPlan);
     currentFlight      = { route: newRoute, plan: newPlan, simbriefUrl: newUrl };
+    clearPresetField('aircraft');
     reRenderAircraft(newAircraft, blockTimeMin, newUrl);
   } finally {
     generating = false;
