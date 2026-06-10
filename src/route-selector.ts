@@ -27,6 +27,16 @@ export interface SelectedRoute {
   distanceNm: number;
 }
 
+// Pre-resolved locked values: a locked field replaces its random pool.
+// Locked airports deliberately bypass the scheduledOnly and region filters —
+// the user named them explicitly. Range/runway/distance validation still applies.
+export interface RouteLocks {
+  departure?: Airport;
+  destination?: Airport;
+  aircraft?: Aircraft;
+  airline?: Airline;
+}
+
 export class NoRouteError extends Error {
   constructor(reason: string) {
     super(`Could not find a valid route: ${reason}`);
@@ -126,22 +136,29 @@ export function pickRoute(
   allAirlines: Airline[],
   allAirports: Airport[],
   departureScopeAirports?: Airport[],
+  locks?: RouteLocks,
 ): SelectedRoute {
-  const airlines = allAirlines.filter(a =>
-    input.flightTypes.some(ft => a.type === ft) || a.type === 'both'
-  );
-  const aircraft = allAircraft.filter(a =>
-    input.flightTypes.includes(a.flight_type) && a.simulator.includes(input.simulator)
-  );
+  const airlines = locks?.airline
+    ? [locks.airline]
+    : allAirlines.filter(a => input.flightTypes.some(ft => a.type === ft) || a.type === 'both');
+  const aircraft = locks?.aircraft
+    ? [locks.aircraft].filter(a =>
+        input.flightTypes.includes(a.flight_type) && a.simulator.includes(input.simulator))
+    : allAircraft.filter(a =>
+        input.flightTypes.includes(a.flight_type) && a.simulator.includes(input.simulator));
 
   if (aircraft.length === 0)
-    throw new NoRouteError(`no aircraft available for [${input.flightTypes.join(', ')}] / ${input.simulator}`);
+    throw new NoRouteError(locks?.aircraft
+      ? `pre-set aircraft ${locks.aircraft.type_name} does not match [${input.flightTypes.join(', ')}] / ${input.simulator}`
+      : `no aircraft available for [${input.flightTypes.join(', ')}] / ${input.simulator}`);
   if (airlines.length === 0)
     throw new NoRouteError(`no airlines available for flight types [${input.flightTypes.join(', ')}]`);
 
   const schedFilter = (a: Airport) => !input.scheduledOnly || a.scheduled !== false;
-  const destPool = allAirports.filter(schedFilter);
-  const depPool  = (departureScopeAirports ?? allAirports).filter(schedFilter);
+  const destPool = locks?.destination ? [locks.destination] : allAirports.filter(schedFilter);
+  const depPool  = locks?.departure
+    ? [locks.departure]
+    : (departureScopeAirports ?? allAirports).filter(schedFilter);
 
   // Shuffle aircraft so all types are tried in random order before giving up (Fisher-Yates)
   const shuffledAircraft = [...aircraft];
@@ -159,7 +176,25 @@ export function pickRoute(
 
     const eligibleDep  = filterByRunway(depPool,  pickedAircraft.min_runway_m);
     const eligibleDest = filterByRunway(destPool, pickedAircraft.min_runway_m);
-    if (eligibleDep.length < 1 || eligibleDest.length < 2) continue;
+    // A locked destination is a pool of exactly one; otherwise need ≥2 so a
+    // destination different from the departure can exist
+    if (eligibleDep.length < 1 || eligibleDest.length < (locks?.destination ? 1 : 2)) continue;
+
+    // With the destination fixed, scan departures deterministically instead of
+    // sampling random ones (which would falsely exhaust for distant targets)
+    if (locks?.destination) {
+      const destination = eligibleDest[0];
+      const r = findDepartureForDest(destination, pickedAircraft, eligibleDep,
+        input.minBlockH, input.maxBlockH, input.minDistNm, input.maxDistNm);
+      if (!r) continue;
+      return {
+        airline: pickRandom(airlinePool as [Airline, ...Airline[]]),
+        aircraft: pickedAircraft,
+        departure: r.departure,
+        destination,
+        distanceNm: r.distanceNm,
+      };
+    }
 
     // Length checked above — safe to treat as non-empty
     const eligible = eligibleDep as [Airport, ...Airport[]];
@@ -198,7 +233,9 @@ export function pickRoute(
     }
   }
 
-  throw new NoRouteError('exhausted all attempts — no valid departure/destination pair found');
+  throw new NoRouteError(locks && Object.values(locks).some(v => v !== undefined)
+    ? 'no valid route satisfies the pre-set fields and active filters'
+    : 'exhausted all attempts — no valid departure/destination pair found');
 }
 
 export function buildRerollAircraftPool(
@@ -223,12 +260,12 @@ export function buildRerollAircraftPool(
   );
 }
 
-export async function selectRoute(input: SelectionInput, aircraft?: Aircraft[]): Promise<SelectedRoute> {
+export async function selectRoute(input: SelectionInput, aircraft?: Aircraft[], locks?: RouteLocks): Promise<SelectedRoute> {
   const [allAircraft, allAirlines, allAirports, depAirports] = await Promise.all([
     aircraft ? Promise.resolve(aircraft) : loadAircraft(),
     loadAirlines(),
     loadAll(),
     input.departureRegion ? loadRegion(input.departureRegion) : Promise.resolve(undefined),
   ]);
-  return pickRoute(input, allAircraft, allAirlines, allAirports, depAirports);
+  return pickRoute(input, allAircraft, allAirlines, allAirports, depAirports, locks);
 }
