@@ -333,7 +333,7 @@ function renderCustomAircraftList(): void {
       badges.appendChild(badge);
     }
 
-    lbl.append(dot, name, addon, badges);
+    lbl.append(dot, name, badges, addon);
 
     const delBtn = document.createElement('button');
     delBtn.type      = 'button';
