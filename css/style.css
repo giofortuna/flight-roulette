@@ -1151,16 +1151,19 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   background: none;
   border: none;
   border-left: 1px solid #0a0a0a;
-  color: var(--text-dim);
+  color: var(--red);
   font-size: 16px;
   cursor: pointer;
   padding: 0 12px;
   line-height: 1;
-  transition: color 0.12s;
+  transition: color 0.12s, text-shadow 0.12s;
   flex-shrink: 0;
 }
 
-.ac-delete-btn:hover { color: var(--red); }
+.ac-delete-btn:hover {
+  color: var(--red);
+  text-shadow: 0 0 6px rgba(255, 59, 59, 0.6);
+}
 
 .custom-ac-form {
   display: flex;
