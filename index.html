@@ -132,41 +132,6 @@
         </div>
       </details>
 
-      <div class="divider"></div>
-
-      <details class="advanced-section" id="preset-details">
-        <summary class="advanced-toggle">
-          <span class="advanced-label">Pre-Set Fields</span>
-          <span class="advanced-arrow">▸</span>
-        </summary>
-        <div class="advanced-content">
-          <div class="setting-row">
-            <span class="setting-label">Flight No</span>
-            <input type="text" class="custom-ac-input" id="preset-fltnum" maxlength="7" placeholder="Random — e.g. BAW123" autocomplete="off">
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">From</span>
-            <input type="text" class="custom-ac-input" id="preset-dep" maxlength="4" placeholder="Random — ICAO, e.g. EGLL" autocomplete="off">
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">To</span>
-            <input type="text" class="custom-ac-input" id="preset-dest" maxlength="4" placeholder="Random — ICAO, e.g. KJFK" autocomplete="off">
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">Aircraft</span>
-            <select id="preset-aircraft" class="region-select">
-              <option value="">Random</option>
-            </select>
-          </div>
-          <div class="setting-row">
-            <span class="setting-label">STD</span>
-            <input type="time" class="custom-ac-input" id="preset-std">
-          </div>
-          <div id="preset-error" class="custom-ac-error"></div>
-          <button type="button" class="btn-add-custom" id="preset-reset">Reset Pre-Set Fields</button>
-        </div>
-      </details>
-
       <button class="btn-generate" id="btn-generate">▶ Generate Flight</button>
     </div>
 
@@ -178,12 +143,18 @@
         <div class="card-section card-section-dark">
           <div class="card-header-row1">
             <div>
-              <div class="flap-label">Flight</div>
+              <div class="label-row">
+                <div class="flap-label">Flight</div>
+                <button class="btn-edit" id="btn-edit-fltnum" title="Pre-set flight number">✎</button>
+              </div>
               <div class="flap-row" id="card-fltnum"></div>
             </div>
             <div>
-              <div class="flap-label" style="text-align:right;">STD</div>
-              <div class="std-time">
+              <div class="label-row label-row-right">
+                <button class="btn-edit" id="btn-edit-std" title="Pre-set departure time">✎</button>
+                <div class="flap-label">STD</div>
+              </div>
+              <div class="std-time" id="std-time">
                 <div class="flap-row" id="card-std-h"></div>
                 <span class="flap-char flap-xl flap-amber">:</span>
                 <div class="flap-row" id="card-std-m"></div>
@@ -206,6 +177,7 @@
               <div class="label-row">
                 <div class="flap-label">From</div>
                 <button class="btn-reroll" id="btn-reroll-dep" title="Re-roll departure">↺</button>
+                <button class="btn-edit" id="btn-edit-dep" title="Pre-set departure ICAO">✎</button>
               </div>
               <div class="flap-row" id="card-dep-icao"></div>
               <div class="flap-row" id="card-dep-city"></div>
@@ -235,6 +207,7 @@
 
             <div class="apt right">
               <div class="label-row label-row-right">
+                <button class="btn-edit" id="btn-edit-dest" title="Pre-set destination ICAO">✎</button>
                 <button class="btn-reroll" id="btn-reroll-dest" title="Re-roll destination">↺</button>
                 <div class="flap-label">To</div>
               </div>
@@ -252,6 +225,7 @@
             <div class="label-row">
               <div class="flap-label">Aircraft</div>
               <button class="btn-reroll" id="btn-reroll-aircraft" title="Re-roll aircraft">↺</button>
+              <button class="btn-edit" id="btn-edit-aircraft" title="Pre-set aircraft">✎</button>
             </div>
             <div class="aircraft-type" id="card-aircraft-type"></div>
             <div class="stat-sub" id="card-aircraft-frame"></div>

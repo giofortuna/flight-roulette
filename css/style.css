@@ -886,6 +886,51 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   color: var(--amber);
 }
 
+/* ── Pre-set field editing (✎ on the flight card) ── */
+.btn-edit {
+  background: none;
+  border: none;
+  color: var(--flap-label);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  font-family: 'Share Tech Mono', monospace;
+  transition: color 0.12s;
+}
+
+.btn-edit:hover { color: var(--amber); }
+
+.btn-edit.locked {
+  color: var(--amber);
+  text-shadow: 0 0 6px rgba(255, 176, 0, 0.5);
+}
+
+.preset-inline-input {
+  background: var(--flap-tile);
+  border: 1px solid var(--amber-dim);
+  color: var(--flap-text);
+  font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 10px;
+  outline: none;
+  min-width: 0;
+  max-width: 240px;
+}
+
+.preset-inline-input:focus { border-color: var(--amber); }
+
+.preset-inline-input.invalid { border-color: var(--red); }
+
+.preset-inline-select {
+  font-size: 12px;
+  text-transform: none;
+  max-width: 100%;
+}
+
 /* ════════════════════════════════════════
    SETTINGS PAGE
 ════════════════════════════════════════ */
@@ -1294,6 +1339,7 @@ details[open] .advanced-arrow { transform: rotate(90deg); }
   .nav-link { padding: 8px 2px; }
 
   .btn-reroll    { font-size: 18px; }
+  .btn-edit      { font-size: 16px; }
   .ac-delete-btn { font-size: 18px; padding: 0 16px; }
 
   .seg label        { padding: 11px 6px; }

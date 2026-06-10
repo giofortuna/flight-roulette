@@ -256,6 +256,36 @@ function blankText(): void {
   }
 }
 
+// --- Pre-set field painting (issue #35): static, no animation ---
+
+export function paintFltnum(text: string): void {
+  setFlapsMin(el('card-fltnum'), text, 'xl', FLTNUM_TILES);
+}
+
+export function paintIcao(which: 'dep' | 'dest', icao: string): void {
+  setFlapsMin(el(which === 'dep' ? 'card-dep-icao' : 'card-dest-icao'), icao, 'xl', ICAO_TILES);
+}
+
+export function paintStd(hhmm: string): void {
+  if (!hhmm) {
+    setBlankTiles(el('card-std-h'), STD_TILES, 'xl', true);
+    setBlankTiles(el('card-std-m'), STD_TILES, 'xl', true);
+    return;
+  }
+  const [h, m] = hhmm.split(':');
+  setFlapsMin(el('card-std-h'), h, 'xl', STD_TILES, true);
+  setFlapsMin(el('card-std-m'), m, 'xl', STD_TILES, true);
+}
+
+export function paintAircraft(typeName: string, frameName: string): void {
+  const t = el('card-aircraft-type');
+  t.textContent = typeName;
+  t.style.opacity = '';
+  const f = el('card-aircraft-frame');
+  f.textContent = frameName;
+  f.style.opacity = '';
+}
+
 // --- Public render functions ---
 
 export function renderBlank(): void {
