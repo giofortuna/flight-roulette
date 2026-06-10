@@ -11,7 +11,7 @@ import { parsePresetFlightNumber, parsePresetIcao, parsePresetStd, PresetError }
 import { planFlight } from './flight-planner.js';
 import { buildSimbriefUrl } from './simbrief.js';
 import { buildPln, plnFilename } from './pln.js';
-import { renderFlight, renderBlank, renderEmpty, renderLoading, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft, paintFltnum, paintAirline, paintAirport, paintStd, paintAircraft } from './renderer.js';
+import { renderFlight, renderBlank, renderEmpty, renderLoading, showNotice, cancelAnim, reRenderAirline, reRenderDestination, reRenderDeparture, reRenderAircraft, paintFltnum, paintAirline, paintAirport, paintStd, paintAircraft } from './renderer.js';
 import type { GeneratedFlight } from './renderer.js';
 import { aircraftKey, filterEnabledAircraft } from './aircraft-filter.js';
 import { loadCustomAircraft, addCustomAircraft, removeCustomAircraftAt, validateCustomEntry } from './custom-aircraft.js';
@@ -862,7 +862,10 @@ async function handleRerollDestination(): Promise<void> {
     const allAirports = await loadAll();
     const destPool = allAirports.filter(a => !settings.scheduledOnly || a.scheduled !== false);
     const result = findDestinationFor(route.departure, route.aircraft, destPool, settings.minBlockH, settings.maxBlockH, settings.minDistNm, settings.maxDistNm);
-    if (!result) return;
+    if (!result) {
+      showNotice('No alternative destination matches the active filters.');
+      return;
+    }
     const { destination, distanceNm } = result;
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
     const newRoute = { ...route, destination, distanceNm };
@@ -889,7 +892,10 @@ async function handleRerollDeparture(): Promise<void> {
     const schedFilter = (a: { scheduled?: boolean }) => !settings.scheduledOnly || a.scheduled !== false;
     const depPool = (depAirports ?? allAirports).filter(schedFilter);
     const result = findDepartureForDest(route.destination, route.aircraft, depPool, settings.minBlockH, settings.maxBlockH, settings.minDistNm, settings.maxDistNm);
-    if (!result) return;
+    if (!result) {
+      showNotice('No alternative departure matches the active filters.');
+      return;
+    }
     const { departure, distanceNm } = result;
     const blockTimeMin = Math.round((distanceNm / route.aircraft.cruise_kts) * 60 + 30);
     const newFlightNumber = route.airline.icao + String(100 + Math.floor(Math.random() * 900));
@@ -925,9 +931,7 @@ async function handleRerollAircraft(): Promise<void> {
       route.destination.max_runway_m,
     );
     if (pool.length === 0) {
-      hideRerollButtons();
-      currentFlight = null;
-      renderEmpty('No alternative aircraft available. Enable more aircraft in Settings.');
+      showNotice('No alternative aircraft available. Enable more aircraft in Settings.');
       return;
     }
     const newAircraft  = pickRandom(pool as [Aircraft, ...Aircraft[]]);
