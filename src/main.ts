@@ -408,8 +408,7 @@ interface PresetState {
   departure?: Airport;
   destination?: Airport;
   aircraft?: Aircraft;
-  stdHM?: string;        // "HH:MM" as typed, for display
-  stdMs?: number;
+  stdHM?: string;        // "HH:MM" as typed; resolved to ms at each generate
 }
 let presetState: PresetState = {};
 
@@ -417,10 +416,28 @@ function markLocked(btnId: string, locked: boolean): void {
   document.getElementById(btnId)!.classList.toggle('locked', locked);
 }
 
-function clearPreset(): void {
-  presetState = {};
-  for (const id of ['btn-edit-fltnum', 'btn-edit-std', 'btn-edit-dep', 'btn-edit-dest', 'btn-edit-aircraft'])
-    markLocked(id, false);
+// Re-rolling a locked field clears its lock — the user explicitly asked for a
+// random value, and a glowing pencil over a re-rolled value would lie
+function clearPresetField(field: 'fltnum' | 'dep' | 'dest' | 'aircraft'): void {
+  switch (field) {
+    case 'fltnum':
+      delete presetState.flightNumber;
+      delete presetState.airline;
+      markLocked('btn-edit-fltnum', false);
+      break;
+    case 'dep':
+      delete presetState.departure;
+      markLocked('btn-edit-dep', false);
+      break;
+    case 'dest':
+      delete presetState.destination;
+      markLocked('btn-edit-dest', false);
+      break;
+    case 'aircraft':
+      delete presetState.aircraft;
+      markLocked('btn-edit-aircraft', false);
+      break;
+  }
 }
 
 function fmtLocalHM(ms: number): string {
@@ -557,15 +574,12 @@ document.getElementById('btn-edit-dest')!.addEventListener('click', () =>
 
 document.getElementById('btn-edit-std')!.addEventListener('click', () => {
   openInlineEditor(document.getElementById('std-time')!, presetState.stdHM ?? '', async v => {
-    const stdMs = parsePresetStd(v);
-    if (stdMs === null) {
+    if (parsePresetStd(v) === null) {
       delete presetState.stdHM;
-      delete presetState.stdMs;
       markLocked('btn-edit-std', false);
       return;
     }
     presetState.stdHM = v;
-    presetState.stdMs = stdMs;
     markLocked('btn-edit-std', true);
   }, () => repaintPresetField('std'), 'time');
 });
@@ -633,8 +647,12 @@ interface ResolvedPreset {
 // Throws PresetError when locked values no longer resolve (e.g. the aircraft
 // was disabled in Settings after being locked)
 function resolvePreset(enabledAircraft: Aircraft[]): ResolvedPreset {
-  const { flightNumber, airline, departure, destination, aircraft, stdMs } = presetState;
-  if (!flightNumber && !departure && !destination && !aircraft && stdMs === undefined) return {};
+  const { flightNumber, airline, departure, destination, aircraft, stdHM } = presetState;
+  if (!flightNumber && !departure && !destination && !aircraft && !stdHM) return {};
+
+  // Recompute each time so a locked "14:00" is always the next 14:00, not a
+  // timestamp frozen when the lock was set
+  const stdMs = stdHM ? parsePresetStd(stdHM) ?? undefined : undefined;
 
   if (departure && destination && departure.icao === destination.icao)
     throw new PresetError('Departure and destination must differ');
@@ -763,7 +781,6 @@ async function generate(): Promise<void> {
       currentFlight = flight;
       renderFlight(flight);
       showRerollButtons();
-      clearPreset();
     } catch (err) {
       currentFlight = null;
       if (err instanceof NoRouteError && preset.locks) {
@@ -805,6 +822,7 @@ async function generate(): Promise<void> {
 async function handleRerollAirline(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
+  clearPresetField('fltnum');
   try {
     const { route, plan } = currentFlight;
     const allAirlines = await loadAirlines();
@@ -826,6 +844,7 @@ async function handleRerollAirline(): Promise<void> {
 async function handleRerollDestination(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
+  clearPresetField('dest');
   try {
     const settings = getSettings();
     const { route, plan } = currentFlight;
@@ -848,6 +867,7 @@ async function handleRerollDestination(): Promise<void> {
 async function handleRerollDeparture(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
+  clearPresetField('dep');
   try {
     const settings = getSettings();
     const { route, plan } = currentFlight;
@@ -875,6 +895,7 @@ async function handleRerollDeparture(): Promise<void> {
 async function handleRerollAircraft(): Promise<void> {
   if (generating || !currentFlight) return;
   generating = true;
+  clearPresetField('aircraft');
   try {
     const settings = getSettings();
     const { route, plan } = currentFlight;
